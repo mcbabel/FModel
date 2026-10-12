@@ -86,6 +86,10 @@ public partial class MainWindow : FWindow
             if (selectedItems.Contains(removed))
                 selectedItems.Remove(removed);
         }
+
+        // keep SelectedItem (used by the information panel) in sync as well
+        if (target.SelectedItem == null && selectedItems.Count > 0)
+            target.SelectedItem = selectedItems[0];
     }
 
     private void OnClosing(object sender, WindowClosingEventArgs e)

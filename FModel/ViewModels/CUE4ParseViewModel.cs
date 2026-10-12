@@ -90,6 +90,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using Serilog;
 using SkiaSharp;
 using Svg.Skia;
@@ -133,6 +134,9 @@ public class CUE4ParseViewModel : ViewModel
             return Dispatcher.UIThread.Invoke(delegate
             {
                 var htz = Snooper.GetMaxRefreshFrequency();
+                // OpenTK's default GLFW error callback throws from native code, which would kill the process
+                // when the GPU/driver doesn't provide OpenGL 4.6: log instead and let window creation fail normally
+                GLFW.SetErrorCallback(_glfwErrorCallback);
                 return _snooper = new Snooper(
                     new GameWindowSettings { UpdateFrequency = htz },
                     new NativeWindowSettings
@@ -153,6 +157,12 @@ public class CUE4ParseViewModel : ViewModel
             });
         }
     }
+
+    private static readonly GLFWCallbacks.ErrorCallback _glfwErrorCallback = (error, description) =>
+    {
+        Log.Error("GLFW error {Error}: {Description}", error, description);
+        FLogger.Append(ELog.Error, () => FLogger.Text($"3D Viewer: {description} (OpenGL 4.6 is required)", Constants.WHITE, true));
+    };
 
     public AbstractVfsFileProvider Provider { get; }
     public GameDirectoryViewModel GameDirectory { get; }

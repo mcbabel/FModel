@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
+using Avalonia.Input;
 
 namespace FModel.Views.Resources.Controls;
 
@@ -10,11 +11,27 @@ namespace FModel.Views.Resources.Controls;
 /// </summary>
 public sealed class MenuItemGesture
 {
-    public static readonly AttachedProperty<string> TextProperty =
-        AvaloniaProperty.RegisterAttached<MenuItemGesture, MenuItem, string>("Text");
+    public static readonly AttachedProperty<object> TextProperty =
+        AvaloniaProperty.RegisterAttached<MenuItemGesture, MenuItem, object>("Text");
 
-    public static string GetText(MenuItem o) => o.GetValue(TextProperty);
-    public static void SetText(MenuItem o, string value) => o.SetValue(TextProperty, value);
+    public static object GetText(MenuItem o) => o.GetValue(TextProperty);
+    public static void SetText(MenuItem o, object value) => o.SetValue(TextProperty, value);
+
+    static MenuItemGesture()
+    {
+        // the theme's MenuItem template displays MenuItem.InputGesture: translate the FModel hotkey text into a KeyGesture
+        TextProperty.Changed.AddClassHandler<MenuItem>((item, e) =>
+        {
+            var text = e.NewValue?.ToString()?.Replace(" + ", "+").Replace("Win+", "Meta+");
+            KeyGesture gesture = null;
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                try { gesture = KeyGesture.Parse(text); }
+                catch { /* not a valid gesture, nothing to display */ }
+            }
+            item.InputGesture = gesture;
+        });
+    }
 
     public static readonly IValueConverter ToStringConverter = new FuncValueConverter<object, string>(o => o?.ToString());
 }
