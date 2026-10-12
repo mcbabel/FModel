@@ -1,4 +1,3 @@
-using Avalonia.Threading;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,19 +6,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Windows;
-using CSCore;
-using CSCore.CoreAudioAPI;
-using CSCore.DSP;
-using CSCore.SoundOut;
-using CSCore.Streams;
+using Avalonia.Threading;
 using CUE4Parse.UE4.Criware.Decoders;
 using CUE4Parse.UE4.Criware.Decoders.ADX;
 using CUE4Parse.UE4.Criware.Decoders.HCA;
 using CUE4Parse.Utils;
 using FModel.Extensions;
 using FModel.Framework;
+using FModel.Framework.Audio;
 using FModel.Services;
 using FModel.Settings;
 using FModel.ViewModels.Commands;
@@ -137,7 +131,7 @@ public class AudioFile : ViewModel
         Data = File.ReadAllBytes(fileInfo.FullName);
     }
 
-    public AudioFile(AudioFile audioFile, IAudioSource wave)
+    public AudioFile(AudioFile audioFile, IAudioDecoder wave)
     {
         Id = audioFile.Id;
         FilePath = audioFile.FilePath;
@@ -145,9 +139,9 @@ public class AudioFile : ViewModel
         Length = audioFile.Length;
         Duration = wave.GetLength();
         Position = audioFile.Position;
-        Encoding = wave.WaveFormat.WaveFormatTag;
+        Encoding = wave.SourceFormat.Encoding;
         PlaybackState = audioFile.PlaybackState;
-        BytesPerSecond = wave.WaveFormat.BytesPerSecond;
+        BytesPerSecond = wave.SourceFormat.BytesPerSecond;
         Extension = audioFile.Extension;
         Data = audioFile.Data;
     }
@@ -161,12 +155,13 @@ public class AudioFile : ViewModel
 public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
 {
     private DiscordHandler _discordHandler => DiscordService.DiscordHandler;
-    private static IWaveSource _waveSource;
-    private static ISoundOut _soundOut;
-    private Timer _sourceTimer;
+    private static IAudioDecoder _waveSource;
+    private static AudioOutput _soundOut;
+    private readonly DispatcherTimer _sourceTimer;
+    private static bool _outputErrorReported;
 
     private TimeSpan _length => _waveSource?.GetLength() ?? TimeSpan.Zero;
-    private TimeSpan _position => _waveSource?.GetPosition() ?? TimeSpan.Zero;
+    private TimeSpan _position => _soundOut?.PositionTime ?? _waveSource?.GetPosition() ?? TimeSpan.Zero;
     private PlaybackState _playbackState => _soundOut?.PlaybackState ?? PlaybackState.Stopped;
     private bool _hideToggle = false;
 
@@ -187,8 +182,8 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
         set => SetProperty(ref _selectedAudioFile, value);
     }
 
-    private MMDevice _selectedAudioDevice;
-    public MMDevice SelectedAudioDevice
+    private AudioDevice _selectedAudioDevice;
+    public AudioDevice SelectedAudioDevice
     {
         get => _selectedAudioDevice;
         set => SetProperty(ref _selectedAudioDevice, value);
@@ -207,13 +202,16 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
 
     public AudioPlayerViewModel()
     {
-        _sourceTimer = new Timer(TimerTick, null, 0, 10);
+        _sourceTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(10) };
+        _sourceTimer.Tick += TimerTick;
         _audioFiles = new ObservableCollection<AudioFile>();
         AudioFilesView = new ListCollectionView(_audioFiles);
 
-        var audioDevices = new ObservableCollection<MMDevice>(EnumerateDevices());
+        var audioDevices = new ObservableCollection<AudioDevice>(AudioDevice.Enumerate());
         AudioDevicesView = new ListCollectionView(audioDevices) { SortDescriptions = { new SortDescription("FriendlyName", ListSortDirection.Ascending) } };
-        SelectedAudioDevice ??= audioDevices.FirstOrDefault();
+        SelectedAudioDevice = audioDevices.FirstOrDefault(x => x.DeviceId == UserSettings.Default.AudioDeviceId)
+                              ?? audioDevices.FirstOrDefault(x => x.IsDefault)
+                              ?? audioDevices.FirstOrDefault();
     }
 
     public void Load()
@@ -223,16 +221,17 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
             if (!ConvertIfNeeded())
                 return;
 
-            _waveSource = new CustomCodecFactory().GetCodec(SelectedAudioFile.Data, SelectedAudioFile.Extension);
-            if (_waveSource == null)
+            var decoder = CreateDecoder(SelectedAudioFile);
+            if (decoder == null)
                 return;
 
-            PlayedFile = new AudioFile(SelectedAudioFile, _waveSource);
-            Spectrum = new SpectrumProvider(_waveSource.WaveFormat.Channels, _waveSource.WaveFormat.SampleRate, FftSize.Fft4096);
+            ClearSoundOut();
+            _waveSource?.Dispose();
+            _waveSource = decoder;
 
-            var notificationSource = new SingleBlockNotificationStream(_waveSource.ToSampleSource());
-            notificationSource.SingleBlockRead += (s, a) => Spectrum.Add(a.Left, a.Right);
-            _waveSource = notificationSource.ToWaveSource(16);
+            PlayedFile = new AudioFile(SelectedAudioFile, _waveSource);
+            Spectrum = new SpectrumProvider(_waveSource.Channels, _waveSource.SampleRate, FftSize.Fft4096);
+            FftData = new float[4096 + 4];
 
             RaiseSourceEvent(ESourceEventType.Loading);
             LoadSoundOut();
@@ -243,13 +242,14 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
     {
         Dispatcher.UIThread.Invoke(() =>
         {
+            ClearSoundOut();
+            _waveSource?.Dispose();
             _waveSource = null;
 
             PlayedFile = new AudioFile(-1, "No audio file");
             Spectrum = null;
 
             RaiseSourceEvent(ESourceEventType.Clearing);
-            ClearSoundOut();
         });
     }
 
@@ -480,38 +480,39 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
     public void SkipTo(double percentage)
     {
         if (_soundOut == null || _waveSource == null) return;
-        _waveSource.Position = (long) (_waveSource.Length * percentage);
+        _soundOut.Position = (long) (_waveSource.Length * Math.Clamp(percentage, 0, 1));
     }
 
-    public void Volume()
+    public void Volume() => Volume(UserSettings.Default.AudioPlayerVolume);
+
+    /// <param name="volume">0 to 100</param>
+    public void Volume(float volume)
     {
         if (_soundOut == null) return;
-        _soundOut.Volume = UserSettings.Default.AudioPlayerVolume / 100;
+        _soundOut.Volume = volume / 100;
     }
 
     public void Device()
     {
-        if (_soundOut == null) return;
+        if (_soundOut == null || _soundOut.Device?.DeviceId == SelectedAudioDevice?.DeviceId) return;
 
-        Pause();
+        var wasPlaying = _soundOut.PlaybackState == PlaybackState.Playing;
+        _soundOut.Stop();
         LoadSoundOut();
-        Play();
+        if (wasPlaying) _soundOut?.Play();
     }
 
     public void Dispose()
     {
         Dispatcher.UIThread.Invoke(() =>
         {
+            _sourceTimer.Stop();
+            ClearSoundOut();
+
             if (_waveSource != null)
             {
                 _waveSource.Dispose();
                 _waveSource = null;
-            }
-
-            if (_soundOut != null)
-            {
-                _soundOut.Dispose();
-                _soundOut = null;
             }
 
             if (Spectrum != null)
@@ -527,54 +528,93 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
         });
     }
 
-    private void TimerTick(object state)
+    // runs on the UI thread (DispatcherTimer)
+    private void TimerTick(object sender, EventArgs e)
     {
         if (_waveSource == null || _soundOut == null) return;
 
-        if (_position != PlayedFile.Position)
+        var position = _position;
+        if (position != PlayedFile.Position)
         {
-            PlayedFile.Position = _position;
+            PlayedFile.Position = position;
             RaiseSourcePropertyChangedEvent(ESourceProperty.Position, PlayedFile.Position);
         }
 
-        if (_playbackState != PlayedFile.PlaybackState)
+        var playbackState = _playbackState;
+        if (playbackState != PlayedFile.PlaybackState)
         {
-            PlayedFile.PlaybackState = _playbackState;
+            PlayedFile.PlaybackState = playbackState;
             RaiseSourcePropertyChangedEvent(ESourceProperty.PlaybackState, PlayedFile.PlaybackState);
         }
 
-        if (Spectrum != null && PlayedFile.PlaybackState == PlaybackState.Playing)
+        if (Spectrum != null && FftData != null && PlayedFile.PlaybackState == PlaybackState.Playing)
         {
-            FftData = new float[4096+4];
             Spectrum.GetFftData(FftData);
             RaiseSourcePropertyChangedEvent(ESourceProperty.FftData, FftData);
+        }
+    }
+
+    private IAudioDecoder CreateDecoder(AudioFile file)
+    {
+        try
+        {
+            return AudioCodecFactory.GetCodec(file.Data, file.Extension);
+        }
+        catch (Exception e)
+        {
+            // WAVE files with an encoding we can't decode ourselves (ADPCM, XMA, ...) go through vgmstream
+            if (TryDecodeWithVgmstream(file.Data, file.Extension, out var wavData))
+            {
+                try
+                {
+                    return AudioCodecFactory.GetCodec(wavData, "wav");
+                }
+                catch (Exception e2)
+                {
+                    e = e2;
+                }
+            }
+
+            Log.Error(e, "Failed to decode {FileName}", file.FileName);
+            FLogger.Append(ELog.Error, () => FLogger.Text($"Failed to decode '{file.FileName}': {e.Message}", Constants.WHITE, true));
+            return null;
         }
     }
 
     private void LoadSoundOut()
     {
         if (_waveSource == null) return;
-        _soundOut = new WasapiOut(true, AudioClientShareMode.Shared, 100, ThreadPriority.Highest) { Device = SelectedAudioDevice };
-        _soundOut.Initialize(_waveSource.ToSampleSource().ToWaveSource(16));
+        ClearSoundOut();
+
+        try
+        {
+            _soundOut = new AudioOutput(SelectedAudioDevice);
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "Failed to initialize the audio output");
+            if (!_outputErrorReported)
+            {
+                _outputErrorReported = true;
+                FLogger.Append(ELog.Error, () => FLogger.Text(OpenAlRuntime.IsAvailable
+                    ? $"Could not open the audio output device: {e.Message}"
+                    : "Audio playback is unavailable because OpenAL could not be loaded (install OpenAL Soft, e.g. libopenal1)", Constants.WHITE, true));
+            }
+            return;
+        }
+
+        var spectrum = Spectrum;
+        _soundOut.SampleTap = (samples, count, _) => spectrum?.Add(samples, count);
+        _soundOut.Initialize(_waveSource);
         _soundOut.Volume = UserSettings.Default.AudioPlayerVolume / 100;
+        _sourceTimer.Start();
     }
 
     private void ClearSoundOut()
     {
+        if (_soundOut == null) return;
+        _soundOut.Dispose();
         _soundOut = null;
-    }
-
-    private IEnumerable<MMDevice> EnumerateDevices()
-    {
-        using var deviceEnumerator = new MMDeviceEnumerator();
-        using var deviceCollection = deviceEnumerator.EnumAudioEndpoints(DataFlow.Render, DeviceState.Active);
-        foreach (var device in deviceCollection)
-        {
-            if (device.DeviceID == UserSettings.Default.AudioDeviceId)
-                SelectedAudioDevice = device;
-
-            yield return device;
-        }
     }
 
     public event EventHandler<SourceEventArgs> SourceEvent;
@@ -586,7 +626,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
         {
             case ESourceProperty.PlaybackState:
             {
-                if (viewModel._position == viewModel._length && (PlaybackState) args.Value == PlaybackState.Stopped)
+                if (viewModel._soundOut is { ReachedEnd: true } && (PlaybackState) args.Value == PlaybackState.Stopped)
                     viewModel.Next();
 
                 break;
@@ -710,7 +750,8 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
     private static bool TryConvertRada(string inputFilePath, byte[] inputFileData, string extension, out string rawFilePath, bool updateUi = false)
     {
         rawFilePath = string.Empty;
-        var decoderPath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", $"{extension}dec.exe");
+        // radadec only exists for Windows, a native build can be dropped as ".data/radadec" on other platforms
+        var decoderPath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", OperatingSystem.IsWindows() ? $"{extension}dec.exe" : $"{extension}dec");
         if (!File.Exists(decoderPath))
         {
             Log.Error("Failed to convert {FilePath}, {Extension} decoder is missing", inputFilePath, extension);
@@ -741,18 +782,11 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
 
         var tempWavFilePath = Path.ChangeExtension(tempfile, ".wav");
 
-        var process = Process.Start(new ProcessStartInfo
-        {
-            FileName = converterPath,
-            Arguments = usevgmstream ? $"-o \"{tempWavFilePath}\" \"{tempfile}\"" : $"-i \"{tempfile}\" -o \"{tempWavFilePath}\"",
-            UseShellExecute = false,
-            CreateNoWindow = true
-        });
-        process?.WaitForExit(5000);
+        var success = RunConverter(converterPath, usevgmstream ? $"-o \"{tempWavFilePath}\" \"{tempfile}\"" : $"-i \"{tempfile}\" -o \"{tempWavFilePath}\"", 5000)
+                      && File.Exists(tempWavFilePath);
 
         File.Delete(tempfile);
 
-        var success = process?.ExitCode == 0 && File.Exists(tempWavFilePath);
         if (success)
         {
             File.Move(tempWavFilePath, wavFilePath, true);
@@ -761,26 +795,84 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
         return success;
     }
 
+    private static bool RunConverter(string converterPath, string arguments, int timeout)
+    {
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = converterPath,
+                Arguments = arguments,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+            if (process == null) return false;
+            if (!process.WaitForExit(timeout))
+            {
+                process.Kill(true);
+                return false;
+            }
+
+            return process.ExitCode == 0;
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "Failed to run {Converter}", converterPath);
+            return false;
+        }
+    }
+
+    /// <summary>Decodes data we can't read ourselves (e.g. ADPCM .wav) to PCM .wav with vgmstream, without touching the exported file.</summary>
+    private static bool TryDecodeWithVgmstream(byte[] data, string extension, out byte[] wavData)
+    {
+        wavData = null;
+        if (data == null || data.Length == 0) return false;
+
+        var vgmStreamPath = TryGetVgmstreamPath();
+        if (string.IsNullOrEmpty(vgmStreamPath)) return false;
+
+        var tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + "." + (string.IsNullOrEmpty(extension) ? "wav" : extension));
+        var tempWav = Path.ChangeExtension(tempFile, ".decoded.wav");
+        try
+        {
+            File.WriteAllBytes(tempFile, data);
+            if (!RunConverter(vgmStreamPath, $"-o \"{tempWav}\" \"{tempFile}\"", 5000) || !File.Exists(tempWav))
+                return false;
+
+            wavData = File.ReadAllBytes(tempWav);
+            return wavData.Length > 0;
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "vgmstream failed to decode audio");
+            return false;
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+            if (File.Exists(tempWav)) File.Delete(tempWav);
+        }
+    }
+
     private static string TryGetVgmstreamPath()
     {
-        var vgmFilePath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", "test.exe");
-        if (!File.Exists(vgmFilePath))
+        var dataDir = Path.Combine(UserSettings.Default.OutputDirectory, ".data");
+        string[] candidates = OperatingSystem.IsWindows() ? ["test.exe", "vgmstream-cli.exe"] : ["vgmstream-cli"];
+        foreach (var candidate in candidates)
         {
-            vgmFilePath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", "vgmstream-cli.exe");
-            if (!File.Exists(vgmFilePath))
-            {
-                Log.Error("Failed to convert audio, vgmstream is missing");
-                FLogger.Append(ELog.Error, () =>
-                {
-                    FLogger.Text("Failed to convert audio because vgmstream is missing. See: ", Constants.WHITE);
-                    FLogger.Link("→ link ←", Constants.AUDIO_ISSUE_LINK, true);
-                });
-
-                return string.Empty;
-            }
+            var vgmFilePath = Path.Combine(dataDir, candidate);
+            if (File.Exists(vgmFilePath))
+                return vgmFilePath;
         }
 
-        return vgmFilePath;
+        Log.Error("Failed to convert audio, vgmstream is missing");
+        FLogger.Append(ELog.Error, () =>
+        {
+            FLogger.Text("Failed to convert audio because vgmstream is missing. See: ", Constants.WHITE);
+            FLogger.Link("→ link ←", Constants.AUDIO_ISSUE_LINK, true);
+        });
+
+        return string.Empty;
     }
 
     // Since Square Enix soundbanks are pretty niche, let's just use vgmstream to extract them
@@ -815,7 +907,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
         var startInfo = new ProcessStartInfo
         {
             FileName = vgmStreamPath,
-            Arguments = $"-S 0 -o \"{extractionDir}\\?n_?s.wav\" \"{tempSab}\"",
+            Arguments = $"-S 0 -o \"{Path.Combine(extractionDir, "?n_?s.wav")}\" \"{tempSab}\"",
             UseShellExecute = false,
             CreateNoWindow = true
         };

@@ -1,54 +1,63 @@
 using System;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace FModel.Views.Resources.Controls;
 
-public class MagnifierManager : DependencyObject
+/// <summary>
+/// Attached property <c>MagnifierManager.Magnifier</c>: while the left button is pressed over the element,
+/// a magnifying lens follows the pointer (mouse wheel changes the zoom).
+/// </summary>
+public class MagnifierManager : AvaloniaObject
 {
     private MagnifierAdorner _adorner;
-    private UIElement _element;
+    private Control _element;
 
-    public static readonly DependencyProperty CurrentProperty =
-        DependencyProperty.RegisterAttached("Magnifier", typeof(Magnifier), typeof(UIElement), new FrameworkPropertyMetadata(null, OnMagnifierChanged));
+    public static readonly AttachedProperty<Magnifier> MagnifierProperty =
+        AvaloniaProperty.RegisterAttached<MagnifierManager, Control, Magnifier>("Magnifier");
 
-    public static void SetMagnifier(UIElement element, Magnifier value)
+    static MagnifierManager()
     {
-        element.SetValue(CurrentProperty, value);
+        MagnifierProperty.Changed.AddClassHandler<Control>((target, e) =>
+        {
+            if (e.NewValue is Magnifier magnifier)
+                new MagnifierManager().AttachToMagnifier(target, magnifier);
+        });
     }
 
-    public static Magnifier GetMagnifier(UIElement element)
-    {
-        return (Magnifier) element.GetValue(CurrentProperty);
-    }
+    public static void SetMagnifier(Control element, Magnifier value) => element.SetValue(MagnifierProperty, value);
+    public static Magnifier GetMagnifier(Control element) => element.GetValue(MagnifierProperty);
 
-    private static void OnMagnifierChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private void ElementOnPointerReleased(object sender, PointerReleasedEventArgs e)
     {
-        if (d is not UIElement target)
-            throw new ArgumentException("Magnifier can only be attached to a UIElement.");
-
-        new MagnifierManager().AttachToMagnifier(target, e.NewValue as Magnifier);
-    }
-
-    private void ElementOnMouseLeftButtonUp(object sender, MouseEventArgs e)
-    {
-        if (GetMagnifier(_element) is { IsFrozen: true })
+        if (e.InitialPressMouseButton != MouseButton.Left || GetMagnifier(_element) is { IsFrozen: true })
             return;
 
         HideAdorner();
     }
 
-    private void ElementOnMouseLeftButtonDown(object sender, MouseEventArgs e)
+    private void ElementOnPointerPressed(object sender, PointerPressedEventArgs e)
     {
+        if (!e.GetCurrentPoint(_element).Properties.IsLeftButtonPressed)
+            return;
+
         ShowAdorner();
+        _adorner.UpdatePosition(e.GetPosition(_element));
     }
 
-    private void ElementOnMouseWheel(object sender, MouseWheelEventArgs e)
+    private void ElementOnPointerMoved(object sender, PointerEventArgs e)
+    {
+        if (_adorner.IsVisible)
+            _adorner.UpdatePosition(e.GetPosition(_element));
+    }
+
+    private void ElementOnPointerWheelChanged(object sender, PointerWheelEventArgs e)
     {
         if (GetMagnifier(_element) is not { IsUsingZoomOnMouseWheel: true } magnifier) return;
 
-        switch (e.Delta)
+        switch (e.Delta.Y)
         {
             case < 0:
             {
@@ -67,36 +76,35 @@ public class MagnifierManager : DependencyObject
         _adorner.UpdateViewBox();
     }
 
-    private void AttachToMagnifier(UIElement element, Magnifier magnifier)
+    private void AttachToMagnifier(Control element, Magnifier magnifier)
     {
         _element = element;
-        _element.MouseLeftButtonDown += ElementOnMouseLeftButtonDown;
-        _element.MouseLeftButtonUp += ElementOnMouseLeftButtonUp;
-        _element.MouseWheel += ElementOnMouseWheel;
+        _element.AddHandler(InputElement.PointerPressedEvent, ElementOnPointerPressed, RoutingStrategies.Bubble, true);
+        _element.AddHandler(InputElement.PointerReleasedEvent, ElementOnPointerReleased, RoutingStrategies.Bubble, true);
+        _element.AddHandler(InputElement.PointerMovedEvent, ElementOnPointerMoved, RoutingStrategies.Bubble, true);
+        _element.AddHandler(InputElement.PointerWheelChangedEvent, ElementOnPointerWheelChanged, RoutingStrategies.Bubble, true);
 
         magnifier.Target = _element;
 
-        _adorner = new MagnifierAdorner(_element, magnifier);
+        _adorner = new MagnifierAdorner(_element, magnifier) { IsVisible = false };
     }
 
     private void ShowAdorner()
     {
         VerifyAdornerLayer();
-        _adorner.Visibility = Visibility.Visible;
+        _adorner.IsVisible = true;
     }
 
     private void VerifyAdornerLayer()
     {
         if (_adorner.Parent != null) return;
         var layer = AdornerLayer.GetAdornerLayer(_element);
-        layer?.Add(_adorner);
+        layer?.Children.Add(_adorner);
     }
 
     private void HideAdorner()
     {
-        if (_adorner.Visibility == Visibility.Visible)
-        {
-            _adorner.Visibility = Visibility.Collapsed;
-        }
+        if (_adorner.IsVisible)
+            _adorner.IsVisible = false;
     }
 }

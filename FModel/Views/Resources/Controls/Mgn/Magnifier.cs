@@ -1,139 +1,116 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Media;
 
 namespace FModel.Views.Resources.Controls;
 
-[TemplatePart(Name = PART_VisualBrush, Type = typeof(VisualBrush))]
-public class Magnifier : Control
+/// <summary>Magnifying lens (see MagnifierManager). Templates "CircleTemplate"/"RectangleTemplate" in ControlStyles.axaml fill a shape with <see cref="LensBrush"/>.</summary>
+public class Magnifier : TemplatedControl
 {
     private const double DEFAULT_SIZE = 100d;
-    private const string PART_VisualBrush = "PART_VisualBrush";
-    private VisualBrush _visualBrush = new();
 
-    public static readonly DependencyProperty FrameTypeProperty =
-        DependencyProperty.Register("FrameType", typeof(EFrameType), typeof(Magnifier), new UIPropertyMetadata(EFrameType.Circle, OnFrameTypeChanged));
+    public static readonly StyledProperty<EFrameType> FrameTypeProperty =
+        AvaloniaProperty.Register<Magnifier, EFrameType>(nameof(FrameType), EFrameType.Circle);
     public EFrameType FrameType
     {
-        get => (EFrameType) GetValue(FrameTypeProperty);
+        get => GetValue(FrameTypeProperty);
         set => SetValue(FrameTypeProperty, value);
     }
 
-    private static void OnFrameTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        var m = (Magnifier) d;
-        m.OnFrameTypeChanged((EFrameType) e.OldValue, (EFrameType) e.NewValue);
-    }
-
-    protected virtual void OnFrameTypeChanged(EFrameType oldValue, EFrameType newValue)
-    {
-        UpdateSizeFromRadius();
-    }
-
-    public static readonly DependencyProperty IsUsingZoomOnMouseWheelProperty =
-        DependencyProperty.Register("IsUsingZoomOnMouseWheel", typeof(bool), typeof(Magnifier), new UIPropertyMetadata(true));
+    public static readonly StyledProperty<bool> IsUsingZoomOnMouseWheelProperty =
+        AvaloniaProperty.Register<Magnifier, bool>(nameof(IsUsingZoomOnMouseWheel), true);
     public bool IsUsingZoomOnMouseWheel
     {
-        get => (bool) GetValue(IsUsingZoomOnMouseWheelProperty);
+        get => GetValue(IsUsingZoomOnMouseWheelProperty);
         set => SetValue(IsUsingZoomOnMouseWheelProperty, value);
     }
 
     public bool IsFrozen { get; private set; }
 
-    public static readonly DependencyProperty RadiusProperty =
-        DependencyProperty.Register("Radius", typeof(double), typeof(Magnifier), new FrameworkPropertyMetadata(DEFAULT_SIZE / 2, OnRadiusPropertyChanged));
+    public static readonly StyledProperty<double> RadiusProperty =
+        AvaloniaProperty.Register<Magnifier, double>(nameof(Radius), DEFAULT_SIZE / 2);
     public double Radius
     {
-        get => (double) GetValue(RadiusProperty);
+        get => GetValue(RadiusProperty);
         set => SetValue(RadiusProperty, value);
     }
 
-    private static void OnRadiusPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    public static readonly StyledProperty<Visual> TargetProperty =
+        AvaloniaProperty.Register<Magnifier, Visual>(nameof(Target));
+    public Visual Target
     {
-        var m = (Magnifier) d;
-        m.OnRadiusChanged(e);
-    }
-
-    protected virtual void OnRadiusChanged(DependencyPropertyChangedEventArgs e)
-    {
-        UpdateSizeFromRadius();
-    }
-
-    public static readonly DependencyProperty TargetProperty = DependencyProperty.Register("Target", typeof(UIElement), typeof(Magnifier));
-    public UIElement Target
-    {
-        get => (UIElement) GetValue(TargetProperty);
+        get => GetValue(TargetProperty);
         set => SetValue(TargetProperty, value);
     }
 
-    public Rect ViewBox
-    {
-        get => _visualBrush.Viewbox;
-        set => _visualBrush.Viewbox = value;
-    }
-
-    public static readonly DependencyProperty ZoomFactorProperty =
-        DependencyProperty.Register("ZoomFactor", typeof(double), typeof(Magnifier), new FrameworkPropertyMetadata(0.5, OnZoomFactorPropertyChanged), OnValidationCallback);
+    public static readonly StyledProperty<double> ZoomFactorProperty =
+        AvaloniaProperty.Register<Magnifier, double>(nameof(ZoomFactor), 0.5, validate: v => v >= 0);
     public double ZoomFactor
     {
-        get => (double) GetValue(ZoomFactorProperty);
+        get => GetValue(ZoomFactorProperty);
         set => SetValue(ZoomFactorProperty, value);
     }
 
-    private static bool OnValidationCallback(object baseValue)
-    {
-        return (double) baseValue >= 0;
-    }
-
-    private static void OnZoomFactorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        var m = (Magnifier) d;
-        m.OnZoomFactorChanged(e);
-    }
-
-    protected virtual void OnZoomFactorChanged(DependencyPropertyChangedEventArgs e)
-    {
-        UpdateViewBox();
-    }
-
-    public static readonly DependencyProperty ZoomFactorOnMouseWheelProperty =
-        DependencyProperty.Register("ZoomFactorOnMouseWheel", typeof(double), typeof(Magnifier), new FrameworkPropertyMetadata(0.1d, OnZoomFactorOnMouseWheelPropertyChanged), OnZoomFactorOnMouseWheelValidationCallback);
+    public static readonly StyledProperty<double> ZoomFactorOnMouseWheelProperty =
+        AvaloniaProperty.Register<Magnifier, double>(nameof(ZoomFactorOnMouseWheel), 0.1d, validate: v => v >= 0);
     public double ZoomFactorOnMouseWheel
     {
-        get => (double) GetValue(ZoomFactorOnMouseWheelProperty);
+        get => GetValue(ZoomFactorOnMouseWheelProperty);
         set => SetValue(ZoomFactorOnMouseWheelProperty, value);
     }
 
-    private static bool OnZoomFactorOnMouseWheelValidationCallback(object baseValue)
+    public static readonly DirectProperty<Magnifier, IBrush> LensBrushProperty =
+        AvaloniaProperty.RegisterDirect<Magnifier, IBrush>(nameof(LensBrush), o => o.LensBrush);
+    private VisualBrush _lensBrush;
+    /// <summary>Brush showing <see cref="ViewBox"/> of <see cref="Target"/> (WPF PART_VisualBrush).</summary>
+    public IBrush LensBrush
     {
-        return (double) baseValue >= 0;
+        get => _lensBrush;
+        private set
+        {
+            var old = _lensBrush;
+            _lensBrush = (VisualBrush) value;
+            RaisePropertyChanged(LensBrushProperty, old, _lensBrush);
+        }
     }
 
-    private static void OnZoomFactorOnMouseWheelPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private Rect _viewBox;
+    /// <summary>Area of <see cref="Target"/> (in its own coordinates) displayed by the lens.</summary>
+    public Rect ViewBox
     {
-        var m = (Magnifier) d;
-        m.OnZoomFactorOnMouseWheelChanged(e);
-    }
-
-    protected virtual void OnZoomFactorOnMouseWheelChanged(DependencyPropertyChangedEventArgs e)
-    {
+        get => _viewBox;
+        set
+        {
+            if (_viewBox == value) return;
+            _viewBox = value;
+            UpdateBrush();
+        }
     }
 
     static Magnifier()
     {
-        DefaultStyleKeyProperty.OverrideMetadata(typeof(Magnifier), new FrameworkPropertyMetadata(typeof(Magnifier)));
-        HeightProperty.OverrideMetadata(typeof(Magnifier), new FrameworkPropertyMetadata(DEFAULT_SIZE));
-        WidthProperty.OverrideMetadata(typeof(Magnifier), new FrameworkPropertyMetadata(DEFAULT_SIZE));
+        WidthProperty.OverrideDefaultValue<Magnifier>(DEFAULT_SIZE);
+        HeightProperty.OverrideDefaultValue<Magnifier>(DEFAULT_SIZE);
     }
 
     public Magnifier()
     {
-        SizeChanged += OnSizeChangedEvent;
+        UpdateSizeFromRadius();
     }
 
-    private void OnSizeChangedEvent(object sender, SizeChangedEventArgs e)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        UpdateViewBox();
+        base.OnPropertyChanged(change);
+
+        if (change.Property == FrameTypeProperty || change.Property == RadiusProperty)
+            UpdateSizeFromRadius();
+        else if (change.Property == ZoomFactorProperty || change.Property == BoundsProperty ||
+                 change.Property == WidthProperty || change.Property == HeightProperty)
+            UpdateViewBox();
+        else if (change.Property == TargetProperty)
+            UpdateBrush();
     }
 
     private void UpdateSizeFromRadius()
@@ -142,23 +119,9 @@ public class Magnifier : Control
 
         var newSize = Radius * 2;
         if (!Helper.AreVirtuallyEqual(Width, newSize))
-        {
             Width = newSize;
-        }
-
         if (!Helper.AreVirtuallyEqual(Height, newSize))
-        {
             Height = newSize;
-        }
-    }
-
-    public override void OnApplyTemplate()
-    {
-        base.OnApplyTemplate();
-
-        var newBrush = GetTemplateChild(PART_VisualBrush) as VisualBrush ?? new VisualBrush();
-        newBrush.Viewbox = _visualBrush.Viewbox;
-        _visualBrush = newBrush;
     }
 
     public void Freeze(bool freeze)
@@ -168,9 +131,21 @@ public class Magnifier : Control
 
     private void UpdateViewBox()
     {
-        if (!IsInitialized)
-            return;
+        var width = double.IsNaN(Width) ? Bounds.Width : Width;
+        var height = double.IsNaN(Height) ? Bounds.Height : Height;
+        ViewBox = new Rect(ViewBox.Position, new Size(width * ZoomFactor, height * ZoomFactor));
+    }
 
-        ViewBox = new Rect(ViewBox.Location, new Size(ActualWidth * ZoomFactor, ActualHeight * ZoomFactor));
+    private void UpdateBrush()
+    {
+        // a new brush instance so the lens is re-rendered for each new viewbox
+        LensBrush = Target == null ? null : new VisualBrush
+        {
+            Visual = Target,
+            Stretch = Stretch.Fill,
+            AlignmentX = AlignmentX.Left,
+            AlignmentY = AlignmentY.Top,
+            SourceRect = new RelativeRect(_viewBox, RelativeUnit.Absolute)
+        };
     }
 }

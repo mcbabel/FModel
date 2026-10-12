@@ -2,9 +2,11 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Threading;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using FModel.Services;
 using FModel.Settings;
 using FModel.ViewModels;
@@ -23,11 +25,14 @@ public partial class DropOverlay : UserControl
     private ApplicationViewModel _applicationView => ApplicationService.ApplicationView;
     private DragStatus _dragStatus = DragStatus.None;
     private string _path = null;
+    private TopLevel _window;
+    private bool _leavePending;
 
     public DropOverlay()
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -39,27 +44,50 @@ public partial class DropOverlay : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        var window = Window.GetWindow(this);
-        if (window is null)
+        var window = TopLevel.GetTopLevel(this);
+        if (window is null || ReferenceEquals(window, _window))
             return;
 
-        window.PreviewDragEnter += OnPreviewDragEnter;
-        window.PreviewDragOver += OnPreviewDragOver;
-        window.PreviewDragLeave += OnPreviewDragLeave;
-        window.Drop += OnDrop;
+        _window = window;
+        // drag events are raised on the element under the pointer and bubble up to the window
+        window.AddHandler(DragDrop.DragEnterEvent, OnPreviewDragEnter, RoutingStrategies.Bubble, true);
+        window.AddHandler(DragDrop.DragOverEvent, OnPreviewDragOver, RoutingStrategies.Bubble, true);
+        window.AddHandler(DragDrop.DragLeaveEvent, OnPreviewDragLeave, RoutingStrategies.Bubble, true);
+        window.AddHandler(DragDrop.DropEvent, OnDrop, RoutingStrategies.Bubble, true);
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        if (_window is null)
+            return;
+
+        _window.RemoveHandler(DragDrop.DragEnterEvent, OnPreviewDragEnter);
+        _window.RemoveHandler(DragDrop.DragOverEvent, OnPreviewDragOver);
+        _window.RemoveHandler(DragDrop.DragLeaveEvent, OnPreviewDragLeave);
+        _window.RemoveHandler(DragDrop.DropEvent, OnDrop);
+        _window = null;
     }
 
     private void OnPreviewDragEnter(object sender, DragEventArgs e)
     {
-        GetValidTarget(sender, e);
+        // entering another element of the same window: not a real leave
+        _leavePending = false;
+        if (IsVisible && _dragStatus is not DragStatus.None)
+        {
+            e.DragEffects = DragDropEffects.Copy;
+            e.Handled = true;
+            return;
+        }
+
+        GetValidTarget(_window, e);
         if (_dragStatus is DragStatus.None)
         {
-            e.Effects = DragDropEffects.None;
+            e.DragEffects = DragDropEffects.None;
         }
         else
         {
-            Visibility = Visibility.Visible;
-            e.Effects = DragDropEffects.Copy;
+            IsVisible = true;
+            e.DragEffects = DragDropEffects.Copy;
 
             if (_dragStatus is DragStatus.Folder)
             {
@@ -77,30 +105,42 @@ public partial class DropOverlay : UserControl
 
     private void OnPreviewDragOver(object sender, DragEventArgs e)
     {
-        e.Effects = _dragStatus is DragStatus.None ? DragDropEffects.None : DragDropEffects.Copy;
+        e.DragEffects = _dragStatus is DragStatus.None ? DragDropEffects.None : DragDropEffects.Copy;
         e.Handled = true;
     }
 
     private void OnPreviewDragLeave(object sender, DragEventArgs e)
     {
-        Visibility = Visibility.Collapsed;
-        ResetState();
+        // DragLeave is also raised when moving from one element to another (followed by DragEnter): defer it
+        _leavePending = true;
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (!_leavePending) return;
+            _leavePending = false;
+            IsVisible = false;
+            ResetState();
+        }, DispatcherPriority.Background);
     }
 
     private async void OnDrop(object sender, DragEventArgs e)
     {
-        Visibility = Visibility.Collapsed;
+        _leavePending = false;
+        IsVisible = false;
         e.Handled = true;
-        switch (_dragStatus)
+        var status = _dragStatus;
+        var path = _path;
+        ResetState();
+
+        switch (status)
         {
             case DragStatus.Folder:
-                await Dispatcher.InvokeAsync(() => _applicationView.AddGameDirectory(_path));
+                await Dispatcher.UIThread.InvokeAsync(() => _applicationView.AddGameDirectory(path));
                 break;
             case DragStatus.File:
                 UserSettings.IsEndpointValid(EEndpointType.Mapping, out var oldMappingsEndpoint);
                 try
                 {
-                    var newMappingsEndpoint = new EndpointSettings() { Overwrite = true, FilePath = _path };
+                    var newMappingsEndpoint = new EndpointSettings() { Overwrite = true, FilePath = path };
                     UserSettings.Default.CurrentDir.Endpoints[(int) EEndpointType.Mapping] = newMappingsEndpoint;
                     await _applicationView.CUE4Parse.InitMappings();
                     _applicationView.SettingsView.MappingEndpoint = newMappingsEndpoint;
@@ -117,12 +157,16 @@ public partial class DropOverlay : UserControl
             default:
                 break;
         }
-        ResetState();
     }
 
     private void GetValidTarget(object sender, DragEventArgs e)
     {
-        if (!_applicationView.Status.IsReady || !e.Data.GetDataPresent(DataFormats.FileDrop) || e.Data.GetData(DataFormats.FileDrop) is not string[] files)
+        ResetState();
+        if (!_applicationView.Status.IsReady || e.Data.GetFiles() is not { } items)
+            return;
+
+        var files = items.Select(x => x.TryGetLocalPath()).Where(x => !string.IsNullOrEmpty(x)).ToArray();
+        if (files.Length == 0)
             return;
 
         bool directorySelectorIsVisible = _applicationView.Status.Kind is EStatusKind.Configuring;

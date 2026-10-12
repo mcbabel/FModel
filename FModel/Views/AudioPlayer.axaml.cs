@@ -1,25 +1,35 @@
 using System;
-using System.ComponentModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using CSCore.CoreAudioAPI;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using FModel.Framework.Audio;
+using FModel.Framework.Ui;
 using FModel.Services;
 using FModel.Settings;
 using FModel.ViewModels;
-using Microsoft.Win32;
 
 namespace FModel.Views;
 
-public partial class AudioPlayer
+public partial class AudioPlayer : FWindow
 {
     private ApplicationViewModel _applicationView => ApplicationService.ApplicationView;
 
     public AudioPlayer()
     {
+        var area = ScreenInfo.PrimaryWorkingAreaDipsOf(this);
+        Width = area.Width * 0.55;
+        Height = area.Height * 0.50;
+
         DataContext = _applicationView;
         InitializeComponent();
+
+        AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
+        AudioFilesListBox.AddHandler(DoubleTappedEvent, OnAudioFileMouseDoubleClick, RoutingStrategies.Tunnel);
+        Closing += OnClosing;
+        Activated += OnActivatedDeactivated;
+        Deactivated += OnActivatedDeactivated;
     }
 
     public void Load(byte[] data, string filePath)
@@ -27,7 +37,7 @@ public partial class AudioPlayer
         _applicationView.AudioPlayer.AddToPlaylist(data, filePath);
     }
 
-    private void OnClosing(object sender, CancelEventArgs e)
+    private void OnClosing(object sender, WindowClosingEventArgs e)
     {
         _applicationView.AudioPlayer.Stop();
         _applicationView.AudioPlayer.Dispose();
@@ -36,21 +46,21 @@ public partial class AudioPlayer
 
     private void OnDeviceSwap(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is not ComboBox { SelectedItem: MMDevice selectedDevice })
+        if (sender is not ComboBox { SelectedItem: AudioDevice selectedDevice })
             return;
 
-        UserSettings.Default.AudioDeviceId = selectedDevice.DeviceID;
+        UserSettings.Default.AudioDeviceId = selectedDevice.DeviceId;
         _applicationView.AudioPlayer.Device();
     }
 
-    private void OnVolumeChange(object sender, RoutedEventArgs e)
+    private void OnVolumeChange(object sender, RangeBaseValueChangedEventArgs e)
     {
-        _applicationView.AudioPlayer.Volume();
+        _applicationView.AudioPlayer.Volume((float) e.NewValue);
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.OriginalSource is TextBox)
+        if (e.Source is TextBox)
             return;
 
         if (UserSettings.Default.AddAudio.IsTriggered(e.Key))
@@ -84,7 +94,7 @@ public partial class AudioPlayer
         e.Handled = true;
     }
 
-    private void OnAudioFileMouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private void OnAudioFileMouseDoubleClick(object sender, TappedEventArgs e)
     {
         _applicationView.AudioPlayer.PlayPauseOnForce();
     }
@@ -94,8 +104,8 @@ public partial class AudioPlayer
         if (sender is not TextBox textBox)
             return;
 
-        var filters = textBox.Text.Trim().Split(' ');
-        _applicationView.AudioPlayer.AudioFilesView.Filter = o => { return o is AudioFile audio && filters.All(x => audio.FileName.Contains(x, StringComparison.OrdinalIgnoreCase)); };
+        var filters = (textBox.Text ?? string.Empty).Trim().Split(' ');
+        _applicationView.AudioPlayer.AudioFilesView.Filter = o => o is AudioFile audio && filters.All(x => audio.FileName.Contains(x, StringComparison.OrdinalIgnoreCase));
     }
 
     private void OnActivatedDeactivated(object sender, EventArgs e)

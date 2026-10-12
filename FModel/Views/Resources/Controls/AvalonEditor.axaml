@@ -1,111 +1,98 @@
-﻿<UserControl x:Class="FModel.Views.Resources.Controls.AvalonEditor"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="FModel.Views.Resources.Controls.AvalonEditor"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
-             xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
-             xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
-             PreviewKeyDown="OnPreviewKeyDown">
+             xmlns:avalonEdit="https://github.com/avaloniaui/avaloniaedit">
+    <UserControl.Styles>
+        <Style Selector="Grid#SearchBar">
+            <Setter Property="ZIndex" Value="0" />
+        </Style>
+        <Style Selector="Grid#SearchBar.open">
+            <Setter Property="ZIndex" Value="1" />
+        </Style>
+        <Style Selector="TextBox#WpfSuckMyDick">
+            <Setter Property="Watermark" Value="Write your pattern and press enter..." />
+        </Style>
+        <Style Selector="TextBox#WpfSuckMyDick.regex">
+            <Setter Property="Watermark" Value="Write your regex pattern and press enter..." />
+        </Style>
+    </UserControl.Styles>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="3 0" HorizontalAlignment="Right" Width="500">
-            <Grid.Style>
-                <Style TargetType="{x:Type Grid}">
-                    <Setter Property="ZIndex" Value="0" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding HasSearchOpen}" Value="True">
-                            <Setter Property="ZIndex" Value="1" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
+        <Grid x:Name="SearchBar" Grid.Row="0" Margin="3 0" HorizontalAlignment="Right" Width="500"
+              Classes.open="{Binding HasSearchOpen}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="0" ZIndex="1" HorizontalAlignment="Left" Margin="5 2 0 0">
+            <Grid Grid.Column="0" ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5 0 0 0" IsHitTestVisible="False">
                 <Viewbox Width="16" Height="16">
                     <Canvas Width="24" Height="24">
-                        <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource SearchIcon}" />
+                        <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource SearchIcon}" />
                     </Canvas>
                 </Viewbox>
             </Grid>
             <TextBox x:Name="WpfSuckMyDick" Grid.Column="0" Grid.ColumnSpan="2" Padding="25 0 0 0" AcceptsTab="False" AcceptsReturn="False"
-                     BorderBrush="{DynamicResource {x:Static adonisUi:Brushes.AccentBrush}}" BorderThickness="1">
-                <TextBox.Style>
-                    <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-                        <Setter Property="Text" Value="{Binding TextToFind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                        <Setter Property="adonisExtensions:WatermarkExtension.Watermark" Value="Write your pattern and press enter..." />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding UseRegEx}" Value="True">
-                                <Setter Property="adonisExtensions:WatermarkExtension.Watermark" Value="Write your regex pattern and press enter..." />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBox.Style>
-            </TextBox>
+                     VerticalContentAlignment="Center"
+                     Text="{Binding TextToFind, Mode=TwoWay}" Classes.regex="{Binding UseRegEx}"
+                     BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" />
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <ToggleButton ToolTip="Search Up" Padding="5" IsChecked="{Binding SearchUp}" Focusable="False"
-                              Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarToggleButton}}">
+                <ToggleButton ToolTip.Tip="Search Up" Padding="5" IsChecked="{Binding SearchUp}" Focusable="False" Classes="ToolbarToggleButton">
                     <Viewbox Width="16" Height="16" HorizontalAlignment="Center">
                         <Canvas Width="24" Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource SearchUpIcon}" />
+                            <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource SearchUpIcon}" />
                         </Canvas>
                     </Viewbox>
                 </ToggleButton>
-                <ToggleButton ToolTip="Match Whole Word" Padding="5" IsChecked="{Binding WholeWord}" Focusable="False"
-                              Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarToggleButton}}">
+                <ToggleButton ToolTip.Tip="Match Whole Word" Padding="5" IsChecked="{Binding WholeWord}" Focusable="False" Classes="ToolbarToggleButton">
                     <Viewbox Width="16" Height="16" HorizontalAlignment="Center">
                         <Canvas Width="24" Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource WholeWordIcon}" />
+                            <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource WholeWordIcon}" />
                         </Canvas>
                     </Viewbox>
                 </ToggleButton>
-                <ToggleButton ToolTip="Match Case" Padding="5" IsChecked="{Binding CaseSensitive}" Focusable="False"
-                              Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarToggleButton}}">
+                <ToggleButton ToolTip.Tip="Match Case" Padding="5" IsChecked="{Binding CaseSensitive}" Focusable="False" Classes="ToolbarToggleButton">
                     <Viewbox Width="16" Height="16" HorizontalAlignment="Center">
                         <Canvas Width="24" Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource MatchCaseIcon}" />
+                            <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource MatchCaseIcon}" />
                         </Canvas>
                     </Viewbox>
                 </ToggleButton>
-                <ToggleButton ToolTip="Regex" Padding="5" IsChecked="{Binding UseRegEx}" Focusable="False"
-                              Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarToggleButton}}">
+                <ToggleButton ToolTip.Tip="Regex" Padding="5" IsChecked="{Binding UseRegEx}" Focusable="False" Classes="ToolbarToggleButton">
                     <Viewbox Width="16" Height="16" HorizontalAlignment="Center">
                         <Canvas Width="24" Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource RegexIcon}" />
+                            <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource RegexIcon}" />
                         </Canvas>
                     </Viewbox>
                 </ToggleButton>
-                <Button ToolTip="Clear Search Filter" Padding="5" Focusable="False" Click="OnDeleteSearchClick"
-                        Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarButton}}">
+                <Button ToolTip.Tip="Clear Search Filter" Padding="5" Focusable="False" Click="OnDeleteSearchClick" Classes="ToolbarButton">
                     <Viewbox Width="16" Height="16" HorizontalAlignment="Center">
                         <Canvas Width="24" Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource BackspaceIcon}"/>
+                            <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource BackspaceIcon}" />
                         </Canvas>
                     </Viewbox>
                 </Button>
             </StackPanel>
-            <Button Grid.Column="2" ToolTip="Close" Padding="5" Focusable="False" Click="OnCloseClick" Margin="2 0 0 0"
-                    Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarButton}}" BorderThickness="1"
-                    Background="{DynamicResource {x:Static adonisUi:Brushes.Layer3BackgroundBrush}}"
-                    BorderBrush="{DynamicResource {x:Static adonisUi:Brushes.AccentBrush}}">
+            <Button Grid.Column="2" ToolTip.Tip="Close" Padding="5" Focusable="False" Click="OnCloseClick" Margin="2 0 0 0"
+                    Classes="ToolbarButton" BorderThickness="1"
+                    Background="{DynamicResource Layer3BackgroundBrush}"
+                    BorderBrush="{DynamicResource AccentBrush}">
                 <Viewbox Width="16" Height="16" HorizontalAlignment="Center">
                     <Canvas Width="24" Height="24">
-                        <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource CloseIcon}"/>
+                        <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource CloseIcon}" />
                     </Canvas>
                 </Viewbox>
             </Button>
         </Grid>
 
         <avalonEdit:TextEditor x:Name="MyAvalonEditor" Grid.Row="0" Grid.RowSpan="2" SyntaxHighlighting="{Binding Highlighter}" Document="{Binding Document}"
-                               FontFamily="Consolas" FontSize="{Binding FontSize}" IsReadOnly="True" ShowLineNumbers="True" Foreground="#DAE5F2"
-                               Background="{DynamicResource {x:Static adonisUi:Brushes.Layer3BackgroundBrush}}" PreviewMouseWheel="OnPreviewMouseWheel"
-                               TextChanged="OnTextChanged" MouseHover="OnMouseHover" MouseHoverStopped="OnMouseHoverStopped" PreviewMouseUp="OnMouseRelease" />
+                               FontFamily="{DynamicResource CodeFontFamily}" FontSize="{Binding FontSize}" IsReadOnly="True" ShowLineNumbers="True" Foreground="#DAE5F2"
+                               Background="{DynamicResource Layer3BackgroundBrush}"
+                               TextChanged="OnTextChanged" PointerHover="OnMouseHover" PointerHoverStopped="OnMouseHoverStopped" />
     </Grid>
 </UserControl>

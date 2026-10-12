@@ -1,31 +1,31 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:settings="clr-namespace:FModel.Settings"
-                    xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
-                    xmlns:converters="clr-namespace:FModel.Views.Resources.Converters"
-                    x:Class="FModel.Views.Resources.Controls.ContextMenus.FolderContextMenuDictionary">
-    <ContextMenu x:Key="FolderContextMenu" x:Shared="False"
-                 Opened="FolderContextMenu_OnOpened">
+                    xmlns:settings="using:FModel.Settings"
+                    xmlns:controls="using:FModel.Views.Resources.Controls"
+                    xmlns:menus="using:FModel.Views.Resources.Controls.ContextMenus"
+                    xmlns:converters="using:FModel.Views.Resources.Converters">
+    <!-- Shared instance (attached to many controls). Its DataContext is a SelectionMenuContext created on every opening,
+         see ContextMenuBehavior. -->
+    <ContextMenu x:Key="FolderContextMenu" menus:ContextMenuBehavior.ProvidesSelection="True">
         <MenuItem Header="Export Folder">
             <MenuItem.Icon>
                 <Viewbox Width="16"
                          Height="16">
                     <Canvas Width="24"
                             Height="24">
-                        <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                        <Path Fill="{DynamicResource ForegroundBrush}"
                               Data="M2 6c0 -.796 .316 -1.558 .879 -2.121c.563 -.563 1.325 -.879 2.121 -.879h4l.099 .005c.229 .023 .444 .124 .608 .288l2.707 2.707h6.586c.796 0 1.558 .316 2.121 .879c.319 .319 .559 .703 .707 1.121l-14.523 0c-.407 0 -.805 .125 -1.14 .356c-.292 .203 -.525 .48 -.674 .801l-.058 .141l-1.379 3.676c-.194 .517 .068 1.093 .585 1.287c.517 .194 1.094 -.068 1.288 -.585l1.134 -3.027c.146 -.39 .519 -.649 .937 -.649h13.002l.217 .012c.216 .024 .426 .082 .624 .173c.054 .025 .107 .053 .159 .083c.199 .115 .377 .263 .525 .439c.188 .222 .325 .482 .403 .762c.077 .28 .092 .573 .045 .859c-.001 .008 -.003 .016 -.005 .024l-.995 5.21c-.131 .686 -.497 1.304 -1.036 1.749c-.47 .389 -1.046 .624 -1.65 .677l-.261 .012h-14.026c-.796 0 -1.558 -.316 -2.121 -.879c-.563 -.563 -.879 -1.325 -.879 -2.121v-11z" />
                     </Canvas>
                 </Viewbox>
             </MenuItem.Icon>
 
             <MenuItem Header="Raw Data (.uasset)"
-                      Command="{Binding RightClickMenuCommand}"
-                      InputGestureText="{Binding ExportData, Source={x:Static settings:UserSettings.Default}}">
+                      Command="{Binding App.RightClickMenuCommand}"
+                      controls:MenuItemGesture.Text="{Binding ExportData, Source={x:Static settings:UserSettings.Default}}">
                 <MenuItem.CommandParameter>
                     <MultiBinding Converter="{x:Static converters:MultiParameterConverter.Instance}">
                         <Binding Source="Save_Data" />
-                        <Binding Path="Tag"
-                                 RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                        <Binding Path="SelectedItems" />
                     </MultiBinding>
                 </MenuItem.CommandParameter>
                 <MenuItem.Icon>
@@ -33,20 +33,19 @@
                              Height="16">
                         <Canvas Width="24"
                                 Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                            <Path Fill="{DynamicResource ForegroundBrush}"
                                   Data="{StaticResource ExportIcon}" />
                         </Canvas>
                     </Viewbox>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Properties (.json)"
-                      Command="{Binding RightClickMenuCommand}"
-                      InputGestureText="{Binding ExportProperties, Source={x:Static settings:UserSettings.Default}}">
+                      Command="{Binding App.RightClickMenuCommand}"
+                      controls:MenuItemGesture.Text="{Binding ExportProperties, Source={x:Static settings:UserSettings.Default}}">
                 <MenuItem.CommandParameter>
                     <MultiBinding Converter="{x:Static converters:MultiParameterConverter.Instance}">
                         <Binding Source="Save_Properties" />
-                        <Binding Path="Tag"
-                                 RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                        <Binding Path="SelectedItems" />
                     </MultiBinding>
                 </MenuItem.CommandParameter>
                 <MenuItem.Icon>
@@ -54,20 +53,19 @@
                              Height="16">
                         <Canvas Width="24"
                                 Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                            <Path Fill="{DynamicResource ForegroundBrush}"
                                   Data="{StaticResource SaveIcon}" />
                         </Canvas>
                     </Viewbox>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Textures"
-                      Command="{Binding RightClickMenuCommand}"
-                      InputGestureText="{Binding ExportTextures, Source={x:Static settings:UserSettings.Default}}">
+                      Command="{Binding App.RightClickMenuCommand}"
+                      controls:MenuItemGesture.Text="{Binding ExportTextures, Source={x:Static settings:UserSettings.Default}}">
                 <MenuItem.CommandParameter>
                     <MultiBinding Converter="{x:Static converters:MultiParameterConverter.Instance}">
                         <Binding Source="Save_Textures" />
-                        <Binding Path="Tag"
-                                 RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                        <Binding Path="SelectedItems" />
                     </MultiBinding>
                 </MenuItem.CommandParameter>
                 <MenuItem.Icon>
@@ -75,20 +73,19 @@
                              Height="16">
                         <Canvas Width="24"
                                 Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                            <Path Fill="{DynamicResource ForegroundBrush}"
                                   Data="{StaticResource TextureIcon}" />
                         </Canvas>
                     </Viewbox>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Decompiled Blueprints"
-                      Command="{Binding RightClickMenuCommand}"
-                      InputGestureText="{Binding ExportCode, Source={x:Static settings:UserSettings.Default}}">
+                      Command="{Binding App.RightClickMenuCommand}"
+                      controls:MenuItemGesture.Text="{Binding ExportCode, Source={x:Static settings:UserSettings.Default}}">
                 <MenuItem.CommandParameter>
                     <MultiBinding Converter="{x:Static converters:MultiParameterConverter.Instance}">
                         <Binding Source="Save_Code" />
-                        <Binding Path="Tag"
-                                 RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                        <Binding Path="SelectedItems" />
                     </MultiBinding>
                 </MenuItem.CommandParameter>
                 <MenuItem.Icon>
@@ -96,20 +93,19 @@
                              Height="16">
                         <Canvas Width="24"
                                 Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                            <Path Fill="{DynamicResource ForegroundBrush}"
                                   Data="{StaticResource CodeIcon}" />
                         </Canvas>
                     </Viewbox>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Models"
-                      Command="{Binding RightClickMenuCommand}"
-                      InputGestureText="{Binding ExportModels, Source={x:Static settings:UserSettings.Default}}">
+                      Command="{Binding App.RightClickMenuCommand}"
+                      controls:MenuItemGesture.Text="{Binding ExportModels, Source={x:Static settings:UserSettings.Default}}">
                 <MenuItem.CommandParameter>
                     <MultiBinding Converter="{x:Static converters:MultiParameterConverter.Instance}">
                         <Binding Source="Save_Models" />
-                        <Binding Path="Tag"
-                                 RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                        <Binding Path="SelectedItems" />
                     </MultiBinding>
                 </MenuItem.CommandParameter>
                 <MenuItem.Icon>
@@ -117,20 +113,19 @@
                              Height="16">
                         <Canvas Width="24"
                                 Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                            <Path Fill="{DynamicResource ForegroundBrush}"
                                   Data="{StaticResource ModelIcon}" />
                         </Canvas>
                     </Viewbox>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Worlds"
-                      Command="{Binding RightClickMenuCommand}"
-                      InputGestureText="{Binding ExportWorlds, Source={x:Static settings:UserSettings.Default}}">
+                      Command="{Binding App.RightClickMenuCommand}"
+                      controls:MenuItemGesture.Text="{Binding ExportWorlds, Source={x:Static settings:UserSettings.Default}}">
                 <MenuItem.CommandParameter>
                     <MultiBinding Converter="{x:Static converters:MultiParameterConverter.Instance}">
                         <Binding Source="Save_Worlds" />
-                        <Binding Path="Tag"
-                                 RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                        <Binding Path="SelectedItems" />
                     </MultiBinding>
                 </MenuItem.CommandParameter>
                 <MenuItem.Icon>
@@ -139,24 +134,23 @@
                         <Canvas Width="24"
                                 Height="24">
                             <Canvas Width="24" Height="24">
-                                <Path StrokeThickness="2" Stroke="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource World1}" />
-                                <Path StrokeThickness="2" Stroke="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource World2}" />
-                                <Path StrokeThickness="2" Stroke="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource World3}" />
-                                <Path StrokeThickness="2" Stroke="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource World4}" />
-                                <Path StrokeThickness="2" Stroke="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource World5}" />
+                                <Path StrokeThickness="2" Stroke="{DynamicResource ForegroundBrush}" Data="{StaticResource World1}" />
+                                <Path StrokeThickness="2" Stroke="{DynamicResource ForegroundBrush}" Data="{StaticResource World2}" />
+                                <Path StrokeThickness="2" Stroke="{DynamicResource ForegroundBrush}" Data="{StaticResource World3}" />
+                                <Path StrokeThickness="2" Stroke="{DynamicResource ForegroundBrush}" Data="{StaticResource World4}" />
+                                <Path StrokeThickness="2" Stroke="{DynamicResource ForegroundBrush}" Data="{StaticResource World5}" />
                             </Canvas>
                         </Canvas>
                     </Viewbox>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Animations"
-                      Command="{Binding RightClickMenuCommand}"
-                      InputGestureText="{Binding ExportAnimations, Source={x:Static settings:UserSettings.Default}}">
+                      Command="{Binding App.RightClickMenuCommand}"
+                      controls:MenuItemGesture.Text="{Binding ExportAnimations, Source={x:Static settings:UserSettings.Default}}">
                 <MenuItem.CommandParameter>
                     <MultiBinding Converter="{x:Static converters:MultiParameterConverter.Instance}">
                         <Binding Source="Save_Animations" />
-                        <Binding Path="Tag"
-                                 RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                        <Binding Path="SelectedItems" />
                     </MultiBinding>
                 </MenuItem.CommandParameter>
                 <MenuItem.Icon>
@@ -164,20 +158,19 @@
                              Height="16">
                         <Canvas Width="24"
                                 Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                            <Path Fill="{DynamicResource ForegroundBrush}"
                                   Data="{StaticResource AnimationIcon}" />
                         </Canvas>
                     </Viewbox>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Audio"
-                      Command="{Binding RightClickMenuCommand}"
-                      InputGestureText="{Binding ExportAudio, Source={x:Static settings:UserSettings.Default}}">
+                      Command="{Binding App.RightClickMenuCommand}"
+                      controls:MenuItemGesture.Text="{Binding ExportAudio, Source={x:Static settings:UserSettings.Default}}">
                 <MenuItem.CommandParameter>
                     <MultiBinding Converter="{x:Static converters:MultiParameterConverter.Instance}">
                         <Binding Source="Save_Audio" />
-                        <Binding Path="Tag"
-                                 RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                        <Binding Path="SelectedItems" />
                     </MultiBinding>
                 </MenuItem.CommandParameter>
                 <MenuItem.Icon>
@@ -185,7 +178,7 @@
                              Height="16">
                         <Canvas Width="24"
                                 Height="24">
-                            <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                            <Path Fill="{DynamicResource ForegroundBrush}"
                                   Data="{StaticResource AudioIcon}" />
                         </Canvas>
                     </Viewbox>
@@ -193,22 +186,20 @@
             </MenuItem>
         </MenuItem>
         <Separator />
-        <MenuItem Header="Favorite Directory" Click="OnFavoriteDirectoryClick"
-                  CommandParameter="{Binding Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+        <MenuItem Header="Favorite Directory" Command="{Binding FavoriteDirectoryCommand}">
             <MenuItem.Icon>
                 <Viewbox Width="16" Height="16">
                     <Canvas Width="24" Height="24">
-                        <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource DirectoriesAddIcon}" />
+                        <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource DirectoriesAddIcon}" />
                     </Canvas>
                 </Viewbox>
             </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Header="Copy Directory Path" Click="OnCopyDirectoryPathClick"
-                  CommandParameter="{Binding Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+        <MenuItem Header="Copy Directory Path" Command="{Binding CopyDirectoryPathCommand}">
             <MenuItem.Icon>
                 <Viewbox Width="16" Height="16">
                     <Canvas Width="24" Height="24">
-                        <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource CopyIcon}" />
+                        <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource CopyIcon}" />
                     </Canvas>
                 </Viewbox>
             </MenuItem.Icon>

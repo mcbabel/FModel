@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using AvaloniaEdit;
 using CUE4Parse.Utils;
 using FModel.Extensions;
 using FModel.Framework;
 using FModel.Services;
 using FModel.ViewModels;
-using ICSharpCode.AvalonEdit;
 using SkiaSharp;
 
 namespace FModel.Views.Resources.Controls;
@@ -17,13 +18,10 @@ namespace FModel.Views.Resources.Controls;
 /// <summary>
 /// Logique d'interaction pour AvalonEditor.xaml
 /// </summary>
-public partial class AvalonEditor
+public partial class AvalonEditor : UserControl
 {
     public static TextEditor YesWeEditor;
-    public static System.Windows.Controls.TextBox YesWeSearch;
-    private readonly Regex _hexColorRegex = new("\"Hex\": \"(?'target'[0-9A-Fa-f]{3,8})\"$",
-        RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    private readonly System.Windows.Controls.ToolTip _toolTip = new();
+    public static TextBox YesWeSearch;
     private readonly Dictionary<string, NavigationList<int>> _savedCarets = new();
     private NavigationList<int> _caretsOffsets
     {
@@ -35,7 +33,6 @@ public partial class AvalonEditor
 
     public AvalonEditor()
     {
-        CommandBindings.Add(new CommandBinding(NavigationCommands.Search, (_, e) => FindNext(e.Parameter != null)));
         InitializeComponent();
 
         YesWeEditor = MyAvalonEditor;
@@ -46,74 +43,54 @@ public partial class AvalonEditor
         MyAvalonEditor.TextArea.TextView.ElementGenerators.Add(new JumpElementGenerator());
         MyAvalonEditor.TextArea.TextView.ElementGenerators.Add(new HexColorElementGenerator());
 
+        AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
+        MyAvalonEditor.AddHandler(PointerWheelChangedEvent, OnPreviewMouseWheel, RoutingStrategies.Tunnel);
+        MyAvalonEditor.AddHandler(PointerReleasedEvent, OnMouseRelease, RoutingStrategies.Tunnel, true);
+
         ApplicationService.ApplicationView.CUE4Parse.TabControl.OnTabRemove += OnTabClose;
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (DataContext is not TabItem dc) return;
+        var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+
         switch (e.Key)
         {
             case Key.Escape:
-                ((TabItem) DataContext).HasSearchOpen = false;
+                dc.HasSearchOpen = false;
                 break;
-            case Key.Enter when !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) && ((TabItem) DataContext).HasSearchOpen:
+            case Key.F3: // WPF NavigationCommands.Search
+                FindNext(shift);
+                e.Handled = true;
+                break;
+            case Key.Enter when !shift && dc.HasSearchOpen:
                 FindNext();
                 break;
-            case Key.Enter when Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) && ((TabItem) DataContext).HasSearchOpen:
-                var dc = (TabItem) DataContext;
+            case Key.Enter when shift && dc.HasSearchOpen:
                 var old = dc.SearchUp;
                 dc.SearchUp = true;
                 FindNext();
                 dc.SearchUp = old;
                 break;
-            case Key.System: // Alt
-                if (Keyboard.IsKeyDown(Key.Left))
-                {
-                    if (_caretsOffsets.Count == 0) return;
-                    MyAvalonEditor.CaretOffset = _caretsOffsets.MovePrevious;
-                    MyAvalonEditor.TextArea.Caret.BringCaretToView();
-                }
-                else if (Keyboard.IsKeyDown(Key.Right))
-                {
-                    if (_caretsOffsets.Count == 0) return;
-                    MyAvalonEditor.CaretOffset = _caretsOffsets.MoveNext;
-                    MyAvalonEditor.TextArea.Caret.BringCaretToView();
-                }
-
+            case Key.Left when e.KeyModifiers == KeyModifiers.Alt:
+                if (_caretsOffsets.Count == 0) return;
+                MyAvalonEditor.CaretOffset = _caretsOffsets.MovePrevious;
+                MyAvalonEditor.TextArea.Caret.BringCaretToView();
+                e.Handled = true;
+                break;
+            case Key.Right when e.KeyModifiers == KeyModifiers.Alt:
+                if (_caretsOffsets.Count == 0) return;
+                MyAvalonEditor.CaretOffset = _caretsOffsets.MoveNext;
+                MyAvalonEditor.TextArea.Caret.BringCaretToView();
+                e.Handled = true;
                 break;
         }
     }
 
-    private void OnMouseHover(object sender, MouseEventArgs e)
-    {
-        var pos = MyAvalonEditor.GetPositionFromPoint(e.GetPosition(MyAvalonEditor));
-        if (pos == null) return;
+    private void OnMouseHover(object sender, PointerEventArgs e) => HexColorToolTip.Show(MyAvalonEditor, e);
 
-        var line = MyAvalonEditor.Document.GetLineByNumber(pos.Value.Line);
-        var m = _hexColorRegex.Match(MyAvalonEditor.Document.GetText(line.Offset, line.Length));
-        if (!m.Success || !m.Groups.TryGetValue("target", out var g)) return;
-
-        var color = SKColor.Parse(g.Value);
-        _toolTip.PlacementTarget = this; // required for property inheritance
-        _toolTip.Background = new SolidColorBrush(Color.FromArgb(color.Alpha, color.Red, color.Green, color.Blue));
-        _toolTip.Foreground = _toolTip.BorderBrush = PerceivedBrightness(color) > 130 ? Brushes.Black : Brushes.White;
-        _toolTip.Content = $"#{g.Value}";
-        _toolTip.IsOpen = true;
-        e.Handled = true;
-    }
-
-    private void OnMouseHoverStopped(object sender, MouseEventArgs e)
-    {
-        _toolTip.IsOpen = false;
-    }
-
-    private int PerceivedBrightness(SKColor c)
-    {
-        return (int) Math.Sqrt(
-            c.Red * c.Red * .299 +
-            c.Green * c.Green * .587 +
-            c.Blue * c.Blue * .114);
-    }
+    private void OnMouseHoverStopped(object sender, PointerEventArgs e) => HexColorToolTip.Hide(MyAvalonEditor);
 
     private void OnTextChanged(object sender, EventArgs e)
     {
@@ -135,18 +112,19 @@ public partial class AvalonEditor
         avalonEditor.ScrollToLine(lineNumber);
     }
 
-    private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    private void OnPreviewMouseWheel(object sender, PointerWheelEventArgs e)
     {
-        if (DataContext is not TabItem tabItem || Keyboard.Modifiers != ModifierKeys.Control)
+        if (DataContext is not TabItem tabItem || e.KeyModifiers != KeyModifiers.Control)
             return;
 
-        var fontSize = tabItem.FontSize + e.Delta / 50.0;
+        var fontSize = tabItem.FontSize + e.Delta.Y * 120 / 50.0; // WPF delta is 120 per notch
         tabItem.FontSize = fontSize switch
         {
             < 6 => 6,
             > 200 => 200,
             _ => fontSize
         };
+        e.Handled = true;
     }
 
     private void OnDeleteSearchClick(object sender, RoutedEventArgs e)
@@ -180,15 +158,10 @@ public partial class AvalonEditor
         {
             // we have reached the end of the document
             // start again from the beginning/end,
-            var oldEditor = MyAvalonEditor;
-            do
-            {
-                m = rightToLeft ? r.Match(MyAvalonEditor.Text, MyAvalonEditor.Text.Length - 1) : r.Match(MyAvalonEditor.Text, 0);
-                if (!m.Success) continue;
-                MyAvalonEditor.Select(m.Index, m.Length);
-                MyAvalonEditor.TextArea.Caret.BringCaretToView();
-                break;
-            } while (MyAvalonEditor != oldEditor);
+            m = rightToLeft ? r.Match(MyAvalonEditor.Text, MyAvalonEditor.Text.Length - 1) : r.Match(MyAvalonEditor.Text, 0);
+            if (!m.Success) return;
+            MyAvalonEditor.Select(m.Index, m.Length);
+            MyAvalonEditor.TextArea.Caret.BringCaretToView();
         }
     }
 
@@ -250,8 +223,52 @@ public partial class AvalonEditor
         }
     }
 
-    private void OnMouseRelease(object sender, MouseButtonEventArgs e)
+    private void OnMouseRelease(object sender, PointerReleasedEventArgs e)
     {
         SaveCaretLoc(MyAvalonEditor.CaretOffset);
+    }
+}
+
+/// <summary>Shows a tooltip filled with the color of the hovered <c>"Hex": "RRGGBBAA"</c> line of a TextEditor.</summary>
+internal static class HexColorToolTip
+{
+    private static readonly Regex _hexColorRegex = new("\"Hex\": \"(?'target'[0-9A-Fa-f]{3,8})\"$",
+        RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    public static void Show(TextEditor editor, PointerEventArgs e)
+    {
+        var pos = editor.GetPositionFromPoint(e.GetPosition(editor));
+        if (pos == null || editor.Document == null) return;
+
+        var line = editor.Document.GetLineByNumber(pos.Value.Line);
+        var m = _hexColorRegex.Match(editor.Document.GetText(line.Offset, line.Length));
+        if (!m.Success || !m.Groups.TryGetValue("target", out var g)) return;
+
+        var color = SKColor.Parse(g.Value);
+        var foreground = PerceivedBrightness(color) > 130 ? Brushes.Black : Brushes.White;
+        var toolTip = new ToolTip
+        {
+            Background = new SolidColorBrush(Color.FromArgb(color.Alpha, color.Red, color.Green, color.Blue)),
+            Foreground = foreground,
+            BorderBrush = foreground,
+            Content = $"#{g.Value}"
+        };
+        ToolTip.SetTip(editor, toolTip);
+        ToolTip.SetIsOpen(editor, true);
+        e.Handled = true;
+    }
+
+    public static void Hide(TextEditor editor)
+    {
+        ToolTip.SetIsOpen(editor, false);
+        ToolTip.SetTip(editor, null);
+    }
+
+    private static int PerceivedBrightness(SKColor c)
+    {
+        return (int) Math.Sqrt(
+            c.Red * c.Red * .299 +
+            c.Green * c.Green * .587 +
+            c.Blue * c.Blue * .114);
     }
 }
