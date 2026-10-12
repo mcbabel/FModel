@@ -1,0 +1,27 @@
+diff --git a/CUE4Parse-Conversion/ExportSession.cs b/CUE4Parse-Conversion/ExportSession.cs
+index 48e8e14b..a00956dd 100644
+--- a/CUE4Parse-Conversion/ExportSession.cs
++++ b/CUE4Parse-Conversion/ExportSession.cs
+@@ -169,7 +169,7 @@ internal string ResolveOutputPath(string savePath, string ext, string? nameSuffi
+         var fullPath = Path.Combine(BaseDirectory.FullName, savePath) + nameSuffix + '.' + ext.ToLower();
+         var dir = Path.GetDirectoryName(fullPath) ?? throw new InvalidOperationException($"Cannot determine directory for path: {fullPath}");
+         Directory.CreateDirectory(dir);
+-        return fullPath.Replace('/', '\\');
++        return Path.DirectorySeparatorChar == '\\' ? fullPath.Replace('/', '\\') : fullPath.Replace('\\', '/');
+     }
+ 
+     public event PropertyChangedEventHandler? PropertyChanged;
+diff --git a/CUE4Parse/FileProvider/DefaultFileProvider.cs b/CUE4Parse/FileProvider/DefaultFileProvider.cs
+index 65a93c70..7dbd707c 100644
+--- a/CUE4Parse/FileProvider/DefaultFileProvider.cs
++++ b/CUE4Parse/FileProvider/DefaultFileProvider.cs
+@@ -103,7 +103,8 @@ private LooseFileDiscovery IterateFiles(DirectoryInfo directory, SearchOption op
+                 // Only load containers if .uproject file is not found
+                 if (uproject is null && (upperExt is "PAK" or "UTOC" || (upperExt == "UPAK" && Versions.Game is GAME_LordOfMysteries)))
+                 {
+-                    if (file.FullName.Contains(@"Binaries\ThirdParty\CEF", StringComparison.OrdinalIgnoreCase) || file.FullName.Contains(@"Binaries\Win32\host") || file.FullName.Contains(@"Binaries\Win64\host") || file.FullName.Contains(@"\qtwebengine_") || file.FullName.Contains(@"NexonPlatformWebView\ThirdParty") || file.FullName.Contains("SnapversePCGameSDK")) continue;
++                    var fullName = file.FullName.Replace('/', '\\');
++                    if (fullName.Contains(@"Binaries\ThirdParty\CEF", StringComparison.OrdinalIgnoreCase) || fullName.Contains(@"Binaries\Win32\host") || fullName.Contains(@"Binaries\Win64\host") || fullName.Contains(@"\qtwebengine_") || fullName.Contains(@"NexonPlatformWebView\ThirdParty") || fullName.Contains("SnapversePCGameSDK")) continue;
+                     RegisterVfs(file);
+                     continue;
+                 }

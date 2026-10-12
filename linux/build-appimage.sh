@@ -9,6 +9,7 @@ APPDIR="$OUT/FModel.AppDir"
 TARGET="${APPIMAGE_OUTPUT:-$ROOT/FModel-x86_64.AppImage}"
 
 git -C "$ROOT" submodule update --init --recursive
+"$ROOT/linux/apply-patches.sh"
 rm -rf "${OUT:?}"
 mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/share/applications" "$APPDIR/usr/share/icons/hicolor/256x256/apps"
 

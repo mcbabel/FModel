@@ -10,6 +10,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/FModel/bin/Publish/$RID"
 
 git -C "$ROOT" submodule update --init --recursive
+"$ROOT/linux/apply-patches.sh"
 
 dotnet publish "$ROOT/FModel/FModel.csproj" -c Release -r "$RID" --self-contained true \
     -o "$OUT" \

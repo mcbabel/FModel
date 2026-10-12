@@ -34,7 +34,7 @@ cd FModel
 ./linux/build.sh          # or a plain self-contained binary
 ./FModel/bin/Publish/linux-x64/install.sh   # optional: installs to ~/.local with a desktop entry
 ```
-Or run it directly from source: `dotnet run --project FModel -c Release`.
+Or run it directly from source: `./linux/apply-patches.sh && dotnet run --project FModel -c Release` (the build scripts apply the Linux fixes in `linux/patches` to the CUE4Parse submodule automatically).
 
 Settings are stored in `~/.config/FModel`. The output folder is `~/.local/share/FModel/Output` for the AppImage, and `Output/` next to the executable for other builds (or `~/.local/share/FModel/Output` if that location is read-only). Games are auto-detected from Steam libraries and from Heroic / Legendary (Epic Games) installations.
 
