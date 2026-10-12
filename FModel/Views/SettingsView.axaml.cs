@@ -145,7 +145,7 @@ public partial class SettingsView : FWindow
 
     private void OnBrowseMappings(object sender, RoutedEventArgs e)
     {
-        var openFileDialog = new OpenFileDialog
+        var openFileDialog = new FModel.Framework.Ui.OpenFileDialog
         {
             Title = "Select a mapping file",
             InitialDirectory = CacheManager.MappingsDirectory,

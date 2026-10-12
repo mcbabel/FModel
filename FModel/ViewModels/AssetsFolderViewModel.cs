@@ -110,15 +110,11 @@ public class TreeItem : ViewModel
     }
 
     private CompositeCollection _combinedEntries;
-    public CompositeCollection CombinedEntries => _combinedEntries ??=
-    [
-        new CollectionContainer { Collection = FilteredFoldersView },
-        new CollectionContainer { Collection = AssetsList.AssetsView }
-    ];
+    public CompositeCollection CombinedEntries => _combinedEntries ??= new CompositeCollection(FilteredFoldersView, AssetsList.AssetsView);
 
     public TreeItem Parent { get; init; }
     public int Depth => Parent?.Depth + 1 ?? 0;
-    public Thickness Indent => new(Depth * 16, 0, 0, 0); // For folder tree indentation
+    public Avalonia.Thickness Indent => new(Depth * 16, 0, 0, 0); // For folder tree indentation
 
     public TreeItem(string header, GameFile entry, string pathHere)
     {

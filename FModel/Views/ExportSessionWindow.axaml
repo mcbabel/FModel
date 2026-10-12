@@ -11,7 +11,6 @@
     <FWindow.Styles>
         <!-- WPF StretchTreeViewItemStyle (class groups, object groups and log entries) -->
         <Style Selector="TreeView#LogTree TreeViewItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
             <Setter Property="Template">
                 <ControlTemplate>
@@ -41,7 +40,7 @@
                                 <ContentPresenter Name="PART_HeaderPresenter" Grid.Column="1"
                                                   Content="{TemplateBinding Header}"
                                                   ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  HorizontalAlignment="Stretch"
                                                   HorizontalContentAlignment="Stretch"
                                                   Margin="0,4,8,4" />
                             </Grid>
@@ -84,7 +83,6 @@
         </Style>
         <!-- WPF ExceptionTreeViewItemStyle (exception details under a log entry) -->
         <Style Selector="TreeView#LogTree > TreeViewItem > TreeViewItem > TreeViewItem > TreeViewItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Focusable" Value="False" />
             <Setter Property="Template">
                 <ControlTemplate>

@@ -52,7 +52,7 @@ public partial class MainWindow : FWindow
 
         AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel);
         AddHandler(PointerPressedEvent, OnWindowPointerPressed, RoutingStrategies.Tunnel);
-        AssetsListName.AddHandler(DoubleTappedEvent, OnAssetsListMouseDoubleClick, RoutingStrategies.Tunnel);
+        AssetsListName.AddHandler(DoubleTappedEvent, OnAssetsListMouseDoubleClick, RoutingStrategies.Bubble, true);
         AssetsListName.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
         AssetsExplorer.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
         AssetsListExplorer.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);

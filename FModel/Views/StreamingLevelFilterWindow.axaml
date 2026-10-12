@@ -7,7 +7,6 @@
     <FWindow.Styles>
         <!-- WPF LevelTreeViewItemStyle -->
         <Style Selector="TreeView#LevelTree TreeViewItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
             <Setter Property="Template">
                 <ControlTemplate>
@@ -37,7 +36,7 @@
                                 <ContentPresenter Name="PART_HeaderPresenter" Grid.Column="1"
                                                   Content="{TemplateBinding Header}"
                                                   ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  HorizontalAlignment="Stretch"
                                                   HorizontalContentAlignment="Stretch"
                                                   Margin="0,4,8,4" />
                             </Grid>

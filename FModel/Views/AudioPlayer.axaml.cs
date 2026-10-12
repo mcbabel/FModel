@@ -66,7 +66,7 @@ public partial class AudioPlayer : FWindow
         if (UserSettings.Default.AddAudio.IsTriggered(e.Key))
         {
             e.Handled = true;
-            var openFileDialog = new OpenFileDialog
+            var openFileDialog = new FModel.Framework.Ui.OpenFileDialog
             {
                 Title = "Select an audio file",
                 InitialDirectory = UserSettings.Default.AudioDirectory,

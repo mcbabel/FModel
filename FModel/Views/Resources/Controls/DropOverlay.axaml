@@ -10,7 +10,7 @@
             <Border CornerRadius="10" Background="#1FFFFFFF" />
             <Rectangle Stroke="{DynamicResource AccentBrush}"
                        StrokeThickness="2"
-                       StrokeDashArray="4 2"
+                       StrokeDashArray="4,2"
                        StrokeLineCap="Round"
                        RadiusX="10"
                        RadiusY="10" />

@@ -241,7 +241,6 @@
     <Style Selector="ListBox.AssetsFolderListBox">
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="ItemsPanel">
@@ -356,7 +355,7 @@
                         <Image VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Uniform"
                                IsVisible="{Binding HasImage}"
                                Source="{Binding SelectedImage.Image}"
-                               RenderOptions.BitmapInterpolationMode="{Binding SelectedImage.RenderNearestNeighbor, Converter={x:Static converters:BoolToRenderModeConverter.Instance}}"
+                               ImageOptions.NearestNeighbor="{Binding SelectedImage.RenderNearestNeighbor}"
                                controls:MouseBindings.DoubleClickCommand="{Binding ImageCommand}"
                                controls:MouseBindings.DoubleClickCommandParameter="Open">
                             <Image.ContextMenu>

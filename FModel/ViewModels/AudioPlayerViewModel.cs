@@ -626,7 +626,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
         {
             case ESourceProperty.PlaybackState:
             {
-                if (viewModel._soundOut is { ReachedEnd: true } && (PlaybackState) args.Value == PlaybackState.Stopped)
+                if (_soundOut is { ReachedEnd: true } && (PlaybackState) args.Value == PlaybackState.Stopped)
                     viewModel.Next();
 
                 break;

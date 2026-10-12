@@ -350,6 +350,6 @@ public partial class ImageMerger : FWindow
     private void OnCopyImage(object sender, RoutedEventArgs e)
     {
         if (_imageBuffer == null) return;
-        Clipboard.SetImage(_imageBuffer, FILENAME);
+        FModel.Framework.Ui.Clipboard.SetImage(_imageBuffer, FILENAME);
     }
 }

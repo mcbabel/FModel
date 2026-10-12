@@ -74,8 +74,6 @@ public class CustomDirectoriesViewModel : ViewModel
         {
             Header = "Add Directory",
             Icon = new Image { Source = AppWindows.LoadBitmap("Resources/add_directory.png"), Width = 16, Height = 16 },
-            HorizontalContentAlignment = HorizontalAlignment.Left,
-            VerticalContentAlignment = VerticalAlignment.Center,
             Command = AddEditDirectoryCommand
         };
         yield return new Separator();
@@ -89,8 +87,6 @@ public class CustomDirectoriesViewModel : ViewModel
             {
                 Header = setting.Header,
                 Tag = setting.DirectoryPath,
-                HorizontalContentAlignment = HorizontalAlignment.Left,
-                VerticalContentAlignment = VerticalAlignment.Center,
                 ItemsSource = EnumerateCommands(setting)
             };
         }
@@ -102,8 +98,6 @@ public class CustomDirectoriesViewModel : ViewModel
         {
             Header = "Go To",
             Icon = new Image { Source = AppWindows.LoadBitmap("Resources/go_to_directory.png"), Width = 16, Height = 16 },
-            HorizontalContentAlignment = HorizontalAlignment.Left,
-            VerticalContentAlignment = VerticalAlignment.Center,
             Command = GoToCommand,
             CommandParameter = dir.DirectoryPath
         };
@@ -111,8 +105,6 @@ public class CustomDirectoriesViewModel : ViewModel
         {
             Header = "Edit Directory",
             Icon = new Image { Source = AppWindows.LoadBitmap("Resources/edit.png"), Width = 16, Height = 16 },
-            HorizontalContentAlignment = HorizontalAlignment.Left,
-            VerticalContentAlignment = VerticalAlignment.Center,
             Command = AddEditDirectoryCommand,
             CommandParameter = dir
         };
@@ -121,8 +113,6 @@ public class CustomDirectoriesViewModel : ViewModel
             Header = "Delete Directory",
             StaysOpenOnClick = true,
             Icon = new Image { Source = AppWindows.LoadBitmap("Resources/delete.png"), Width = 16, Height = 16 },
-            HorizontalContentAlignment = HorizontalAlignment.Left,
-            VerticalContentAlignment = VerticalAlignment.Center,
             Command = DeleteDirectoryCommand,
             CommandParameter = dir
         };
