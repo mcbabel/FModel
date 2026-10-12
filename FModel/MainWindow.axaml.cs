@@ -94,6 +94,7 @@ public partial class MainWindow : FWindow
 
     private void OnClosing(object sender, WindowClosingEventArgs e)
     {
+        UserSettings.Save();
         _discordHandler.Dispose();
     }
 

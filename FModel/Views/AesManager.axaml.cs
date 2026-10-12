@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using FModel.Framework.Ui;
 using FModel.Services;
+using FModel.Settings;
 using FModel.ViewModels;
 
 namespace FModel.Views;
@@ -36,6 +37,9 @@ public partial class AesManager : FWindow
 
     private async void OnClosing(object sender, WindowClosingEventArgs e)
     {
+        // persist the keys right away instead of only when FModel exits
+        _applicationView.AesManager.SetAesKeys();
+        UserSettings.Save();
         await _applicationView.UpdateProvider(false);
     }
 }
