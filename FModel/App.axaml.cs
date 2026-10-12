@@ -71,7 +71,10 @@ public partial class App : Application
         var createMe = false;
         if (!Directory.Exists(UserSettings.Default.OutputDirectory))
         {
-            var currentDir = AppContext.BaseDirectory;
+            // inside an AppImage the program directory is a read-only (or temporary) mount: use $XDG_DATA_HOME/FModel instead
+            var currentDir = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPIMAGE"))
+                ? AppContext.BaseDirectory
+                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FModel");
             try
             {
                 var outputDir = Directory.CreateDirectory(Path.Combine(currentDir, "Output"));

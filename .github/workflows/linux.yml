@@ -1,36 +1,62 @@
-name: FModel Linux Builder
+name: FModel Linux AppImage
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ dev ]
+    branches: [ dev, 'claude/**' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: linux-appimage-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rid: [ linux-x64 ]
+  appimage:
+    # older Ubuntu = older glibc requirement = runs on more distributions
+    runs-on: ubuntu-22.04
 
     steps:
       - name: GIT Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+          fetch-depth: 0
 
       - name: .NET 10 Setup
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      - name: Build natives dependencies
+      - name: Native build tools
         run: sudo apt-get update && sudo apt-get install -y cmake g++
 
-      - name: .NET Publish
-        run: ./linux/build.sh ${{ matrix.rid }}
+      - name: Build AppImage
+        run: ./linux/build-appimage.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FModel-${{ matrix.rid }}
-          path: FModel-${{ matrix.rid }}.tar.gz
+          name: FModel-x86_64.AppImage
+          path: FModel-x86_64.AppImage
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="linux-latest"
+          gh release delete "$TAG" --cleanup-tag --yes || true
+          git push origin ":refs/tags/$TAG" || true
+          gh release create "$TAG" FModel-x86_64.AppImage \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "FModel Linux AppImage (latest)" \
+            --notes "Native Linux build of FModel (Avalonia port), built from ${GITHUB_REF_NAME} @ ${GITHUB_SHA::7}.
+
+          Usage:
+          \`\`\`
+          chmod +x FModel-x86_64.AppImage
+          ./FModel-x86_64.AppImage
+          \`\`\`
+          Requirements: OpenGL 4.6 drivers (3D viewer), OpenAL (audio player). Settings: ~/.config/FModel, output: ~/.local/share/FModel/Output."

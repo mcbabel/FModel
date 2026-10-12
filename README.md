@@ -20,16 +20,23 @@ This fork runs natively on Linux (X11 and Wayland via XWayland) — the UI was p
 
 **Requirements:** a 64-bit Linux distribution, OpenGL 4.6 capable GPU drivers (3D viewer), `libopenal1` / `openal-soft` (audio player), and optionally `java` (Lua decompilation). Oodle, zlib-ng and vgmstream are downloaded automatically on first start, like on Windows.
 
+**AppImage (recommended):** download `FModel-x86_64.AppImage` from the [Linux release](../../releases/tag/linux-latest) (built automatically by GitHub Actions on every push), then:
+```bash
+chmod +x FModel-x86_64.AppImage
+./FModel-x86_64.AppImage
+```
+
 **Build:**
 ```bash
 git clone --recursive <this repository>
 cd FModel
-./linux/build.sh          # needs the .NET 10 SDK, cmake and g++
+./linux/build-appimage.sh # AppImage, needs the .NET 10 SDK, cmake and g++
+./linux/build.sh          # or a plain self-contained binary
 ./FModel/bin/Publish/linux-x64/install.sh   # optional: installs to ~/.local with a desktop entry
 ```
 Or run it directly from source: `dotnet run --project FModel -c Release`.
 
-Settings are stored in `~/.config/FModel`, the output folder defaults to `Output/` next to the executable (or `~/.local/share/FModel/Output` if that location is read-only). Games are auto-detected from Steam libraries and from Heroic / Legendary (Epic Games) installations.
+Settings are stored in `~/.config/FModel`. The output folder is `~/.local/share/FModel/Output` for the AppImage, and `Output/` next to the executable for other builds (or `~/.local/share/FModel/Output` if that location is read-only). Games are auto-detected from Steam libraries and from Heroic / Legendary (Epic Games) installations.
 
 ### Sponsorship:
 <p>
