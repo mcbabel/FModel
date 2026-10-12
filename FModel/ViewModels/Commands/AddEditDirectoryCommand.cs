@@ -1,4 +1,4 @@
-using AdonisUI.Controls;
+using FModel.Framework.Ui;
 using FModel.Framework;
 using FModel.Settings;
 using FModel.Views;
@@ -16,7 +16,7 @@ public class AddEditDirectoryCommand : ViewModelCommand<CustomDirectoriesViewMod
         if (parameter is not CustomDirectory customDir)
             customDir = new CustomDirectory();
 
-        Helper.OpenWindow<AdonisWindow>("Custom Directory", () =>
+        Helper.OpenWindow<FWindow>("Custom Directory", () =>
         {
             var index = contextViewModel.GetIndex(customDir);
             var input = new CustomDir(customDir);

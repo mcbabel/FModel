@@ -14,7 +14,7 @@ using CUE4Parse.UE4.Versions;
 using CUE4Parse.Utils;
 using FModel.Settings;
 using FModel.ViewModels.ApiEndpoints.Models;
-using Microsoft.Win32;
+using FModel.Framework.Ui;
 
 namespace FModel.ViewModels;
 

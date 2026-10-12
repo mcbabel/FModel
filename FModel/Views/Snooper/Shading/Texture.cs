@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using System.Windows;
 using CUE4Parse_Conversion.Textures;
 using CUE4Parse.UE4.Assets.Exports.Texture;
 using CUE4Parse.UE4.Objects.Core.Math;
@@ -164,8 +163,8 @@ public class Texture : IDisposable
 
     private void ProcessPixels(string texture, TextureTarget target)
     {
-        var info = Application.GetResourceStream(new Uri($"/FModel;component/Resources/{texture}.png", UriKind.Relative));
-        using var img = Image.Load<Rgba32>(info.Stream);
+        using var stream = FModel.Framework.Ui.AppWindows.OpenResource($"Resources/{texture}.png");
+        using var img = Image.Load<Rgba32>(stream);
         Width = img.Width;
         Height = img.Height;
         GL.TexImage2D(target, 0, PixelInternalFormat.Rgba8, Width, Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);

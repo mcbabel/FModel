@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using AdonisUI.Controls;
+using FModel.Framework.Ui;
 using FModel.Extensions;
 using FModel.Framework;
 using FModel.Services;
@@ -24,10 +24,10 @@ public class MenuCommand : ViewModelCommand<ApplicationViewModel>
                 contextViewModel.AvoidEmptyGameDirectory(true);
                 break;
             case "Directory_AES":
-                Helper.OpenWindow<AdonisWindow>("AES Manager", () => new AesManager().Show());
+                Helper.OpenWindow<FWindow>("AES Manager", () => new AesManager().Show());
                 break;
             case "Directory_Backup":
-                Helper.OpenWindow<AdonisWindow>("Backup Manager", () => new BackupManager(contextViewModel.CUE4Parse.Provider.ProjectName).Show());
+                Helper.OpenWindow<FWindow>("Backup Manager", () => new BackupManager(contextViewModel.CUE4Parse.Provider.ProjectName).Show());
                 break;
             case "Directory_ArchivesInfo":
                 ApplicationService.ApplicationView.IsAssetsExplorerVisible = false;
@@ -39,25 +39,25 @@ public class MenuCommand : ViewModelCommand<ApplicationViewModel>
                 contextViewModel.CUE4Parse.SnooperViewer.Run();
                 break;
             case "Views_ExportSession":
-                Helper.OpenWindow<AdonisWindow>("Export Session", () => new ExportSessionWindow().Show());
+                Helper.OpenWindow<FWindow>("Export Session", () => new ExportSessionWindow().Show());
                 break;
             case "Views_AudioPlayer":
-                Helper.OpenWindow<AdonisWindow>("Audio Player", () => new AudioPlayer().Show());
+                Helper.OpenWindow<FWindow>("Audio Player", () => new AudioPlayer().Show());
                 break;
             case "Views_ImageMerger":
-                Helper.OpenWindow<AdonisWindow>("Image Merger", () => new ImageMerger().Show());
+                Helper.OpenWindow<FWindow>("Image Merger", () => new ImageMerger().Show());
                 break;
             case "Settings":
-                Helper.OpenWindow<AdonisWindow>("Settings", () => new SettingsView().Show());
+                Helper.OpenWindow<FWindow>("Settings", () => new SettingsView().Show());
                 break;
             case "Help_About":
-                Helper.OpenWindow<AdonisWindow>("About", () => new About().Show());
+                Helper.OpenWindow<FWindow>("About", () => new About().Show());
                 break;
             case "Help_Donate":
                 Process.Start(new ProcessStartInfo { FileName = Constants.DONATE_LINK, UseShellExecute = true });
                 break;
             case "Help_Releases":
-                Helper.OpenWindow<AdonisWindow>("Releases", () => new UpdateView().Show());
+                Helper.OpenWindow<FWindow>("Releases", () => new UpdateView().Show());
                 break;
             case "Help_BugsReport":
                 Process.Start(new ProcessStartInfo { FileName = Constants.ISSUE_LINK, UseShellExecute = true });

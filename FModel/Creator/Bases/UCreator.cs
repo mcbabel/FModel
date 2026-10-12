@@ -1,5 +1,5 @@
+using FModel.Framework.Ui;
 using System;
-using System.Windows;
 using CUE4Parse.UE4.Assets.Exports;
 using FModel.Creator.Bases.FN;
 using FModel.Framework;
@@ -27,7 +27,7 @@ public abstract class UCreator
 
     protected UCreator(UObject uObject, EIconStyle style)
     {
-        DefaultPreview = SKBitmap.Decode(Application.GetResourceStream(new Uri("pack://application:,,,/Resources/T_Placeholder_Item_Image.png"))?.Stream);
+        DefaultPreview = SKBitmap.Decode(AppWindows.OpenResource("Resources/T_Placeholder_Item_Image.png"));
         Background = new[] { SKColor.Parse("5BFD00"), SKColor.Parse("003700") };
         Border = new[] { SKColor.Parse("1E8500"), SKColor.Parse("5BFD00") };
         DisplayName = string.Empty;

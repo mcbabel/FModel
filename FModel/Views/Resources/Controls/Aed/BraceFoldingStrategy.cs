@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Folding;
+using AvaloniaEdit;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Folding;
 
 namespace FModel.Views.Resources.Controls;
 

@@ -1,11 +1,10 @@
+using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Data;
 using CUE4Parse.FileProvider.Objects;
 using FModel.Framework;
 using FModel.Services;
@@ -35,7 +34,7 @@ public class BackupManagerViewModel : ViewModel
     }
 
     public ObservableCollection<Backup> Backups { get; }
-    public ICollectionView BackupsView { get; }
+    public ListCollectionView BackupsView { get; }
 
     public BackupManagerViewModel(string gameName)
     {
@@ -51,7 +50,7 @@ public class BackupManagerViewModel : ViewModel
             var backups = _apiEndpointView.DillyApi.GetBackups(cancellationToken);
             if (backups == null) return;
 
-            Application.Current.Dispatcher.Invoke(() =>
+            Dispatcher.UIThread.Invoke(() =>
             {
                 foreach (var backup in backups) Backups.Add(backup);
                 SelectedBackup = Backups.FirstOrDefault();

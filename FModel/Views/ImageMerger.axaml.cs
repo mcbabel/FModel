@@ -239,7 +239,7 @@ public partial class ImageMerger
     private void OnOpenImage(object sender, RoutedEventArgs e)
     {
         if (ImagePreview.Source == null) return;
-        Helper.OpenWindow<AdonisWindow>("Merged Image", () =>
+        Helper.OpenWindow<FWindow>("Merged Image", () =>
         {
             new ImagePopout
             {

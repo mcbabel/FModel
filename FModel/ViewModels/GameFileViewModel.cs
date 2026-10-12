@@ -1,10 +1,10 @@
+using Avalonia.Threading;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using CUE4Parse_Conversion.Textures;
 using CUE4Parse.FileProvider.Objects;
 using CUE4Parse.GameTypes.Borderlands3.Assets.Exports;
@@ -117,8 +117,8 @@ public class GameFileViewModel(GameFile asset) : ViewModel
         }
     }
 
-    private ImageSource _previewImage;
-    public ImageSource PreviewImage
+    private IImage _previewImage;
+    public IImage PreviewImage
     {
         get => _previewImage;
         private set
@@ -522,14 +522,9 @@ public class GameFileViewModel(GameFile asset) : ViewModel
         using var ms = new MemoryStream(data.ToArray());
         ms.Position = 0;
 
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.StreamSource = ms;
-        bitmap.EndInit();
-        bitmap.Freeze();
+        var bitmap = new Bitmap(ms);
 
-        Application.Current.Dispatcher.InvokeAsync(() => PreviewImage = bitmap);
+        Dispatcher.UIThread.InvokeAsync(() => PreviewImage = bitmap);
     }
 
     private CancellationTokenSource _previewCts;

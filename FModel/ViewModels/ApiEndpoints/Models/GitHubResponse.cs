@@ -1,14 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
-using System.Windows;
-using AdonisUI.Controls;
-using AutoUpdaterDotNET;
+using FModel.Framework.Ui;
 using FModel.Framework;
 using FModel.Settings;
-using MessageBox = AdonisUI.Controls.MessageBox;
-using MessageBoxButton = AdonisUI.Controls.MessageBoxButton;
-using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
-using MessageBoxResult = AdonisUI.Controls.MessageBoxResult;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 
 namespace FModel.ViewModels.ApiEndpoints.Models;
@@ -113,7 +108,7 @@ public class GitHubCommit : ViewModel
 
         var messageBox = new MessageBoxModel
         {
-            Text = $"Are you sure you want to update to version '{ShortSha}'?{(!Asset.IsLatest ? "\nThis is not the latest version." : "")}",
+            Text = $"This build of FModel cannot replace itself with the official Windows release.\nDo you want to open version '{ShortSha}' in your browser to download it manually?{(!Asset.IsLatest ? "\nThis is not the latest version." : "")}",
             Caption = "Update FModel",
             Icon = MessageBoxImage.Question,
             Buttons = MessageBoxButtons.YesNo(),
@@ -125,10 +120,7 @@ public class GitHubCommit : ViewModel
 
         try
         {
-            if (AutoUpdater.DownloadUpdate(new UpdateInfoEventArgs { DownloadURL = Asset.BrowserDownloadUrl }))
-            {
-                Application.Current.Shutdown();
-            }
+            Process.Start(new ProcessStartInfo { FileName = Asset.BrowserDownloadUrl, UseShellExecute = true });
         }
         catch (Exception exception)
         {

@@ -1,7 +1,7 @@
+using FModel.Framework.Ui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using CUE4Parse.GameTypes.FN.Enums;
 using CUE4Parse.UE4.Assets.Exports;
 using CUE4Parse.UE4.Assets.Exports.Engine;
@@ -298,8 +298,8 @@ public class BaseIcon : UCreator
             if (flag.Equals("Cosmetics.UserFacingFlags.HasUpgradeQuests", StringComparison.OrdinalIgnoreCase))
             {
                 if (Object.ExportType.Equals("AthenaPetCarrierItemDefinition", StringComparison.OrdinalIgnoreCase))
-                    UserFacingFlags[flag] = SKBitmap.Decode(Application.GetResourceStream(new Uri("pack://application:,,,/Resources/T-Icon-Pets-64.png"))?.Stream);
-                else UserFacingFlags[flag] = SKBitmap.Decode(Application.GetResourceStream(new Uri("pack://application:,,,/Resources/T-Icon-Quests-64.png"))?.Stream);
+                    UserFacingFlags[flag] = SKBitmap.Decode(AppWindows.OpenResource("Resources/T-Icon-Pets-64.png"));
+                else UserFacingFlags[flag] = SKBitmap.Decode(AppWindows.OpenResource("Resources/T-Icon-Quests-64.png"));
             }
             else
             {

@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Windows.Data;
 using CUE4Parse.FileProvider.Objects;
 using FModel.Framework;
 
@@ -9,8 +8,8 @@ public class AssetsListViewModel
 {
     public RangeObservableCollection<GameFileViewModel> Assets { get; } = [];
 
-    private ICollectionView _assetsView;
-    public ICollectionView AssetsView
+    private ListCollectionView _assetsView;
+    public ListCollectionView AssetsView
     {
         get
         {

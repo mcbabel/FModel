@@ -8,8 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
+using Avalonia.Threading;
 using CUE4Parse_Conversion;
 using CUE4Parse_Conversion.Options;
 using CUE4Parse.Utils;
@@ -64,7 +63,7 @@ public class ExportSessionViewModel : ViewModel
             if (_session != null) return _session;
             _session = new ExportSession((args, ct) =>
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                Dispatcher.UIThread.Invoke(() =>
                 {
                     var window = new StreamingLevelFilterWindow(new StreamingLevelFilterViewModel(args));
                     _stopwatch.Stop();
@@ -151,7 +150,7 @@ public class ExportSessionViewModel : ViewModel
     private void OnLogEvent(LogEvent log)
     {
         _pendingLogs.Enqueue(log);
-        Application.Current?.Dispatcher.InvokeAsync(DrainLogs);
+        Dispatcher.UIThread.InvokeAsync(DrainLogs);
     }
 
     private int _previousCount;
@@ -160,7 +159,7 @@ public class ExportSessionViewModel : ViewModel
         if (e.PropertyName != nameof(ExportSession.TotalQueued)) return;
 
         var count = _session?.TotalQueued ?? 0;
-        Application.Current?.Dispatcher.InvokeAsync(() =>
+        Dispatcher.UIThread.InvokeAsync(() =>
         {
             if (count > 0 && _previousCount == 0)
             {
@@ -208,7 +207,7 @@ public class ExportSessionViewModel : ViewModel
 
         var progress = new Progress<ExportProgress>(p =>
         {
-            Application.Current?.Dispatcher.InvokeAsync(() =>
+            Dispatcher.UIThread.InvokeAsync(() =>
             {
                 CompletedCount = p.Completed;
                 CurrentItemName = p.LastResult?.ObjectPath;
@@ -228,12 +227,12 @@ public class ExportSessionViewModel : ViewModel
         }
         catch (OperationCanceledException)
         {
-            Application.Current?.Dispatcher.InvokeAsync(() => IsCanceled = true);
+            Dispatcher.UIThread.InvokeAsync(() => IsCanceled = true);
         }
         finally
         {
             _stopwatch.Stop();
-            Application.Current?.Dispatcher.InvokeAsync(() =>
+            Dispatcher.UIThread.InvokeAsync(() =>
             {
                 StopUiTimer();
                 IsRunning = false;

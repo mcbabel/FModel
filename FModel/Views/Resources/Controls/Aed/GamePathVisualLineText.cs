@@ -1,14 +1,13 @@
 using System;
 using System.Text.RegularExpressions;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.TextFormatting;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using CUE4Parse.Utils;
 using FModel.Extensions;
 using FModel.Services;
 using FModel.ViewModels;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Rendering;
 
 namespace FModel.Views.Resources.Controls;
 
@@ -38,21 +37,22 @@ public class GamePathVisualLineText : VisualLineText
         if (text.Count != 2) // ": "
             TextRunProperties.SetForegroundBrush(Brushes.Plum);
 
-        return new TextCharacters(text.Text, text.Offset, text.Count, TextRunProperties);
+        return new TextCharacters(text.Text.AsMemory(text.Offset, text.Count), TextRunProperties);
     }
 
-    private bool GamePathIsClickable() => !string.IsNullOrEmpty(_gamePath) && Keyboard.Modifiers == ModifierKeys.None;
+    private bool GamePathIsClickable(KeyModifiers modifiers) => !string.IsNullOrEmpty(_gamePath) && modifiers == KeyModifiers.None;
 
-    protected override void OnQueryCursor(QueryCursorEventArgs e)
+    protected override void OnQueryCursor(PointerEventArgs e)
     {
-        if (!GamePathIsClickable()) return;
+        if (!GamePathIsClickable(e.KeyModifiers)) return;
+        if (e.Source is InputElement inputElement)
+            inputElement.Cursor = new Cursor(StandardCursorType.Hand);
         e.Handled = true;
-        e.Cursor = Cursors.Hand;
     }
 
-    protected override void OnMouseDown(MouseButtonEventArgs e)
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        if (e.ChangedButton != MouseButton.Left || !GamePathIsClickable())
+        if (!e.GetCurrentPoint(null).Properties.IsLeftButtonPressed || !GamePathIsClickable(e.KeyModifiers))
             return;
         if (e.Handled || OnGamePathClicked == null)
             return;

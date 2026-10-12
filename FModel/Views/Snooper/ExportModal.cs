@@ -557,7 +557,7 @@ public sealed class ExportModal
     {
         try
         {
-            if (File.Exists(path) || Directory.Exists(path)) Process.Start("explorer.exe", $"/select, \"{path}\"");
+            if (File.Exists(path) || Directory.Exists(path)) FModel.Framework.Ui.Shell.RevealInFileManager(path);
             else Log.Warning("File or directory does not exist: {Path}", path);
         }
         catch (Exception ex)

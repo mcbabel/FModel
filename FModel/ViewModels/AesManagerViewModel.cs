@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Data;
 using CUE4Parse.UE4.Objects.Core.Misc;
 using FModel.Framework;
 using FModel.Services;
@@ -16,7 +15,7 @@ public class AesManagerViewModel : ViewModel
     private ThreadWorkerViewModel _threadWorkerView => ApplicationService.ThreadWorkerView;
 
     public FullyObservableCollection<FileItem> AesKeys { get; private set; } // holds all aes keys even the main one
-    public ICollectionView AesKeysView { get; private set; } // holds all aes key ordered by name for the ui
+    public ListCollectionView AesKeysView { get; private set; } // holds all aes key ordered by name for the ui
     public bool HasChange { get; set; }
 
     private AesResponse _keysFromSettings;

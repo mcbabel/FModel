@@ -1,20 +1,11 @@
-<adonisControls:AdonisWindow x:Class="FModel.Views.DirectorySelector"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:FModel.Views.Resources.Controls"
-        xmlns:converters="clr-namespace:FModel.Views.Resources.Converters"
-        xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
-        xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
-        xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" IconVisibility="Collapsed" SizeToContent="Height"
-        MinHeight="{Binding Source={x:Static SystemParameters.MaximizedPrimaryScreenHeight}, Converter={converters:RatioConverter}, ConverterParameter='0.20'}"
-        Width="{Binding Source={x:Static SystemParameters.MaximizedPrimaryScreenWidth}, Converter={converters:RatioConverter}, ConverterParameter='0.25'}"
-        AllowDrop="True">
-    <adonisControls:AdonisWindow.Style>
-        <Style TargetType="adonisControls:AdonisWindow" BasedOn="{StaticResource {x:Type adonisControls:AdonisWindow}}" >
-            <Setter Property="Title" Value="Directory Selector" />
-        </Style>
-    </adonisControls:AdonisWindow.Style>
+<FWindow x:Class="FModel.Views.DirectorySelector"
+         xmlns="https://github.com/avaloniaui"
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         xmlns:controls="using:FModel.Views.Resources.Controls"
+         xmlns:converters="using:FModel.Views.Resources.Converters"
+         Title="Directory Selector"
+         WindowStartupLocation="CenterScreen" CanResize="False" SizeToContent="Height"
+         DragDrop.AllowDrop="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -28,8 +19,8 @@
                        Text="We like to make things as simple as possible. Choose between the detected games or manually add your own. FModel will use this information to automatically find archives to load and decrypt if needed. Make sure to not skip this step!" />
         </StackPanel>
 
-        <GroupBox Grid.Row="1" adonisExtensions:LayerExtension.Layer="2" Margin="10 10 10 18"
-                  Padding="{adonisUi:Space 0}" Background="Transparent">
+        <GroupBox Grid.Row="1" LayerExtension.Layer="2" Margin="10 10 10 18"
+                  Padding="0" Background="Transparent">
             <StackPanel>
                 <Grid x:Name="Hello" Margin="0 5">
                     <Grid.RowDefinitions>
@@ -48,8 +39,8 @@
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Detected Game" VerticalAlignment="Center" Margin="0 0 0 5" />
                     <controls:FilterableComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"
                                                  ItemsSource="{Binding DetectedDirectories}" Margin="0 0 0 5"
-                                                 Style="{StaticResource UComboBox}"
-                                                 adonisExtensions:WatermarkExtension.Watermark="Search for a game..."
+                                                 Classes="UComboBox" HorizontalAlignment="Stretch"
+                                                 PlaceholderText="Search for a game..."
                                                  VerticalAlignment="Center" SelectedItem="{Binding SelectedDirectory, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -61,7 +52,7 @@
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="UE Versions" VerticalAlignment="Center" Margin="0 0 0 5" />
                     <controls:FilterableComboBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Margin="0 0 0 5"
                                                  ItemsSource="{Binding UeGames}"
-                                                 Style="{StaticResource UComboBox}"
+                                                 Classes="UComboBox" HorizontalAlignment="Stretch"
                                                  VerticalAlignment="Center" SelectedItem="{Binding SelectedDirectory.UeVersion, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -72,25 +63,27 @@
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Directory" VerticalAlignment="Center" />
                     <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding SelectedDirectory.GameDirectory, Mode=TwoWay}" />
-                    <Button Grid.Row="2" Grid.Column="4" Content="..." HorizontalAlignment="Right" Click="OnBrowseDirectories" />
-                    <Button Grid.Row="2" Grid.Column="4" Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}" Padding="0"
-                            Click="OnDeleteDirectory" Width="{Binding ActualWidth, ElementName=OkGuysButWhoFuckingAsked}" ToolTip="Delete Game"
-                            Visibility="{Binding SelectedDirectory.IsManual, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Button x:Name="BrowseDirectoryButton" Grid.Row="2" Grid.Column="4" Content="..." HorizontalAlignment="Right" Click="OnBrowseDirectories" />
+                    <!-- same size as the "..." button it covers (WPF bound it to the manual "..." button which has the same size) -->
+                    <Button Grid.Row="2" Grid.Column="4" Classes="AccentButton" Padding="0"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                            Click="OnDeleteDirectory" Width="{Binding #BrowseDirectoryButton.Bounds.Width}" ToolTip.Tip="Delete Game"
+                            IsVisible="{Binding SelectedDirectory.IsManual, FallbackValue=False}">
                         <Viewbox Width="16" Height="16" HorizontalAlignment="Center">
                             <Canvas Width="24" Height="24">
-                                <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource RemoveIcon}" />
+                                <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource RemoveIcon}" />
                             </Canvas>
                         </Viewbox>
                     </Button>
                 </Grid>
 
-                <Separator Style="{StaticResource CustomSeparator}" Tag="ADD UNDETECTED GAME" Margin="0,0,0,0"/>
-                <TextBlock Text="Drag &amp; drop folder to quickly configure new game" 
+                <Separator Classes="CustomSeparator" Tag="ADD UNDETECTED GAME" Margin="0,0,0,0"/>
+                <TextBlock Text="Drag &amp; drop folder to quickly configure new game"
                            HorizontalAlignment="Center"
-                           Foreground="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                           Foreground="{DynamicResource ForegroundBrush}"
                            Margin="0,0,0,5" />
-                <Expander x:Name="ManualGameExpander" ExpandDirection="Down" IsExpanded="False">
-                    <Grid MaxWidth="{Binding ActualWidth, ElementName=Hello}">
+                <Expander x:Name="ManualGameExpander" ExpandDirection="Down" IsExpanded="False" HorizontalAlignment="Stretch">
+                    <Grid MaxWidth="{Binding #Hello.Bounds.Width}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="5" />
@@ -112,11 +105,12 @@
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Directory" VerticalAlignment="Center" />
                         <TextBox x:Name="HelloGameMyNameIsDirectory" Grid.Row="2" Grid.Column="2" />
                         <Button x:Name="OkGuysButWhoFuckingAsked" Grid.Row="2" Grid.Column="4" Content="..." HorizontalAlignment="Right" Click="OnBrowseManualDirectories" />
-                        <Button Grid.Row="2" Grid.Column="6" Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}" Padding="0"
-                                Click="OnAddDirectory" ToolTip="Add Game" Width="{Binding ActualWidth, ElementName=OkGuysButWhoFuckingAsked}">
+                        <Button Grid.Row="2" Grid.Column="6" Classes="AccentButton" Padding="0"
+                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                Click="OnAddDirectory" ToolTip.Tip="Add Game" Width="{Binding #OkGuysButWhoFuckingAsked.Bounds.Width}">
                             <Viewbox Width="16" Height="16" HorizontalAlignment="Center">
                                 <Canvas Width="24" Height="24">
-                                    <Path Fill="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" Data="{StaticResource AddIcon}" />
+                                    <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource AddIcon}" />
                                 </Canvas>
                             </Viewbox>
                         </Button>
@@ -126,8 +120,8 @@
         </GroupBox>
 
         <Border Grid.Row="2"
-                Background="{DynamicResource {x:Static adonisUi:Brushes.Layer1BackgroundBrush}}"
-                adonisExtensions:LayerExtension.IncreaseLayer="True">
+                Background="{DynamicResource Layer1BackgroundBrush}"
+                LayerExtension.IncreaseLayer="True">
             <Grid Margin="30, 12, 6, 12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -138,15 +132,14 @@
 
                 <Button Grid.Column="0" MinWidth="78" Margin="0 0 12 0"
                         HorizontalAlignment="Left" VerticalAlignment="Bottom" Content="Clear"
-                        ToolTip="Remove game directories that no longer exist" Click="OnClearDirectories" />
+                        ToolTip.Tip="Remove game directories that no longer exist" Click="OnClearDirectories" />
                 <Button Grid.Column="2" MinWidth="78" Margin="0 0 12 0" IsDefault="True" IsCancel="False"
                         HorizontalAlignment="Right" VerticalAlignment="Bottom" Content="OK" Click="OnClick" />
-                <Button Grid.Column="3" MinWidth="78" Margin="0 0 12 0" IsDefault="False"  IsCancel="True"
-                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Content="Cancel" />
+                <Button Grid.Column="3" MinWidth="78" Margin="0 0 12 0" IsDefault="False" IsCancel="True"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Content="Cancel" Click="OnCancel" />
             </Grid>
         </Border>
-        <controls:DropOverlay Grid.RowSpan="99"
-                              Grid.ColumnSpan="99"
-                              Panel.ZIndex="1000" />
+        <controls:DropOverlay Grid.RowSpan="3"
+                              ZIndex="1000" />
     </Grid>
-</adonisControls:AdonisWindow>
+</FWindow>

@@ -2,7 +2,10 @@ using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Windows.Forms;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using Avalonia.Threading;
+using FModel.Framework.Ui;
 using CUE4Parse.UE4.Assets.Exports;
 using FModel.Views.Snooper.Buffers;
 using OpenTK.Graphics.OpenGL4;
@@ -12,7 +15,6 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
-using Application = System.Windows.Application;
 
 namespace FModel.Views.Snooper;
 
@@ -58,21 +60,79 @@ public class Snooper : GameWindow
         IsVisible = true;
     }
 
+    private DispatcherTimer _loopTimer;
+    private Stopwatch _loopWatch;
+    private TaskCompletionSource _runCompletion;
+
+    /// <summary>
+    /// Shows the viewer and runs its frame loop. Unlike GameWindow.Run() this doesn't block the UI thread:
+    /// frames are driven by a dispatcher timer so the Avalonia windows stay responsive (on Windows/WPF both
+    /// shared the same Win32 message loop, on Linux GLFW and Avalonia have their own event loops).
+    /// When called from a worker thread, this method blocks the worker until the viewer is closed, like before.
+    /// </summary>
     public override void Run()
     {
         Renderer.Options.SwapMaterial(false);
         Renderer.Options.AnimateMesh(false);
-        Application.Current.Dispatcher.Invoke(delegate
+
+        Task completion = null;
+        Dispatcher.UIThread.Invoke(() =>
         {
             WindowShouldClose(false, false);
-            base.Run();
+            completion = StartLoop();
         });
+
+        if (!Dispatcher.UIThread.CheckAccess())
+            completion?.Wait();
+    }
+
+    private Task StartLoop()
+    {
+        if (_runCompletion is { Task.IsCompleted: false })
+            return _runCompletion.Task; // already running, just shown again
+
+        _runCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Context?.MakeCurrent();
+        OnLoad();
+        OnResize(new ResizeEventArgs(ClientSize));
+
+        _loopWatch = Stopwatch.StartNew();
+        var period = UpdateFrequency <= 0 ? 1.0 / 60.0 : 1.0 / UpdateFrequency;
+        _loopTimer = new DispatcherTimer(TimeSpan.FromSeconds(period), DispatcherPriority.Background, (_, _) => Tick());
+        _loopTimer.Start();
+        return _runCompletion.Task;
+    }
+
+    private unsafe void Tick()
+    {
+        if (GLFW.WindowShouldClose(WindowPtr))
+        {
+            _loopTimer?.Stop();
+            _loopTimer = null;
+            OnUnload();
+            _runCompletion?.TrySetResult();
+            return;
+        }
+
+        Context?.MakeCurrent();
+
+        var elapsed = _loopWatch.Elapsed.TotalSeconds;
+        _loopWatch.Restart();
+
+        NewInputFrame();
+        ProcessWindowEvents(IsEventDriven);
+        if (GLFW.WindowShouldClose(WindowPtr))
+            return; // closed while processing events, cleaned up on next tick
+
+        OnUpdateFrame(new FrameEventArgs(elapsed));
+        OnRenderFrame(new FrameEventArgs(elapsed));
     }
 
     private unsafe void LoadWindowIcon()
     {
-        var info = Application.GetResourceStream(new Uri("/FModel;component/Resources/engine.png", UriKind.Relative));
-        using var img = SixLabors.ImageSharp.Image.Load<Rgba32>(info.Stream);
+        using var stream = AppWindows.OpenResource("Resources/engine.png");
+        using var img = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
         var memoryGroup = img.GetPixelMemoryGroup();
         Memory<byte> array = new byte[memoryGroup.TotalLength * sizeof(Rgba32)];
         var block = MemoryMarshal.Cast<byte, Rgba32>(array.Span);
@@ -174,59 +234,18 @@ public class Snooper : GameWindow
         WindowShouldClose(true, true);
     }
 
-    [DllImport("user32.dll")]
-    private static extern bool EnumDisplaySettings(
-        string deviceName, int modeNum, ref DEVMODE devMode);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct DEVMODE
-    {
-        private const int CCHDEVICENAME = 0x20;
-        private const int CCHFORMNAME = 0x20;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
-        public string dmDeviceName;
-        public short dmSpecVersion;
-        public short dmDriverVersion;
-        public short dmSize;
-        public short dmDriverExtra;
-        public int dmFields;
-        public int dmPositionX;
-        public int dmPositionY;
-        public ScreenOrientation dmDisplayOrientation;
-        public int dmDisplayFixedOutput;
-        public short dmColor;
-        public short dmDuplex;
-        public short dmYResolution;
-        public short dmTTOption;
-        public short dmCollate;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
-        public string dmFormName;
-        public short dmLogPixels;
-        public int dmBitsPerPel;
-        public int dmPelsWidth;
-        public int dmPelsHeight;
-        public int dmDisplayFlags;
-        public int dmDisplayFrequency;
-        public int dmICMMethod;
-        public int dmICMIntent;
-        public int dmMediaType;
-        public int dmDitherType;
-        public int dmReserved1;
-        public int dmReserved2;
-        public int dmPanningWidth;
-        public int dmPanningHeight;
-
-    }
-
     public static int GetMaxRefreshFrequency()
     {
         var rf = 60;
-        var vDevMode = new DEVMODE();
-        var i = 0;
-        while (EnumDisplaySettings(null, i, ref vDevMode))
+        try
         {
-            i++;
-            rf = Math.Max(rf, vDevMode.dmDisplayFrequency);
+            GLFWProvider.EnsureInitialized();
+            foreach (var monitor in Monitors.GetMonitors())
+                rf = Math.Max(rf, monitor.CurrentVideoMode.RefreshRate);
+        }
+        catch
+        {
+            // ignored
         }
 
         return rf;

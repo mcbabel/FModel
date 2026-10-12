@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media.Imaging;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using FModel.Framework.Ui;
 using FModel.Framework;
 using FModel.Settings;
 using FModel.ViewModels.Commands;
@@ -73,7 +73,7 @@ public class CustomDirectoriesViewModel : ViewModel
         yield return new MenuItem
         {
             Header = "Add Directory",
-            Icon = new Image { Source = new BitmapImage(new Uri("/FModel;component/Resources/add_directory.png", UriKind.Relative)) },
+            Icon = new Image { Source = AppWindows.LoadBitmap("Resources/add_directory.png"), Width = 16, Height = 16 },
             HorizontalContentAlignment = HorizontalAlignment.Left,
             VerticalContentAlignment = VerticalAlignment.Center,
             Command = AddEditDirectoryCommand
@@ -101,7 +101,7 @@ public class CustomDirectoriesViewModel : ViewModel
         yield return new MenuItem
         {
             Header = "Go To",
-            Icon = new Image { Source = new BitmapImage(new Uri("/FModel;component/Resources/go_to_directory.png", UriKind.Relative)) },
+            Icon = new Image { Source = AppWindows.LoadBitmap("Resources/go_to_directory.png"), Width = 16, Height = 16 },
             HorizontalContentAlignment = HorizontalAlignment.Left,
             VerticalContentAlignment = VerticalAlignment.Center,
             Command = GoToCommand,
@@ -110,7 +110,7 @@ public class CustomDirectoriesViewModel : ViewModel
         yield return new MenuItem
         {
             Header = "Edit Directory",
-            Icon = new Image { Source = new BitmapImage(new Uri("/FModel;component/Resources/edit.png", UriKind.Relative)) },
+            Icon = new Image { Source = AppWindows.LoadBitmap("Resources/edit.png"), Width = 16, Height = 16 },
             HorizontalContentAlignment = HorizontalAlignment.Left,
             VerticalContentAlignment = VerticalAlignment.Center,
             Command = AddEditDirectoryCommand,
@@ -120,7 +120,7 @@ public class CustomDirectoriesViewModel : ViewModel
         {
             Header = "Delete Directory",
             StaysOpenOnClick = true,
-            Icon = new Image { Source = new BitmapImage(new Uri("/FModel;component/Resources/delete.png", UriKind.Relative)) },
+            Icon = new Image { Source = AppWindows.LoadBitmap("Resources/delete.png"), Width = 16, Height = 16 },
             HorizontalContentAlignment = HorizontalAlignment.Left,
             VerticalContentAlignment = VerticalAlignment.Center,
             Command = DeleteDirectoryCommand,

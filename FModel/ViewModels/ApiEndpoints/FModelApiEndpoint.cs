@@ -1,10 +1,8 @@
 using System;
-using AdonisUI.Controls;
+using FModel.Framework.Ui;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using AutoUpdaterDotNET;
 using CUE4Parse.Utils;
 using FModel.Extensions;
 using FModel.Framework;
@@ -15,9 +13,6 @@ using FModel.Views;
 using Newtonsoft.Json;
 using RestSharp;
 using Serilog;
-using MessageBox = AdonisUI.Controls.MessageBox;
-using MessageBoxButton = AdonisUI.Controls.MessageBoxButton;
-using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
 
 namespace FModel.ViewModels.ApiEndpoints;
 
@@ -98,54 +93,51 @@ public class FModelApiEndpoint : AbstractApiProvider
             return;
         }
 
-        if (launch)
+        _ = Task.Run(async () =>
         {
-            AutoUpdater.ParseUpdateInfoEvent += ParseUpdateInfoEvent;
-            AutoUpdater.CheckForUpdateEvent += CheckForUpdateEvent;
-        }
-        AutoUpdater.Start("https://api.fmodel.app/v1/infos/Qa");
-    }
-
-    private void ParseUpdateInfoEvent(ParseUpdateInfoEventArgs args)
-    {
-        _infos = JsonConvert.DeserializeObject<Info>(args.RemoteData);
-        if (_infos != null)
-        {
-            args.UpdateInfo = new UpdateInfoEventArgs
+            Info infos = null;
+            try
             {
-                CurrentVersion = _infos.Version.SubstringBefore('-'),
-                ChangelogURL = _infos.ChangelogUrl,
-                DownloadURL = _infos.DownloadUrl,
-                Mandatory = new CustomMandatory
-                {
-                    CommitHash = _infos.Version.SubstringAfter('+')
-                }
-            };
-        }
+                var request = new FRestRequest("https://api.fmodel.app/v1/infos/Qa");
+                var response = await _client.ExecuteAsync(request).ConfigureAwait(false);
+                Log.Information("[{Method}] [{Status}({StatusCode})] '{Resource}'", request.Method, response.StatusDescription, (int) response.StatusCode, response.ResponseUri?.OriginalString);
+                if (response.IsSuccessful && !string.IsNullOrEmpty(response.Content))
+                    infos = JsonConvert.DeserializeObject<Info>(response.Content);
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Update check failed");
+            }
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => CheckForUpdateEvent(infos));
+        });
     }
 
-    private void CheckForUpdateEvent(UpdateInfoEventArgs args)
+    private void CheckForUpdateEvent(Info infos)
     {
-        if (args is { CurrentVersion: { } })
+        _infos = infos;
+        if (infos is { Version: not null })
         {
             UserSettings.Default.LastUpdateCheck = DateTime.Now;
 
-            var targetHash = ((CustomMandatory) args.Mandatory).CommitHash;
+            var currentVersionString = infos.Version.SubstringBefore('-');
+            var targetHash = infos.Version.SubstringAfter('+');
             _applicationView.IsUpdateAvailable = targetHash != Constants.APP_COMMIT_ID;
             if (targetHash == Constants.APP_COMMIT_ID)
             {
                 if (UserSettings.Default.ShowChangelog)
-                    ShowChangelog(args);
+                    ShowChangelog(infos.ChangelogUrl, currentVersionString);
 
                 return;
             }
 
-            var currentVersion = new System.Version(args.CurrentVersion);
-            UserSettings.Default.ShowChangelog = currentVersion != args.InstalledVersion;
+            var currentVersion = new System.Version(currentVersionString);
+            var installedVersion = System.Version.TryParse(Constants.APP_VERSION, out var v) ? v : new System.Version();
+            UserSettings.Default.ShowChangelog = currentVersion != installedVersion;
 
             const string message = "A new update is available!";
             Log.Warning("{message} Version {CurrentVersion} ({Hash})", message, currentVersion, targetHash);
-            Helper.OpenWindow<AdonisWindow>(message, () => new UpdateView { Title = message, ResizeMode = ResizeMode.NoResize }.ShowDialog());
+            Helper.OpenWindow<FWindow>(message, () => new UpdateView { Title = message, CanResize = false }.ShowDialog());
         }
         else
         {
@@ -155,21 +147,17 @@ public class FModelApiEndpoint : AbstractApiProvider
         }
     }
 
-    private void ShowChangelog(UpdateInfoEventArgs args)
+    private void ShowChangelog(string changelogUrl, string version)
     {
-        var request = new FRestRequest(args.ChangelogURL);
+        if (string.IsNullOrEmpty(changelogUrl)) return;
+
+        var request = new FRestRequest(changelogUrl);
         var response = _client.Execute(request);
         if (!response.IsSuccessful || string.IsNullOrEmpty(response.Content)) return;
 
-        _applicationView.CUE4Parse.TabControl.AddTab($"Release Notes: {args.CurrentVersion}");
+        _applicationView.CUE4Parse.TabControl.AddTab($"Release Notes: {version}");
         _applicationView.CUE4Parse.TabControl.SelectedTab.Highlighter = AvalonExtensions.HighlighterSelector("changelog");
         _applicationView.CUE4Parse.TabControl.SelectedTab.SetDocumentText(response.Content, false, false);
         UserSettings.Default.ShowChangelog = false;
     }
-}
-
-public class CustomMandatory : Mandatory
-{
-    public string CommitHash { get; set; }
-    public string ShortCommitHash => CommitHash[..7];
 }

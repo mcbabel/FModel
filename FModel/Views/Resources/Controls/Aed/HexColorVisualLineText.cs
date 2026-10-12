@@ -1,7 +1,7 @@
 using System;
-using System.Windows.Media;
-using System.Windows.Media.TextFormatting;
-using ICSharpCode.AvalonEdit.Rendering;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
+using AvaloniaEdit.Rendering;
 
 namespace FModel.Views.Resources.Controls;
 
@@ -25,7 +25,7 @@ public class HexColorVisualLineText : VisualLineText
         if (text.Count != 2) // ": "
             TextRunProperties.SetForegroundBrush(Brushes.PeachPuff);
 
-        return new TextCharacters(text.Text, text.Offset, text.Count, TextRunProperties);
+        return new TextCharacters(text.Text.AsMemory(text.Offset, text.Count), TextRunProperties);
     }
 
     protected override VisualLineText CreateInstance(int length)

@@ -1,11 +1,12 @@
+using FModel.Framework.Ui;
 using System;
+using System.Formats.Tar;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using CUE4Parse_Conversion.Textures.BC;
 using CUE4Parse.Compression;
 using CUE4Parse.Encryption.Aes;
@@ -19,9 +20,6 @@ using FModel.Settings;
 using FModel.ViewModels.Commands;
 using FModel.Views;
 using FModel.Views.Resources.Controls;
-using MessageBox = AdonisUI.Controls.MessageBox;
-using MessageBoxButton = AdonisUI.Controls.MessageBoxButton;
-using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
 using System.Runtime.Intrinsics.X86;
 
 namespace FModel.ViewModels;
@@ -36,6 +34,7 @@ public class ApplicationViewModel : ViewModel
         {
             SetProperty(ref _build, value);
             RaisePropertyChanged(nameof(TitleExtra));
+            RaisePropertyChanged(nameof(WindowTitle));
         }
     }
 
@@ -88,6 +87,7 @@ public class ApplicationViewModel : ViewModel
 
     public string InitialWindowTitle => $"FModel ({Constants.APP_SHORT_COMMIT_ID} - {Constants.APP_BUILD_DATE:MMM d, yyyy})";
     public string GameDisplayName => CUE4Parse.Provider.GameDisplayName ?? "Unknown";
+    public string WindowTitle => $"{InitialWindowTitle} - {GameDisplayName} {TitleExtra}";
     public string TitleExtra => $"({UserSettings.Default.CurrentDir.UeVersion}){(Build != EBuildKind.Release ? $" ({Build})" : "")}";
 
     public LoadingModesViewModel LoadingModes { get; }
@@ -202,38 +202,30 @@ public class ApplicationViewModel : ViewModel
 
     public void Restart()
     {
-        var path = Path.GetFullPath(Environment.GetCommandLineArgs()[0]);
-        if (path.EndsWith(".dll"))
+        var path = Environment.GetEnvironmentVariable("APPIMAGE") is { Length: > 0 } appImage && File.Exists(appImage)
+            ? appImage // running from an AppImage, restart the AppImage itself and not the mounted binary
+            : Environment.ProcessPath ?? Path.GetFullPath(Environment.GetCommandLineArgs()[0]);
+        var startInfo = new ProcessStartInfo
         {
-            new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments = $"\"{path}\"",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = false,
-                    CreateNoWindow = true
-                }
-            }.Start();
+            UseShellExecute = false,
+            RedirectStandardOutput = false,
+            RedirectStandardError = false,
+            CreateNoWindow = true
+        };
+
+        if (Path.GetFileNameWithoutExtension(path).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
+        {
+            // running through "dotnet FModel.dll"
+            startInfo.FileName = path;
+            startInfo.Arguments = $"\"{typeof(App).Assembly.Location}\"";
         }
-        else if (path.EndsWith(".exe"))
+        else
         {
-            new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = path,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = false,
-                    CreateNoWindow = true
-                }
-            }.Start();
+            startInfo.FileName = path;
         }
 
-        Application.Current.Shutdown();
+        new Process { StartInfo = startInfo }.Start();
+        AppWindows.Desktop?.Shutdown();
     }
 
     public async Task UpdateProvider(bool isLaunch)
@@ -257,24 +249,42 @@ public class ApplicationViewModel : ViewModel
             AesManager.SetAesKeys();
         });
         RaisePropertyChanged(nameof(GameDisplayName));
+        RaisePropertyChanged(nameof(WindowTitle));
     }
 
     public static async Task InitVgmStream()
     {
-        var vgmZipFilePath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", "vgmstream-win.zip");
-        var vgmFileInfo = new FileInfo(vgmZipFilePath);
+        var archiveName = OperatingSystem.IsWindows() ? "vgmstream-win.zip" : "vgmstream-linux-cli.tar.gz";
+        var vgmArchiveFilePath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", archiveName);
+        var vgmFileInfo = new FileInfo(vgmArchiveFilePath);
 
         if (!vgmFileInfo.Exists || vgmFileInfo.LastWriteTimeUtc < DateTime.UtcNow.AddMonths(-4))
         {
-            await ApplicationService.ApiEndpointView.DownloadFileAsync("https://github.com/vgmstream/vgmstream/releases/latest/download/vgmstream-win.zip", vgmZipFilePath);
+            await ApplicationService.ApiEndpointView.DownloadFileAsync($"https://github.com/vgmstream/vgmstream/releases/latest/download/{archiveName}", vgmArchiveFilePath);
             vgmFileInfo.Refresh();
 
-            if (vgmFileInfo.Length > 0)
+            if (vgmFileInfo.Exists && vgmFileInfo.Length > 0)
             {
-                var zipDir = Path.GetDirectoryName(vgmZipFilePath)!;
-                await using var zipFs = File.OpenRead(vgmZipFilePath);
-                await using var zip = await ZipArchive.CreateAsync(zipFs, ZipArchiveMode.Read, true, null);
-                await zip.ExtractToDirectoryAsync(zipDir, true);
+                var archiveDir = Path.GetDirectoryName(vgmArchiveFilePath)!;
+                if (OperatingSystem.IsWindows())
+                {
+                    await using var zipFs = File.OpenRead(vgmArchiveFilePath);
+                    await using var zip = await ZipArchive.CreateAsync(zipFs, ZipArchiveMode.Read, true, null);
+                    await zip.ExtractToDirectoryAsync(archiveDir, true);
+                }
+                else
+                {
+                    await using var archiveFs = File.OpenRead(vgmArchiveFilePath);
+                    await using var gzip = new GZipStream(archiveFs, CompressionMode.Decompress);
+                    await TarFile.ExtractToDirectoryAsync(gzip, archiveDir, true);
+
+                    var cliPath = Path.Combine(archiveDir, "vgmstream-cli");
+                    if (File.Exists(cliPath))
+                    {
+                        File.SetUnixFileMode(cliPath, File.GetUnixFileMode(cliPath) |
+                            UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute);
+                    }
+                }
             }
             else
             {
@@ -304,9 +314,9 @@ public class ApplicationViewModel : ViewModel
             return;
 
         var oodlePath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", OodleHelper.OODLE_NAME_OLD);
-        if (!File.Exists(oodlePath))
+        if (!OperatingSystem.IsWindows() || !File.Exists(oodlePath))
         {
-            oodlePath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", OodleHelper.OODLE_NAME_CURRENT);
+            oodlePath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", OodleHelper.OodleFileName);
         }
 
         await OodleHelper.InitializeAsync(oodlePath);
@@ -314,7 +324,7 @@ public class ApplicationViewModel : ViewModel
 
     public static async Task InitZlib()
     {
-        var zlibPath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", ZlibHelper.DLL_NAME);
+        var zlibPath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", ZlibHelper.DllName);
         var zlibFileInfo = new FileInfo(zlibPath);
 
         if (!zlibFileInfo.Exists || zlibFileInfo.LastWriteTimeUtc < DateTime.UtcNow.AddMonths(-4))
@@ -331,6 +341,10 @@ public class ApplicationViewModel : ViewModel
 
     public static async Task InitDetex()
     {
+        // Detex is a Windows-only native library, CUE4Parse uses managed decoders on other platforms
+        if (!OperatingSystem.IsWindows())
+            return;
+
         var detexPath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", DetexHelper.DLL_NAME);
         if (File.Exists(DetexHelper.DLL_NAME))
         {

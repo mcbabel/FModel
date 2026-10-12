@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,8 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using AdonisUI.Controls;
+using FModel.Framework.Ui;
 using CUE4Parse_Conversion.Exporters;
 using CUE4Parse_Conversion.Sounds;
 using CUE4Parse;
@@ -95,7 +95,6 @@ using SkiaSharp;
 using Svg.Skia;
 using UE4Config.Parsing;
 using static CUE4Parse.UE4.Versions.EGame;
-using Application = System.Windows.Application;
 using FGuid = CUE4Parse.UE4.Objects.Core.Misc.FGuid;
 
 namespace FModel.ViewModels;
@@ -131,17 +130,16 @@ public class CUE4ParseViewModel : ViewModel
         {
             if (_snooper != null) return _snooper;
 
-            return Application.Current.Dispatcher.Invoke(delegate
+            return Dispatcher.UIThread.Invoke(delegate
             {
-                var scale = ImGuiController.GetDpiScale();
                 var htz = Snooper.GetMaxRefreshFrequency();
                 return _snooper = new Snooper(
                     new GameWindowSettings { UpdateFrequency = htz },
                     new NativeWindowSettings
                     {
                         ClientSize = new OpenTK.Mathematics.Vector2i(
-                            Convert.ToInt32(SystemParameters.MaximizedPrimaryScreenWidth * .75 * scale),
-                            Convert.ToInt32(SystemParameters.MaximizedPrimaryScreenHeight * .85 * scale)),
+                            Convert.ToInt32(ScreenInfo.PrimaryWorkingAreaPixels.Width * .75),
+                            Convert.ToInt32(ScreenInfo.PrimaryWorkingAreaPixels.Height * .85)),
                         NumberOfSamples = Constants.SAMPLES_COUNT,
                         WindowBorder = WindowBorder.Resizable,
                         Flags = ContextFlags.ForwardCompatible,
@@ -203,16 +201,16 @@ public class CUE4ParseViewModel : ViewModel
                 {
                     GAME_StateOfDecay2 => new DefaultFileProvider(new DirectoryInfo(gameDirectory),
                     [
-                        new(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\StateOfDecay2\\Saved\\Paks"),
-                        new(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\StateOfDecay2\\Saved\\DisabledPaks")
+                        new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StateOfDecay2", "Saved", "Paks")),
+                        new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StateOfDecay2", "Saved", "DisabledPaks"))
                     ], SearchOption.AllDirectories, versionContainer, pathComparer),
                     GAME_eFootball => new DefaultFileProvider(new DirectoryInfo(gameDirectory),
                     [
-                        new(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\KONAMI\\eFootball\\ST\\Download")
+                        new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "KONAMI", "eFootball", "ST", "Download"))
                     ], SearchOption.AllDirectories, versionContainer, pathComparer),
                     GAME_DeadByDaylight => new DefaultFileProvider(new DirectoryInfo(gameDirectory),
                     [
-                        new(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\DeadByDaylight\\Saved\\PersistentDownloadDir\\DynamicContent")
+                        new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DeadByDaylight", "Saved", "PersistentDownloadDir", "DynamicContent"))
                     ], SearchOption.AllDirectories, versionContainer, pathComparer),
                     GAME_AshEchoes => new AEDefaultFileProvider(gameDirectory, SearchOption.AllDirectories, versionContainer, pathComparer),
                     GAME_BlackStigma => new DefaultFileProvider(gameDirectory, SearchOption.AllDirectories, versionContainer, StringComparer.Ordinal),
@@ -332,7 +330,7 @@ public class CUE4ParseViewModel : ViewModel
                     break;
                 case DefaultFileProvider:
                 {
-                    var ioStoreOnDemandPath = Path.Combine(UserSettings.Default.GameDirectory, "..\\..\\..\\Cloud\\IoStoreOnDemand.ini");
+                    var ioStoreOnDemandPath = Path.Combine(UserSettings.Default.GameDirectory, "..", "..", "..", "Cloud", "IoStoreOnDemand.ini");
                     if (File.Exists(ioStoreOnDemandPath))
                     {
                         using var s = new StreamReader(ioStoreOnDemandPath);
@@ -401,7 +399,7 @@ public class CUE4ParseViewModel : ViewModel
 
         AssetsFolder.Clear();
         SearchVm.SearchResults.Clear();
-        Helper.CloseWindow<AdonisWindow>("Search For Packages");
+        Helper.CloseWindow<FWindow>("Search For Packages");
         Provider.UnloadNonStreamedVfs();
         GC.Collect();
     }
@@ -550,7 +548,7 @@ public class CUE4ParseViewModel : ViewModel
             IoStoreOnDemand.FindPropertyInstructions("Endpoint", "TocPath", inst);
             if (inst.Count <= 0) return;
 
-            var ioStoreOnDemandPath = Path.Combine(UserSettings.Default.GameDirectory, "..\\..\\..\\Cloud", inst[0].Value.SubstringAfterLast("/").SubstringBefore("\""));
+            var ioStoreOnDemandPath = Path.Combine(UserSettings.Default.GameDirectory, "..", "..", "..", "Cloud", inst[0].Value.SubstringAfterLast("/").SubstringBefore("\""));
             if (!File.Exists(ioStoreOnDemandPath)) return;
 
             await Provider.RegisterVfsAsync(new IoChunkToc(ioStoreOnDemandPath, Provider.Versions));
@@ -1713,7 +1711,7 @@ public class CUE4ParseViewModel : ViewModel
     public void FindReferences(GameFile entry)
     {
         var refs = Provider.ScanForPackageRefs(entry);
-        Application.Current.Dispatcher.Invoke(delegate
+        Dispatcher.UIThread.Invoke(delegate
         {
             var refView = Helper.GetWindow<SearchView>("Search For Packages", () => new SearchView().Show());
             refView.ChangeCollection(ESearchViewTab.RefView, refs, entry);
@@ -1825,7 +1823,7 @@ public class CUE4ParseViewModel : ViewModel
         // since we are currently in a thread, the audio player's lifetime (memory-wise) will keep the current thread up and running until fmodel itself closes
         // the solution would be to kill the current thread at this line and then open the audio player without "Application.Current.Dispatcher.Invoke"
         // but the ThreadWorkerViewModel is an idiot and doesn't understand we want to kill the current thread inside the current thread and continue the code
-        Application.Current.Dispatcher.Invoke(delegate
+        Dispatcher.UIThread.Invoke(delegate
         {
             var audioPlayer = Helper.GetWindow<AudioPlayer>("Audio Player", () => new AudioPlayer().Show());
             audioPlayer.Load(data, savedAudioPath);

@@ -1,6 +1,5 @@
-using System.Windows;
-using System.Windows.Media;
-using ICSharpCode.AvalonEdit.Highlighting;
+using Avalonia.Media;
+using AvaloniaEdit.Highlighting;
 using static FModel.Extensions.AvalonExtensions;
 using static FModel.Extensions.Themes.JsonHighlightThemes;
 
@@ -27,8 +26,8 @@ public static class HighlightingThemeExtensions
         if (namedColor is null)
             return;
 
-        namedColor.Foreground = new SimpleHighlightingBrush((Color) ColorConverter.ConvertFromString(color.Foreground));
-        namedColor.FontWeight = color.Bold ? FontWeights.Bold : null;
-        namedColor.FontStyle = color.Italic ? FontStyles.Italic : null;
+        namedColor.Foreground = new SimpleHighlightingBrush(Color.Parse(color.Foreground));
+        namedColor.FontWeight = color.Bold ? FontWeight.Bold : null;
+        namedColor.FontStyle = color.Italic ? FontStyle.Italic : null;
     }
 }

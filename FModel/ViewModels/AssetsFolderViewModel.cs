@@ -1,11 +1,10 @@
+using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Data;
 using CUE4Parse.FileProvider.Objects;
 using CUE4Parse.UE4.Versions;
 using CUE4Parse.UE4.VirtualFileSystem;
@@ -96,8 +95,8 @@ public class TreeItem : ViewModel
     public AssetsListViewModel AssetsList { get; } = new();
     public RangeObservableCollection<TreeItem> Folders { get; } = [];
 
-    private ICollectionView? _filteredFoldersView;
-    public ICollectionView? FilteredFoldersView
+    private ListCollectionView? _filteredFoldersView;
+    public ListCollectionView? FilteredFoldersView
     {
         get
         {
@@ -351,7 +350,7 @@ public class AssetsFolderViewModel : ViewModel
         if (entries == null || entries.Count == 0)
             return;
 
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             var treeItems = new RangeObservableCollection<TreeItem>();
             treeItems.SetSuppressionState(true);

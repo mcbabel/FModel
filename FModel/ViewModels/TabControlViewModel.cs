@@ -1,10 +1,11 @@
+using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Windows;
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
+using FModel.Framework.Ui;
 using CUE4Parse_Conversion.Options;
 using CUE4Parse.FileProvider.Objects;
 using CUE4Parse.UE4.Assets.Exports.Texture;
@@ -16,8 +17,8 @@ using FModel.Services;
 using FModel.Settings;
 using FModel.ViewModels.Commands;
 using FModel.Views.Resources.Controls;
-using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Highlighting;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Highlighting;
 using Serilog;
 using SkiaSharp;
 
@@ -43,8 +44,8 @@ public class TabImage : ViewModel
         SetImage(img);
     }
 
-    private BitmapImage _image;
-    public BitmapImage Image
+    private Bitmap _image;
+    public Bitmap Image
     {
         get => _image;
         set
@@ -85,13 +86,7 @@ public class TabImage : ViewModel
         ExportName += "." + (NoAlpha ? "jpg" : "png");
         using var data = _bmp.Encode(NoAlpha ? SKEncodedImageFormat.Jpeg : SKEncodedImageFormat.Png, 100);
         using var stream = new MemoryStream(ImageBuffer = data.ToArray(), false);
-        var image = new BitmapImage();
-        image.BeginInit();
-        image.CacheOption = BitmapCacheOption.OnLoad;
-        image.StreamSource = stream;
-        image.EndInit();
-        image.Freeze();
-        Image = image;
+        Image = new Bitmap(stream);
     }
 
     private void SetImage(CTexture bitmap)
@@ -118,13 +113,7 @@ public class TabImage : ViewModel
         }
 
         using var stream = new MemoryStream(imageData);
-        var image = new BitmapImage();
-        image.BeginInit();
-        image.CacheOption = BitmapCacheOption.OnLoad;
-        image.StreamSource = stream;
-        image.EndInit();
-        image.Freeze();
-        Image = image;
+        Image = new Bitmap(stream);
     }
 
     private SKBitmap _bmp;
@@ -277,7 +266,7 @@ public class TabItem : ViewModel
         Entry = entry;
         TitleExtra = string.Empty;
         ScrollTrigger = null;
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             _images.Clear();
             SelectedImage = null;
@@ -327,7 +316,7 @@ public class TabItem : ViewModel
 
     public void AddImage(string name, bool rnn, CTexture img, bool save, bool updateUi)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             var t = new TabImage(name, rnn, img);
             if (save) SaveImage(t, updateUi);
@@ -342,7 +331,7 @@ public class TabItem : ViewModel
 
     public void AddImage(string name, bool rnn, SKBitmap img, bool save, bool updateUi)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             var t = new TabImage(name, rnn, img);
             if (save) SaveImage(t, updateUi);
@@ -360,7 +349,7 @@ public class TabItem : ViewModel
 
     public void SetDocumentText(string text, bool save, bool updateUi)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             Document ??= new TextDocument();
             Document.Text = text;
@@ -403,7 +392,7 @@ public class TabItem : ViewModel
 
         Directory.CreateDirectory(directory.SubstringBeforeLast('/'));
 
-        Application.Current.Dispatcher.Invoke(() => File.WriteAllText(directory, Document.Text));
+        Dispatcher.UIThread.Invoke(() => File.WriteAllText(directory, Document.Text));
         SaveCheck(directory, fileName, updateUi);
     }
     public void SaveDecompiled(bool updateUi)
@@ -414,7 +403,7 @@ public class TabItem : ViewModel
 
         Directory.CreateDirectory(directory.SubstringBeforeLast('/'));
 
-        Application.Current.Dispatcher.Invoke(() => File.WriteAllText(directory, Document.Text));
+        Dispatcher.UIThread.Invoke(() => File.WriteAllText(directory, Document.Text));
         SaveCheck(directory, fileName, updateUi);
     }
     private void SaveCheck(string path, string fileName, bool updateUi)
@@ -478,7 +467,7 @@ public class TabControlViewModel : ViewModel
         }
 
         if (!CanAddTabs) return;
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             _tabItems.Add(new TabItem(entry));
             SelectedTab = _tabItems.Last();
@@ -487,7 +476,7 @@ public class TabControlViewModel : ViewModel
 
     public void RemoveTab(TabItem tab = null)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             var tabCount = _tabItems.Count;
             var tabToDelete = tab ?? SelectedTab;
@@ -530,7 +519,7 @@ public class TabControlViewModel : ViewModel
 
     public void RemoveOtherTabs(TabItem tab)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             foreach (var t in _tabItems.Where(t => t != tab).ToList())
             {
@@ -541,7 +530,7 @@ public class TabControlViewModel : ViewModel
 
     public void RemoveAllTabs()
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             SelectedTab = null;
             _tabItems.Clear();

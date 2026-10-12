@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="NeutralBrush" Color="White" />
 
@@ -11,7 +11,7 @@
     <SolidColorBrush x:Key="UserDefinedEnumBrush" Color="DarkGoldenrod" />
     <SolidColorBrush x:Key="UserDefinedStructBrush" Color="Tan" />
 
-    <SolidColorBrush x:Key="GroomAssetBrush" Color="RosyBrown " />
+    <SolidColorBrush x:Key="GroomAssetBrush" Color="RosyBrown" />
     <SolidColorBrush x:Key="ChaosClothBrush" Color="LightSlateGray" />
     <SolidColorBrush x:Key="CustomizableObjectBrush" Color="DarkRed" />
     <SolidColorBrush x:Key="NaniteDisplacedMeshBrush" Color="ForestGreen" />

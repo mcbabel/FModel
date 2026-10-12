@@ -4,8 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Forms;
+using FModel.Framework.Ui;
 using FModel.Settings;
 using ImGuiNET;
 using ImGuizmoNET;
@@ -600,7 +599,7 @@ void main()
 
     public static float GetDpiScale()
     {
-        return Math.Max((float)(Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth), (float)(Screen.PrimaryScreen.Bounds.Height / SystemParameters.PrimaryScreenHeight));
+        return (float) ScreenInfo.PrimaryScaling;
     }
 
     public static ImGuiKey TranslateKey(Keys key)

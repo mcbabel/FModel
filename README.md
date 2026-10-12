@@ -15,6 +15,22 @@ FModel is actively maintained and developed by a dedicated community of contribu
 ### Installation:
 For installation, follow the instructions from [here](https://github.com/4sval/FModel/wiki/Installing-FModel)
 
+### Linux (native):
+This fork runs natively on Linux (X11 and Wayland via XWayland) — the UI was ported from WPF to [Avalonia](https://avaloniaui.net/), everything else (CUE4Parse, 3D viewer, audio player, exports) runs as on Windows.
+
+**Requirements:** a 64-bit Linux distribution, OpenGL 4.6 capable GPU drivers (3D viewer), `libopenal1` / `openal-soft` (audio player), and optionally `java` (Lua decompilation). Oodle, zlib-ng and vgmstream are downloaded automatically on first start, like on Windows.
+
+**Build:**
+```bash
+git clone --recursive <this repository>
+cd FModel
+./linux/build.sh          # needs the .NET 10 SDK, cmake and g++
+./FModel/bin/Publish/linux-x64/install.sh   # optional: installs to ~/.local with a desktop entry
+```
+Or run it directly from source: `dotnet run --project FModel -c Release`.
+
+Settings are stored in `~/.config/FModel`, the output folder defaults to `Output/` next to the executable (or `~/.local/share/FModel/Output` if that location is read-only). Games are auto-detected from Steam libraries and from Heroic / Legendary (Epic Games) installations.
+
 ### Sponsorship:
 <p>
   <a href="https://1password.com/">

@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
-using System.Windows.Data;
 using CSCore;
 using CSCore.CoreAudioAPI;
 using CSCore.DSP;
@@ -25,7 +25,7 @@ using FModel.Settings;
 using FModel.ViewModels.Commands;
 using FModel.Views.Resources.Controls;
 using FModel.Views.Resources.Controls.Aup;
-using Microsoft.Win32;
+using FModel.Framework.Ui;
 using Serilog;
 
 namespace FModel.ViewModels;
@@ -202,8 +202,8 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
     public bool IsPaused => PlayedFile.PlaybackState == PlaybackState.Paused;
 
     private readonly ObservableCollection<AudioFile> _audioFiles;
-    public ICollectionView AudioFilesView { get; }
-    public ICollectionView AudioDevicesView { get; }
+    public ListCollectionView AudioFilesView { get; }
+    public ListCollectionView AudioDevicesView { get; }
 
     public AudioPlayerViewModel()
     {
@@ -218,7 +218,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
 
     public void Load()
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             if (!ConvertIfNeeded())
                 return;
@@ -241,7 +241,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
 
     public void Unload()
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             _waveSource = null;
 
@@ -255,7 +255,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
 
     public void AddToPlaylist(byte[] data, string filePath)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             _audioFiles.Add(new AudioFile(_audioFiles.Count, data, filePath));
             if (_audioFiles.Count > 1) return;
@@ -268,7 +268,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
 
     public void AddToPlaylist(string filePath)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             _audioFiles.Add(new AudioFile(_audioFiles.Count, new FileInfo(filePath)));
             if (_audioFiles.Count > 1) return;
@@ -282,7 +282,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
     public void Remove()
     {
         if (_audioFiles.Count < 1) return;
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             var removedPlaying = false;
             if (PlayedFile.Id == SelectedAudioFile.Id)
@@ -314,7 +314,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
     public void Replace(AudioFile newAudio)
     {
         if (_audioFiles.Count < 1) return;
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             _audioFiles.Insert(SelectedAudioFile.Id, newAudio);
             _audioFiles.RemoveAt(SelectedAudioFile.Id + 1);
@@ -325,7 +325,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
     public void SavePlaylist()
     {
         if (_audioFiles.Count < 1) return;
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             foreach (var a in _audioFiles)
             {
@@ -500,7 +500,7 @@ public class AudioPlayerViewModel : ViewModel, ISource, IDisposable
 
     public void Dispose()
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             if (_waveSource != null)
             {

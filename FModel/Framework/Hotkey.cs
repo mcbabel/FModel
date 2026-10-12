@@ -1,5 +1,7 @@
 using System.Text;
-using System.Windows.Input;
+using Avalonia.Input;
+using FModel.Framework.Ui;
+using Keyboard = FModel.Framework.Ui.Keyboard;
 
 namespace FModel.Framework;
 

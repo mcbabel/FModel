@@ -1,0 +1,720 @@
+<FWindow x:Class="FModel.Views.SettingsView"
+         xmlns="https://github.com/avaloniaui"
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         xmlns:local="using:FModel"
+         xmlns:settings="using:FModel.Settings"
+         xmlns:controls="using:FModel.Views.Resources.Controls"
+         xmlns:converters="using:FModel.Views.Resources.Converters"
+         xmlns:avalonEdit="https://github.com/avaloniaui/avaloniaedit"
+         Title="Settings"
+         WindowStartupLocation="CenterScreen" CanResize="False" SizeToContent="Height"
+         DragDrop.AllowDrop="True">
+    <FWindow.Resources>
+        <ResourceDictionary>
+            <!-- Templates are picked by the Tag of the selected TreeViewItem (see code-behind, replaces OnTagDataTemplateSelector).
+                 The built content inherits the window DataContext (ApplicationViewModel). -->
+            <DataTemplate x:Key="GeneralTemplate">
+                <Grid LayerExtension.Layer="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Output Directory *" VerticalAlignment="Center" Margin="0 0 0 5" ToolTip.Tip="Directory where log files, backups and other do-not-delete files will be put in." />
+                    <TextBox x:Name="ImJackedBro" Grid.Row="0" Grid.Column="2" IsReadOnly="True" Text="{Binding OutputDirectory, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" Margin="0 0 0 5" />
+                    <Button Grid.Row="0" Grid.Column="4" Content="..." HorizontalAlignment="Right" Click="OnBrowseOutput" Margin="0 0 0 5" />
+
+                    <CheckBox Grid.Row="0" Grid.Column="6" Margin="5 0 0 5" ToolTip.Tip="Customize the directory of more output folders"
+                              IsChecked="{Binding SettingsView.UseCustomOutputFolders, Mode=TwoWay}"/>
+                    <!-- the 3rd column follows the width of ImJackedBro (set in code-behind, WPF bound ActualWidth) -->
+                    <Grid x:Name="CustomOutputFoldersGrid" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="7" HorizontalAlignment="Right"
+                          IsVisible="{Binding SettingsView.UseCustomOutputFolders}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Export Raw Data Directory *" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="11" FontStyle="Italic" Margin="0 0 0 5" />
+                        <TextBox Grid.Row="0" Grid.Column="2" IsReadOnly="True" Text="{Binding RawDataDirectory, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" HorizontalAlignment="Stretch" Margin="0 0 0 5" />
+                        <Button Grid.Row="0" Grid.Column="4" Content="..." HorizontalAlignment="Right" Click="OnBrowseRawData" Margin="0 0 0 5" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Save Properties Directory *" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="11" FontStyle="Italic" Margin="0 0 0 5" />
+                        <TextBox Grid.Row="1" Grid.Column="2" IsReadOnly="True" Text="{Binding PropertiesDirectory, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" HorizontalAlignment="Stretch" Margin="0 0 0 5" />
+                        <Button Grid.Row="1" Grid.Column="4" Content="..." HorizontalAlignment="Right" Click="OnBrowseProperties" Margin="0 0 0 5" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Save Texture Directory *" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="11" FontStyle="Italic" Margin="0 0 0 5" />
+                        <TextBox Grid.Row="2" Grid.Column="2" IsReadOnly="True" Text="{Binding TextureDirectory, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" HorizontalAlignment="Stretch" Margin="0 0 0 5" />
+                        <Button Grid.Row="2" Grid.Column="4" Content="..." HorizontalAlignment="Right" Click="OnBrowseTexture" Margin="0 0 0 5" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Save Audio Directory *" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="11" FontStyle="Italic" Margin="0 0 0 5" />
+                        <TextBox Grid.Row="3" Grid.Column="2" IsReadOnly="True" Text="{Binding AudioDirectory, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" HorizontalAlignment="Stretch" Margin="0 0 0 5" />
+                        <Button Grid.Row="3" Grid.Column="4" Content="..." HorizontalAlignment="Right" Click="OnBrowseAudio" Margin="0 0 0 5" />
+                    </Grid>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Discord Rich Presence" VerticalAlignment="Center" />
+                    <ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="5" HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding SettingsView.DiscordRpcs}" SelectedItem="{Binding SettingsView.SelectedDiscordRpc, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={x:Static converters:EnumToStringConverter.Instance}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="7" Classes="CustomSeparator" Tag="GAME" />
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Archive Directory *" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <TextBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3" IsReadOnly="True" Text="{Binding GameDirectory, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" Margin="0 0 0 5" />
+                    <Button Grid.Row="4" Grid.Column="6" Content="..." HorizontalAlignment="Right" Click="OnBrowseDirectories" Margin="0 0 0 5" />
+
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="UE Versions *" VerticalAlignment="Center" Margin="0 0 0 5" ToolTip.Tip="Override the UE version to use when parsing packages" />
+                    <controls:FilterableComboBox Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="5" HorizontalAlignment="Stretch"
+                                                 SelectedItem="{Binding SettingsView.SelectedUeGame, Mode=TwoWay}"
+                                                 ItemsSource="{Binding SettingsView.UeGames}"
+                                                 Classes="UComboBox"
+                                                 Margin="0 0 0 5">
+                        <controls:FilterableComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={x:Static converters:EnumToStringConverter.Instance}}" />
+                            </DataTemplate>
+                        </controls:FilterableComboBox.ItemTemplate>
+                    </controls:FilterableComboBox>
+
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Compressed Audio" VerticalAlignment="Center" Margin="0 0 0 5" ToolTip.Tip="What to do when encountering a compressed audio file" />
+                    <ComboBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="5" HorizontalAlignment="Stretch" Margin="0 0 0 5"
+                              ItemsSource="{Binding SettingsView.CompressedAudios}" SelectedItem="{Binding SettingsView.SelectedCompressedAudio, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={x:Static converters:EnumToStringConverter.Instance}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Packages Language" VerticalAlignment="Center" Margin="0 0 0 5" ToolTip.Tip="Language used and shown when parsing packages" />
+                    <ComboBox Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="5" HorizontalAlignment="Stretch" Margin="0 0 0 5"
+                              ItemsSource="{Binding SettingsView.AssetLanguages}" SelectedItem="{Binding SettingsView.SelectedAssetLanguage, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={x:Static converters:EnumToStringConverter.Instance}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Keep Directory Structure" VerticalAlignment="Center" Margin="0 5 0 10" ToolTip.Tip="Auto-save packages following their game directory" />
+                    <CheckBox Grid.Row="8" Grid.Column="2" Classes="ToggleSwitch" Margin="0 5 0 10"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding KeepDirectoryStructure, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Local Mapping File (drag &amp; drop)" VerticalAlignment="Center" Margin="0 5 0 0" />
+                    <CheckBox Grid.Row="9" Grid.Column="2" Classes="ToggleSwitch" Margin="0 5 0 0"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding SettingsView.MappingEndpoint.Overwrite, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="10" Grid.Column="0" Text="Mapping File Path" VerticalAlignment="Center" Margin="0 10 0 0"
+                               IsVisible="{Binding SettingsView.MappingEndpoint.Overwrite}" />
+                    <TextBox Grid.Row="10" Grid.Column="2" Grid.ColumnSpan="3" Margin="0 10 0 0" Text="{Binding SettingsView.MappingEndpoint.FilePath, Mode=TwoWay}"
+                             IsVisible="{Binding SettingsView.MappingEndpoint.Overwrite}" />
+                    <Button Grid.Row="10" Grid.Column="6" Content="..." HorizontalAlignment="Right" Click="OnBrowseMappings" Margin="0 10 0 0"
+                            IsVisible="{Binding SettingsView.MappingEndpoint.Overwrite}" />
+
+                    <Separator Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="7" Classes="CustomSeparator" Tag="ADVANCED" />
+
+                    <TextBlock Grid.Row="12" Grid.Column="0" Text="Versioning Configuration *" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <Grid Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="5" Margin="0 0 0 5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" Content="Custom Versions" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OpenCustomVersions" />
+                        <Button Grid.Column="2" Content="Options" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OpenOptions" />
+                        <Button Grid.Column="4" Content="MapStructTypes" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OpenMapStructTypes" />
+                    </Grid>
+
+                    <TextBlock Grid.Row="13" Grid.Column="0" Text="AES Reload at Launch" VerticalAlignment="Center" Margin="0 0 0 5"
+                               IsVisible="{Binding SettingsView.AesEndpoint.IsValid}" />
+                    <ComboBox Grid.Row="13" Grid.Column="2" Grid.ColumnSpan="5" HorizontalAlignment="Stretch" Margin="0 0 0 5"
+                              ItemsSource="{Binding SettingsView.AesReloads}" SelectedItem="{Binding SettingsView.SelectedAesReload, Mode=TwoWay}"
+                              IsVisible="{Binding SettingsView.AesEndpoint.IsValid}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={x:Static converters:EnumToStringConverter.Instance}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="14" Grid.Column="0" Text="Endpoint Configuration" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <Grid Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="5" Margin="0 0 0 5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" Content="AES" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OpenAesEndpoint" />
+                        <Button Grid.Column="2" Content="Mapping" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OpenMappingEndpoint" />
+                    </Grid>
+
+                    <TextBlock Grid.Row="15" Grid.Column="0" Text="Serialize Script Bytecode" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Grid.Row="15" Grid.Column="2" Classes="ToggleSwitch" Margin="0 5 0 10"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding ReadScriptData, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="16" Grid.Column="0" Text="Serialize Inlined Shader Maps" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Grid.Row="16" Grid.Column="2" Classes="ToggleSwitch" Margin="0 5 0 10"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding ReadShaderMaps, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="17" Grid.Column="0" Text="Decompile Blueprint to Pseudo C++" VerticalAlignment="Center" Margin="0 0 0 5" ToolTip.Tip="Adds a right click option to decompile UClass packages into a pseudo C++ friendly format" />
+                    <CheckBox Grid.Row="17" Grid.Column="2" Classes="ToggleSwitch" Margin="0 5 0 10"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding ShowDecompileOption, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="18" Grid.Column="0" Text="Decompile Lua" VerticalAlignment="Center" Margin="0 0 0 5" ToolTip.Tip="Decompile/Disassemble compiled lua files with an unluac." />
+                    <CheckBox Grid.Row="18" Grid.Column="2" Classes="ToggleSwitch" Margin="0 5 0 10"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding DecompileLua, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}"
+                              IsCheckedChanged="OnDecompileLuaChanged" />
+
+                    <TextBlock Grid.Row="19" Grid.Column="0" Text="Convert Audio During Export (.wav)" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Grid.Row="19" Grid.Column="2" Classes="ToggleSwitch" Margin="0 5 0 10"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding ConvertAudioOnBulkExport, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="21" Grid.Column="0" Text="CRIWARE Decryption Key" VerticalAlignment="Center" Margin="0 0 0 10" />
+                    <TextBox x:Name="CriwareKeyBox"
+                             Grid.Row="21" Grid.Column="2" Grid.ColumnSpan="5"
+                             Margin="0 5 0 10"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             MaxLength="20"
+                             ToolTip.Tip="Enter decryption key in numeric or hexadecimal format (valid key is up to 20 digits or 8 bytes long)"
+                             TextAlignment="Right"
+                             TextChanged="CriwareKeyBox_TextChanged"
+                             Loaded="CriwareKeyBox_Loaded" />
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="CreatorTemplate">
+                <Grid LayerExtension.Layer="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Image Grid.Column="0" Grid.ColumnSpan="3"
+                           Classes.default="{Binding SettingsView.SelectedCosmeticStyle, Converter={x:Static converters:EnumEqualsConverter.Instance}, ConverterParameter=Default}"
+                           Classes.nobackground="{Binding SettingsView.SelectedCosmeticStyle, Converter={x:Static converters:EnumEqualsConverter.Instance}, ConverterParameter=NoBackground}"
+                           Classes.notext="{Binding SettingsView.SelectedCosmeticStyle, Converter={x:Static converters:EnumEqualsConverter.Instance}, ConverterParameter=NoText}"
+                           Classes.flat="{Binding SettingsView.SelectedCosmeticStyle, Converter={x:Static converters:EnumEqualsConverter.Instance}, ConverterParameter=Flat}"
+                           Classes.cataba="{Binding SettingsView.SelectedCosmeticStyle, Converter={x:Static converters:EnumEqualsConverter.Instance}, ConverterParameter=Cataba}">
+                        <Image.Styles>
+                            <Style Selector="Image">
+                                <Setter Property="Source" Value="/Resources/T_Placeholder_Item_Image.png" />
+                            </Style>
+                            <Style Selector="Image.default">
+                                <Setter Property="Source" Value="/Resources/Default.png" />
+                            </Style>
+                            <Style Selector="Image.nobackground">
+                                <Setter Property="Source" Value="/Resources/NoBackground.png" />
+                            </Style>
+                            <Style Selector="Image.notext">
+                                <Setter Property="Source" Value="/Resources/NoText.png" />
+                            </Style>
+                            <Style Selector="Image.flat">
+                                <Setter Property="Source" Value="/Resources/Flat.png" />
+                            </Style>
+                            <Style Selector="Image.cataba">
+                                <Setter Property="Source" Value="/Resources/Cataba.png" />
+                            </Style>
+                        </Image.Styles>
+                    </Image>
+                    <Grid Grid.Column="3" Grid.ColumnSpan="5" Margin="10 0 0 0" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Cosmetic Style" VerticalAlignment="Center" Margin="0 0 0 5" />
+                        <ComboBox Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Margin="0 0 0 5"
+                                  ItemsSource="{Binding SettingsView.CosmeticStyles}" SelectedItem="{Binding SettingsView.SelectedCosmeticStyle, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={x:Static converters:EnumToStringConverter.Instance}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Cosmetic Shop Icon" VerticalAlignment="Center" Margin="0 0 0 5" />
+                        <CheckBox Grid.Row="1" Grid.Column="2" Classes="ToggleSwitch" Margin="0 5 0 10"
+                                  Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                                  IsChecked="{Binding CosmeticDisplayAsset, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    </Grid>
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="ExportTemplate">
+                <controls:ExportOptionsControl LayerExtension.Layer="2" DataContext="{Binding SettingsView.Options}" />
+            </DataTemplate>
+            <DataTemplate x:Key="PreviewTemplate">
+                <Grid LayerExtension.Layer="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Preview Max Texture Size" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <Slider Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3" TickPlacement="None" Minimum="4" Maximum="4096" Ticks="4,8,16,32,64,128,256,512,1024,2048,4096"
+                            IsSnapToTickEnabled="True" Margin="0 5 0 5"
+                            ToolTip.Tip="{Binding $self.Value}" ToolTip.Placement="BottomEdgeAlignedRight"
+                            Value="{Binding PreviewMaxTextureSize, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Preview Static Meshes" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Classes="ToggleSwitch" Margin="0 5 0 5"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding PreviewStaticMeshes, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Preview Skeletal Meshes" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Classes="ToggleSwitch" Margin="0 5 0 5"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding PreviewSkeletalMeshes, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Preview Animations" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3" Classes="ToggleSwitch" Margin="0 5 0 5"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding PreviewAnimations, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Preview Materials" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3" Classes="ToggleSwitch" Margin="0 5 0 5"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding PreviewMaterials, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Preview Worlds (.umap)" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="3" Classes="ToggleSwitch" Margin="0 5 0 5"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding PreviewWorlds, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Handle Skeletons as Empty Meshes" VerticalAlignment="Center" />
+                    <CheckBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="3" Classes="ToggleSwitch" Margin="0 5 0 0"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding SaveSkeletonAsMesh, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="KeybindingsTemplate">
+                <Grid LayerExtension.Layer="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- <TextBlock Grid.Row="0" Grid.Column="0" Text="Left Switch on Directory Tab" VerticalAlignment="Center" Margin="0 0 0 5" /> -->
+                    <!-- <controls:HotkeyTextBox Grid.Row="0" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5" -->
+                    <!--                         HotKey="{Binding DirLeftTab, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" /> -->
+                    <!-- <TextBlock Grid.Row="1" Grid.Column="0" Text="Right Switch on Directory Tab" VerticalAlignment="Center" /> -->
+                    <!-- <controls:HotkeyTextBox Grid.Row="1" Grid.Column="2" Classes="TextBoxDefaultStyle" -->
+                    <!--                         HotKey="{Binding DirRightTab, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" /> -->
+                    <!-- -->
+                    <!-- <Separator Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Classes="CustomSeparator" /> -->
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Switch Asset Explorer" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="3" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding SwitchAssetExplorer, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <!-- <TextBlock Grid.Row="4" Grid.Column="0" Text="Left Switch on Asset Tab" VerticalAlignment="Center" Margin="0 0 0 5" /> -->
+                    <!-- <controls:HotkeyTextBox Grid.Row="4" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5" -->
+                    <!--                         HotKey="{Binding AssetLeftTab, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" /> -->
+                    <!-- <TextBlock Grid.Row="5" Grid.Column="0" Text="Right Switch on Asset Tab" VerticalAlignment="Center" Margin="0 0 0 5" /> -->
+                    <!-- <controls:HotkeyTextBox Grid.Row="5" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5" -->
+                    <!--                         HotKey="{Binding AssetRightTab, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" /> -->
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Add Asset Tab" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="6" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding AssetAddTab, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Remove Selected Asset Tab" VerticalAlignment="Center" />
+                    <controls:HotkeyTextBox Grid.Row="7" Grid.Column="2" Classes="TextBoxDefaultStyle"
+                                            HotKey="{Binding AssetRemoveTab, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <Separator Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Classes="CustomSeparator" />
+
+                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Export Raw Data" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="9" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding ExportData, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="10" Grid.Column="0" Text="Export Properties" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="10" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding ExportProperties, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="11" Grid.Column="0" Text="Export Textures" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="11" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding ExportTextures, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="12" Grid.Column="0" Text="Export Models" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="12" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding ExportModels, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="13" Grid.Column="0" Text="Export Worlds" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="13" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding ExportWorlds, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="14" Grid.Column="0" Text="Export Animations" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="14" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding ExportAnimations, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="15" Grid.Column="0" Text="Export Audio" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="15" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding ExportAudio, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="16" Grid.Column="0" Text="Export Decompiled Blueprints" VerticalAlignment="Center" />
+                    <controls:HotkeyTextBox Grid.Row="16" Grid.Column="2" Classes="TextBoxDefaultStyle"
+                                            HotKey="{Binding ExportCode, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+
+                    <Separator Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="3" Classes="CustomSeparator" />
+
+                    <TextBlock Grid.Row="18" Grid.Column="0" Text="Add Audio File" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="18" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding AddAudio, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="19" Grid.Column="0" Text="Play / Pause Current Audio" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="19" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding PlayPauseAudio, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="20" Grid.Column="0" Text="Previous Audio" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="20" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding PreviousAudio, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="21" Grid.Column="0" Text="Next Audio" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="21" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding NextAudio, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                    <TextBlock Grid.Row="22" Grid.Column="0" Text="Remove Selected Audio" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <controls:HotkeyTextBox Grid.Row="22" Grid.Column="2" Classes="TextBoxDefaultStyle" Margin="0 0 0 5"
+                                            HotKey="{Binding RemoveAudio, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}" />
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="UnluacTemplate">
+                <Grid LayerExtension.Layer="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="5" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Mode" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="10" HorizontalAlignment="Stretch"
+                              SelectedValueBinding="{Binding Tag}"
+                              SelectedValue="{Binding UnluacMode, Source={x:Static settings:UserSettings.Default}, Mode=TwoWay}"
+                              Margin="0 0 0 5">
+                        <ComboBoxItem Content="Decompile" Tag="{x:Static local:EUnluacMode.Decompile}" />
+                        <ComboBoxItem Content="Disassemble" Tag="{x:Static local:EUnluacMode.Disassemble}" />
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Raw string" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Tag="RawString"
+                              Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3"
+                              Classes="ToggleSwitch" Margin="0 5 0 5"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding UnluacFlags, Source={x:Static settings:UserSettings.Default}, Converter={x:Static converters:EnumFlagToBoolConverter.Instance}, ConverterParameter=RawString, Mode=OneWay}"
+                              IsCheckedChanged="OnUnluacFlagChanged"
+                              ToolTip.Tip="Copy string bytes directly to output" />
+
+                    <TextBlock Grid.Row="1" Grid.Column="4" Text="No debug" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Tag="NoDebug"
+                              Grid.Row="1" Grid.Column="6" Grid.ColumnSpan="3"
+                              Classes="ToggleSwitch" Margin="0 5 0 5"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding UnluacFlags, Source={x:Static settings:UserSettings.Default}, Converter={x:Static converters:EnumFlagToBoolConverter.Instance}, ConverterParameter=NoDebug, Mode=OneWay}"
+                              IsCheckedChanged="OnUnluacFlagChanged"
+                              ToolTip.Tip="Ignore debugging information in input file" />
+
+                    <TextBlock Grid.Row="1" Grid.Column="8" Text="Luaj" VerticalAlignment="Center" Margin="0 0 0 5" />
+                    <CheckBox Tag="Luaj"
+                              Grid.Row="1" Grid.Column="10" Grid.ColumnSpan="3"
+                              Classes="ToggleSwitch" Margin="0 5 0 5"
+                              Content="{Binding $self.IsChecked, Converter={x:Static converters:BoolToToggleConverter.Instance}}"
+                              IsChecked="{Binding UnluacFlags, Source={x:Static settings:UserSettings.Default}, Converter={x:Static converters:EnumFlagToBoolConverter.Instance}, ConverterParameter=Luaj, Mode=OneWay}"
+                              IsCheckedChanged="OnUnluacFlagChanged"
+                              ToolTip.Tip="Emulate Luaj's permissive parser" />
+
+                    <Separator Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="11" Tag="OPCODE MAPPING" Classes="CustomSeparator" />
+
+                    <TextBox Grid.Row="3" Grid.ColumnSpan="12"
+                             Margin="0 0 0 5" Height="300"
+                             FontSize="14" Padding="8"
+                             HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                             VerticalContentAlignment="Top" TextAlignment="Left"
+                             Text="{Binding SettingsView.UnluacOpcodeMap, Mode=TwoWay}"
+                             AcceptsReturn="True"
+                             AcceptsTab="True"
+                             TextWrapping="NoWrap"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             ToolTip.Tip="Paste a custom opcode map." />
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="ThemesTemplate">
+                <Grid LayerExtension.Layer="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="10" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="JSON Highlight Theme" VerticalAlignment="Center" />
+                    <ComboBox Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Margin="0 0 0 5"
+                              ItemsSource="{Binding SettingsView.JsonHighlightThemes}"
+                              SelectedItem="{Binding SettingsView.SelectedJsonHighlightTheme, Mode=TwoWay}"
+                              SelectionChanged="OnJsonHighlightThemeChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={x:Static converters:EnumToStringConverter.Instance}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Padding="1"
+                            Background="{DynamicResource Layer1BackgroundBrush}">
+                        <avalonEdit:TextEditor x:Name="JsonThemePreviewEditor"
+                                               Height="520"
+                                               FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, Liberation Mono, monospace"
+                                               FontSize="13"
+                                               Padding="12"
+                                               ShowLineNumbers="True"
+                                               IsReadOnly="True"
+                                               WordWrap="False"
+                                               HorizontalScrollBarVisibility="Auto"
+                                               VerticalScrollBarVisibility="Auto"
+                                               Background="{DynamicResource Layer3BackgroundBrush}"
+                                               Foreground="#DCDDE4"
+                                               Loaded="OnJsonThemePreviewLoaded" />
+                    </Border>
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
+    </FWindow.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <TreeView Grid.Row="0" Grid.Column="0" x:Name="SettingsTree" SelectionMode="Single" SelectionChanged="OnSelectedItemChanged"
+                  Background="{DynamicResource Layer3BackgroundBrush}">
+            <TreeViewItem Tag="GeneralTemplate">
+                <TreeViewItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="16" Height="16" HorizontalAlignment="Center" Margin="-20 4 7.5 4">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="M17,11c0.34,0,0.67,0.04,1,0.09V7.58c0-0.8-0.47-1.52-1.2-1.83l-5.5-2.4c-0.51-0.22-1.09-0.22-1.6,0l-5.5,2.4 C3.47,6.07,3,6.79,3,7.58v3.6c0,4.54,3.2,8.79,7.5,9.82c0.55-0.13,1.08-0.32,1.6-0.55C11.41,19.47,11,18.28,11,17 C11,13.69,13.69,11,17,11z" />
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="M17,13c-2.21,0-4,1.79-4,4c0,2.21,1.79,4,4,4s4-1.79,4-4C21,14.79,19.21,13,17,13z M17,14.38c0.62,0,1.12,0.51,1.12,1.12 s-0.51,1.12-1.12,1.12s-1.12-0.51-1.12-1.12S16.38,14.38,17,14.38z M17,19.75c-0.93,0-1.74-0.46-2.24-1.17 c0.05-0.72,1.51-1.08,2.24-1.08s2.19,0.36,2.24,1.08C18.74,19.29,17.93,19.75,17,19.75z" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="General" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TreeViewItem.Header>
+            </TreeViewItem>
+            <TreeViewItem Tag="CreatorTemplate"
+                          IsVisible="{Binding CUE4Parse.Provider.ProjectName, Converter={x:Static converters:ProjectNameToVisibilityConverter.Instance}, ConverterParameter='FortniteGame'}">
+                <TreeViewItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="16" Height="16" HorizontalAlignment="Center" Margin="-20 4 7.5 4">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="{StaticResource CreatorIcon}" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Creator" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TreeViewItem.Header>
+            </TreeViewItem>
+            <TreeViewItem Tag="ExportTemplate">
+                <TreeViewItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="16" Height="16" HorizontalAlignment="Center" Margin="-20 4 7.5 4">
+                            <Canvas Width="24" Height="24">
+                                <Path StrokeThickness="2" Stroke="{DynamicResource AccentForegroundBrush}" Data="M14 3v4a1 1 0 0 0 1 1h4" />
+                                <Path StrokeThickness="2" Stroke="{DynamicResource AccentForegroundBrush}" Data="M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Export" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TreeViewItem.Header>
+            </TreeViewItem>
+            <TreeViewItem Tag="PreviewTemplate">
+                <TreeViewItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="16" Height="16" HorizontalAlignment="Center" Margin="-20 4 7.5 4">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="M2,6c0.55,0,1-0.45,1-1V4c0-0.55,0.45-1,1-1h1c0.55,0,1-0.45,1-1S5.55,1,5,1H4C2.34,1,1,2.34,1,4v1C1,5.55,1.45,6,2,6z" />
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="M5,21H4c-0.55,0-1-0.45-1-1v-1c0-0.55-0.45-1-1-1c-0.55,0-1,0.45-1,1v1c0,1.66,1.34,3,3,3h1c0.55,0,1-0.45,1-1 S5.55,21,5,21z" />
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="M20,1h-1c-0.55,0-1,0.45-1,1s0.45,1,1,1h1c0.55,0,1,0.45,1,1v1c0,0.55,0.45,1,1,1c0.55,0,1-0.45,1-1V4 C23,2.34,21.66,1,20,1z" />
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="M22,18c-0.55,0-1,0.45-1,1v1c0,0.55-0.45,1-1,1h-1c-0.55,0-1,0.45-1,1s0.45,1,1,1h1c1.66,0,3-1.34,3-3v-1 C23,18.45,22.55,18,22,18z" />
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="M19,14.87V9.13c0-0.72-0.38-1.38-1-1.73l-5-2.88c-0.31-0.18-0.65-0.27-1-0.27s-0.69,0.09-1,0.27L6,7.39 C5.38,7.75,5,8.41,5,9.13v5.74c0,0.72,0.38,1.38,1,1.73l5,2.88c0.31,0.18,0.65,0.27,1,0.27s0.69-0.09,1-0.27l5-2.88 C18.62,16.25,19,15.59,19,14.87z M11,17.17l-4-2.3v-4.63l4,2.33V17.17z M12,10.84L8.04,8.53L12,6.25l3.96,2.28L12,10.84z M17,14.87l-4,2.3v-4.6l4-2.33V14.87z" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Preview" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TreeViewItem.Header>
+            </TreeViewItem>
+            <TreeViewItem Tag="KeybindingsTemplate">
+                <TreeViewItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="16" Height="16" HorizontalAlignment="Center" Margin="-20 4 7.5 4">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="{StaticResource KeyboardIcon}" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Hotkeys" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TreeViewItem.Header>
+            </TreeViewItem>
+            <TreeViewItem Tag="UnluacTemplate"
+                          IsVisible="{Binding DecompileLua, Source={x:Static settings:UserSettings.Default}}">
+                <TreeViewItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="16" Height="16" HorizontalAlignment="Center" Margin="-20 4 7.5 4">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="{StaticResource LuaIcon}" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Unluac" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TreeViewItem.Header>
+            </TreeViewItem>
+            <TreeViewItem Tag="ThemesTemplate">
+                <TreeViewItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="16" Height="16" HorizontalAlignment="Center" Margin="-20 4 7.5 4">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="{DynamicResource AccentForegroundBrush}" Data="{StaticResource ThemeIcon}" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Themes" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TreeViewItem.Header>
+            </TreeViewItem>
+        </TreeView>
+
+        <Grid Grid.Row="0" Grid.Column="1" Margin="8 4" HorizontalAlignment="Stretch">
+            <ContentControl x:Name="SettingsContent" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+        </Grid>
+
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" LayerExtension.IncreaseLayer="True"
+                Background="{DynamicResource Layer1BackgroundBrush}">
+            <Grid Margin="30, 12, 6, 12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="* May Require a restart for changes to take effect"
+                           HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11" Margin="0 0 10 0"
+                           Foreground="{DynamicResource Layer1InteractionForegroundBrush}" />
+                <Button Grid.Column="1" MinWidth="78" Margin="0 0 12 0" IsDefault="True" IsCancel="False"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom" HorizontalContentAlignment="Center" Content="OK" Click="OnClick" />
+            </Grid>
+        </Border>
+        <controls:DropOverlay Grid.RowSpan="99"
+                              Grid.ColumnSpan="99"
+                              ZIndex="1000" />
+    </Grid>
+</FWindow>

@@ -1,6 +1,6 @@
+using FModel.Framework.Ui;
 using System;
 using System.IO;
-using System.Windows;
 using CUE4Parse.UE4.Versions;
 using FModel.Settings;
 using FModel.ViewModels;
@@ -10,7 +10,7 @@ namespace FModel.Creator;
 
 public class Typefaces
 {
-    private readonly Uri _BURBANK_BIG_CONDENSED_BOLD = new("pack://application:,,,/Resources/BurbankBigCondensed-Bold.ttf");
+    private const string _BURBANK_BIG_CONDENSED_BOLD = "Resources/BurbankBigCondensed-Bold.ttf";
     private const string _EXT = ".ufont";
 
     // FortniteGame
@@ -65,7 +65,7 @@ public class Typefaces
         _viewModel = viewModel;
         var language = UserSettings.Default.AssetLanguage;
 
-        Default = SKTypeface.FromStream(Application.GetResourceStream(_BURBANK_BIG_CONDENSED_BOLD)?.Stream);
+        Default = SKTypeface.FromStream(AppWindows.OpenResource(_BURBANK_BIG_CONDENSED_BOLD));
 
         switch (viewModel.Provider.ProjectName.ToUpperInvariant())
         {

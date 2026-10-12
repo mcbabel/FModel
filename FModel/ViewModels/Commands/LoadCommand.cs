@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AdonisUI.Controls;
+using FModel.Framework.Ui;
 using CUE4Parse.FileProvider.Objects;
 using CUE4Parse.UE4.Readers;
 using CUE4Parse.UE4.VirtualFileSystem;
@@ -18,7 +18,7 @@ using FModel.Services;
 using FModel.Settings;
 using FModel.Views.Resources.Controls;
 using K4os.Compression.LZ4.Streams;
-using Microsoft.Win32;
+using FModel.Framework.Ui;
 
 namespace FModel.ViewModels.Commands;
 
@@ -57,7 +57,7 @@ public class LoadCommand : ViewModelCommand<LoadingModesViewModel>
         _applicationView.CUE4Parse.SearchVm.SearchResults.Clear();
         _applicationView.SelectedLeftTabIndex = 1; // folders tab
         _applicationView.IsAssetsExplorerVisible = true;
-        Helper.CloseWindow<AdonisWindow>("Search For Packages"); // close search window if opened
+        Helper.CloseWindow<FWindow>("Search For Packages"); // close search window if opened
 
         // Populate the package tree before doing supplemental reads. For streamed providers those
         // reads may download BuildPatch chunks and must not delay or hide an otherwise valid tree.
@@ -176,7 +176,7 @@ public class LoadCommand : ViewModelCommand<LoadingModesViewModel>
         if (!openFileDialog.ShowDialog().GetValueOrDefault()) return;
 
         FLogger.Append(ELog.Information, () =>
-            FLogger.Text($"Backup file older than current game is '{openFileDialog.FileName.SubstringAfterLast("\\")}'", Constants.WHITE, true));
+            FLogger.Text($"Backup file older than current game is '{Path.GetFileName(openFileDialog.FileName)}'", Constants.WHITE, true));
 
         var mode = UserSettings.Default.LoadingMode;
         var entries = ParseBackup(openFileDialog.FileName, mode, cancellationToken);

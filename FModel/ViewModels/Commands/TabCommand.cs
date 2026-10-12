@@ -1,6 +1,5 @@
 using System;
-using System.Windows;
-using AdonisUI.Controls;
+using FModel.Framework.Ui;
 using FModel.Framework;
 using FModel.Services;
 using FModel.Views.Resources.Controls;
@@ -82,7 +81,7 @@ public class TabCommand : ViewModelCommand<TabItem>
                 break;
             case "Open_Properties":
                 if (tabViewModel.Header == "New Tab" || tabViewModel.Document == null) return;
-                Helper.OpenWindow<AdonisWindow>(tabViewModel.Header + " (Properties)", () =>
+                Helper.OpenWindow<FWindow>(tabViewModel.Header + " (Properties)", () =>
                 {
                     new PropertiesPopout(tabViewModel)
                     {

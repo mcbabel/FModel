@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=FModel
+GenericName=Unreal Engine Archives Explorer
+Comment=Explore and export Unreal Engine game archives
+Exec=FModel %F
+Icon=fmodel
+Terminal=false
+Categories=Development;Utility;Graphics;
+Keywords=Unreal;UE4;UE5;pak;utoc;archive;explorer;
+StartupWMClass=FModel

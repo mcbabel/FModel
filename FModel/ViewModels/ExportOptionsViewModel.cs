@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Threading;
+using Avalonia.Threading;
 using CUE4Parse.UE4.Assets.Exports.Material;
 using CUE4Parse.UE4.Assets.Exports.Texture;
 using CUE4Parse_Conversion.Options;

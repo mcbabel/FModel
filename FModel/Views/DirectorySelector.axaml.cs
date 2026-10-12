@@ -1,31 +1,42 @@
+using System;
+using Avalonia.Interactivity;
+using FModel.Framework.Ui;
 using FModel.ViewModels;
 using FModel.Views.Resources.Controls;
-using Ookii.Dialogs.Wpf;
 using Serilog;
-using System.Windows;
-using MessageBox = AdonisUI.Controls.MessageBox;
-using MessageBoxButtons = AdonisUI.Controls.MessageBoxButtons;
-using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
-using MessageBoxModel = AdonisUI.Controls.MessageBoxModel;
-using MessageBoxResult = AdonisUI.Controls.MessageBoxResult;
 
 namespace FModel.Views;
 
 /// <summary>
-/// Logique d'interaction pour DirectorySelector.xaml
+/// Logique d'interaction pour DirectorySelector.axaml
 /// </summary>
-public partial class DirectorySelector
+public partial class DirectorySelector : FWindow
 {
+    public DirectorySelector()
+    {
+        InitializeComponent();
+    }
+
     public DirectorySelector(GameSelectorViewModel gameSelectorViewModel)
     {
         DataContext = gameSelectorViewModel;
         InitializeComponent();
+
+        var screen = ScreenInfo.PrimaryWorkingAreaDips;
+        MinHeight = Math.Round(screen.Height * 0.20);
+        Width = Math.Round(screen.Width * 0.25);
     }
 
     private void OnClick(object sender, RoutedEventArgs e)
     {
         DialogResult = true;
-        Close();
+        if (IsVisible) Close();
+    }
+
+    private void OnCancel(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+        if (IsVisible) Close();
     }
 
     private void OnBrowseDirectories(object sender, RoutedEventArgs e)
@@ -33,7 +44,7 @@ public partial class DirectorySelector
         if (DataContext is not GameSelectorViewModel gameLauncherViewModel)
             return;
 
-        var folderBrowser = new VistaFolderBrowserDialog {ShowNewFolderButton = false};
+        var folderBrowser = new FolderBrowserDialog { ShowNewFolderButton = false };
         if (folderBrowser.ShowDialog() == true)
         {
             gameLauncherViewModel.AddUndetectedDir(folderBrowser.SelectedPath);
@@ -42,7 +53,7 @@ public partial class DirectorySelector
 
     private void OnBrowseManualDirectories(object sender, RoutedEventArgs e)
     {
-        var folderBrowser = new VistaFolderBrowserDialog {ShowNewFolderButton = false};
+        var folderBrowser = new FolderBrowserDialog { ShowNewFolderButton = false };
         if (folderBrowser.ShowDialog() == true)
         {
             HelloGameMyNameIsDirectory.Text = folderBrowser.SelectedPath;

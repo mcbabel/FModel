@@ -1,30 +1,28 @@
-using AdonisUI.Controls;
-using Microsoft.Win32;
 using Serilog;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Threading;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using CUE4Parse;
 using FModel.Framework;
+using FModel.Framework.Ui;
 using FModel.Services;
 using FModel.Settings;
 using FModel.Views.Snooper;
 using Newtonsoft.Json;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
-using MessageBox = AdonisUI.Controls.MessageBox;
-using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
-using MessageBoxResult = AdonisUI.Controls.MessageBoxResult;
 
 namespace FModel;
 
 /// <summary>
 /// Interaction logic for App.xaml
 /// </summary>
-public partial class App
+public partial class App : Application
 {
     [DllImport("kernel32.dll")]
     private static extern bool AttachConsole(int dwProcessId);
@@ -33,12 +31,32 @@ public partial class App
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     static extern string BrandingFormatString(string format);
 
-    protected override void OnStartup(StartupEventArgs e)
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    public override void OnFrameworkInitializationCompleted()
+    {
+        OnStartup();
+
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            Keyboard.Initialize();
+            Dispatcher.UIThread.UnhandledException += OnUnhandledException;
+            desktop.Exit += AppExit;
+            desktop.MainWindow = new MainWindow();
+        }
+
+        base.OnFrameworkInitializationCompleted();
+    }
+
+    private void OnStartup()
     {
 #if DEBUG
-        AttachConsole(-1);
+        if (OperatingSystem.IsWindows())
+            AttachConsole(-1);
 #endif
-        base.OnStartup(e);
 
         try
         {
@@ -64,9 +82,14 @@ public partial class App
 
                 UserSettings.Default.OutputDirectory = outputDir.FullName;
             }
-            catch (UnauthorizedAccessException exception)
+            catch (Exception exception) when (exception is UnauthorizedAccessException or IOException)
             {
-                throw new Exception("FModel cannot create the output directory where it is currently located. Please move FModel.exe to a different location.", exception);
+                if (OperatingSystem.IsWindows())
+                    throw new Exception("FModel cannot create the output directory where it is currently located. Please move FModel.exe to a different location.", exception);
+
+                // read-only install location (e.g. /opt, /usr, AppImage): fall back to $XDG_DATA_HOME/FModel/Output
+                var outputDir = Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FModel", "Output"));
+                UserSettings.Default.OutputDirectory = outputDir.FullName;
             }
         }
 
@@ -148,7 +171,7 @@ public partial class App
             sc.ToString().Contains("CUE4Parse_Conversion");
     }
 
-    private void AppExit(object sender, ExitEventArgs e)
+    private void AppExit(object sender, ControlledApplicationLifetimeExitEventArgs e)
     {
         Log.Information("––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––");
         Log.CloseAndFlush();
@@ -191,7 +214,17 @@ public partial class App
         var productName = string.Empty;
         try
         {
-            productName = BrandingFormatString("%WINDOWS_LONG%");
+            if (OperatingSystem.IsWindows())
+                productName = BrandingFormatString("%WINDOWS_LONG%");
+            else if (OperatingSystem.IsLinux() && File.Exists("/etc/os-release"))
+            {
+                foreach (var line in File.ReadLines("/etc/os-release"))
+                {
+                    if (!line.StartsWith("PRETTY_NAME=")) continue;
+                    productName = $"{line["PRETTY_NAME=".Length..].Trim('"')} ({RuntimeInformation.OSDescription})";
+                    break;
+                }
+            }
         }
         catch
         {
@@ -199,14 +232,15 @@ public partial class App
         }
 
         if (string.IsNullOrEmpty(productName))
-            productName = Environment.OSVersion.VersionString;
+            productName = RuntimeInformation.OSDescription;
 
         return $"{productName} ({(Environment.Is64BitOperatingSystem ? "64" : "32")}-bit)";
     }
 
-    public static string GetRegistryValue(string path, string name = null, RegistryHive root = RegistryHive.CurrentUser)
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public static string GetRegistryValue(string path, string name = null, Microsoft.Win32.RegistryHive root = Microsoft.Win32.RegistryHive.CurrentUser)
     {
-        using var rk = RegistryKey.OpenBaseKey(root, RegistryView.Default).OpenSubKey(path);
+        using var rk = Microsoft.Win32.RegistryKey.OpenBaseKey(root, Microsoft.Win32.RegistryView.Default).OpenSubKey(path);
         if (rk != null)
             return rk.GetValue(name, null) as string;
         return string.Empty;

@@ -1,5 +1,5 @@
+using FModel.Framework.Ui;
 using System;
-using System.Windows;
 using CUE4Parse.UE4.Assets.Exports;
 using CUE4Parse.UE4.Objects.Core.i18N;
 using CUE4Parse.UE4.Objects.UObject;
@@ -71,7 +71,7 @@ public class BaseTandem : BaseIcon
 
     private new void DrawBackground(SKCanvas c)
     {
-        c.DrawBitmap(SKBitmap.Decode(Application.GetResourceStream(new Uri("pack://application:,,,/Resources/npcleftside.png"))?.Stream).Resize(Width, Height), 0, 0, new SKPaint { IsAntialias = false, FilterQuality = SKFilterQuality.None, ImageFilter = SKImageFilter.CreateBlur(0, 25) });
+        c.DrawBitmap(SKBitmap.Decode(AppWindows.OpenResource("Resources/npcleftside.png")).Resize(Width, Height), 0, 0, new SKPaint { IsAntialias = false, FilterQuality = SKFilterQuality.None, ImageFilter = SKImageFilter.CreateBlur(0, 25) });
 
         using var rect1 = new SKPath { FillType = SKPathFillType.EvenOdd };
         _panelPaint.Color = SKColor.Parse("#002A8C");

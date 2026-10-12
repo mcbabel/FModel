@@ -2,7 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
+using Avalonia.Controls;
+using FModel.Framework.Ui;
 
 namespace FModel;
 
@@ -40,7 +41,7 @@ public static class Helper
         {
             var w = GetOpenedWindow<T>(windowName);
             if (w.WindowState == WindowState.Minimized) w.WindowState = WindowState.Normal;
-            w.Focus();
+            w.Activate();
         }
     }
 
@@ -66,13 +67,13 @@ public static class Helper
     public static bool IsWindowOpen<T>(string name = "") where T : Window
     {
         return string.IsNullOrEmpty(name)
-            ? Application.Current.Windows.OfType<T>().Any()
-            : Application.Current.Windows.OfType<T>().Any(w => w.Title.Equals(name));
+            ? AppWindows.All.OfType<T>().Any()
+            : AppWindows.All.OfType<T>().Any(w => name.Equals(w.Title));
     }
 
     private static Window GetOpenedWindow<T>(string name) where T : Window
     {
-        return Application.Current.Windows.OfType<T>().FirstOrDefault(w => w.Title.Equals(name));
+        return AppWindows.All.OfType<T>().FirstOrDefault(w => name.Equals(w.Title));
     }
 
     public static bool IsNaN(double value)

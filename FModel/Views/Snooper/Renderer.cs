@@ -1,9 +1,9 @@
+using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
-using System.Windows;
 using CUE4Parse.GameTypes.Nascar.Assets.Exports;
 using CUE4Parse.UE4.Assets.Exports;
 using CUE4Parse.UE4.Assets.Exports.Animation;
@@ -135,7 +135,7 @@ public class Renderer : IDisposable
         if (!Options.TryGetModel(out var model) || !Options.TryGetSection(model, out var section)) return;
 
         model.Materials[section.MaterialIndex].SwapMaterial(unrealMaterial);
-        Application.Current.Dispatcher.Invoke(() => model.Materials[section.MaterialIndex].Setup(Options, model.UvCount));
+        Dispatcher.UIThread.Invoke(() => model.Materials[section.MaterialIndex].Setup(Options, model.UvCount));
     }
 
     public void Animate(UObject anim)
@@ -368,7 +368,7 @@ public class Renderer : IDisposable
         if (Options.TryGetModel(guid, out var model))
         {
             model.AddInstance(Transform.Identity);
-            Application.Current.Dispatcher.Invoke(() => model.SetupInstances());
+            Dispatcher.UIThread.Invoke(() => model.SetupInstances());
             return;
         }
 
@@ -419,7 +419,7 @@ public class Renderer : IDisposable
         if (Options.TryGetModel(guid, out var model))
         {
             model.AddInstance(Transform.Identity);
-            Application.Current.Dispatcher.Invoke(model.SetupInstances);
+            Dispatcher.UIThread.Invoke(model.SetupInstances);
             return;
         }
 
@@ -444,7 +444,7 @@ public class Renderer : IDisposable
         if (Options.TryGetModel(guid, out var model))
         {
             model.AddInstance(Transform.Identity);
-            Application.Current.Dispatcher.Invoke(model.SetupInstances);
+            Dispatcher.UIThread.Invoke(model.SetupInstances);
             return;
         }
 
@@ -469,7 +469,7 @@ public class Renderer : IDisposable
         if (Options.TryGetModel(guid, out var model))
         {
             model.AddInstance(Transform.Identity);
-            Application.Current.Dispatcher.Invoke(model.SetupInstances);
+            Dispatcher.UIThread.Invoke(model.SetupInstances);
             return;
         }
 
@@ -508,7 +508,7 @@ public class Renderer : IDisposable
         if (Options.TryGetModel(guid, out var model))
         {
             model.Materials[0].SwapMaterial(original);
-            Application.Current.Dispatcher.Invoke(() => model.Materials[0].Setup(Options, model.UvCount));
+            Dispatcher.UIThread.Invoke(() => model.Materials[0].Setup(Options, model.UvCount));
             return;
         }
 
@@ -528,7 +528,7 @@ public class Renderer : IDisposable
         if (Options.TryGetModel(guid, out var model))
         {
             model.AddInstance(Transform.Identity);
-            Application.Current.Dispatcher.Invoke(model.SetupInstances);
+            Dispatcher.UIThread.Invoke(model.SetupInstances);
             return;
         }
 

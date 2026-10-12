@@ -1,0 +1,32 @@
+<Application x:Class="FModel.App"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             RequestedThemeVariant="Dark"
+             Name="FModel">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/Views/Resources/Colors.axaml" />
+                <ResourceInclude Source="/Views/Resources/Icons.axaml" />
+                <ResourceInclude Source="/Views/Resources/Controls/ContextMenus/FileContextMenu.axaml" />
+                <ResourceInclude Source="/Views/Resources/Controls/ContextMenus/FolderContextMenu.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- FModel overrides of the AdonisUI dark color scheme -->
+            <Color x:Key="AccentColor">#206BD4</Color>
+            <Color x:Key="AlertColor">#D49220</Color>
+            <Color x:Key="ErrorColor">#C22B2B</Color>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <SimpleTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml" />
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Simple/AvaloniaEdit.xaml" />
+        <StyleInclude Source="/Themes/AdonisTheme.axaml" />
+        <StyleInclude Source="/Views/Resources/Resources.axaml" />
+        <StyleInclude Source="/Views/Resources/Controls/Explorer/Resources.axaml" />
+        <StyleInclude Source="/Views/Resources/Controls/ControlStyles.axaml" />
+        <StyleInclude Source="/Views/Resources/Controls/Aup/AudioStyles.axaml" />
+    </Application.Styles>
+</Application>

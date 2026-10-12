@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Data;
 using CUE4Parse.Utils;
 using FModel.Framework;
 using FModel.Services;
@@ -23,7 +22,7 @@ public partial class UpdateViewModel : ViewModel
     public RemindMeCommand RemindMeCommand => _remindMeCommand ??= new RemindMeCommand(this);
 
     public RangeObservableCollection<GitHubCommit> Commits { get; }
-    public ICollectionView CommitsView { get; }
+    public ListCollectionView CommitsView { get; }
 
     public UpdateViewModel()
     {

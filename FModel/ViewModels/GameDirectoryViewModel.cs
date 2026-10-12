@@ -1,10 +1,9 @@
+using Avalonia.Threading;
 using FModel.Framework;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Data;
 using CUE4Parse.Compression;
 using CUE4Parse.UE4.IO;
 using CUE4Parse.UE4.Objects.Core.Misc;
@@ -125,7 +124,7 @@ public partial class GameDirectoryViewModel : ViewModel
 {
     public readonly ObservableCollection<FileItem> DirectoryFiles;
 
-    public ICollectionView DirectoryFilesView { get; }
+    public ListCollectionView DirectoryFilesView { get; }
 
     private readonly Regex _hiddenArchives = ArchivesRegex();
 
@@ -147,7 +146,7 @@ public partial class GameDirectoryViewModel : ViewModel
         if (!_hiddenArchives.IsMatch(reader.Name)) return;
 
         var fileItem = new FileItem(reader);
-        Application.Current.Dispatcher.Invoke(() => DirectoryFiles.Add(fileItem));
+        Dispatcher.UIThread.Invoke(() => DirectoryFiles.Add(fileItem));
     }
 
     public void AddLooseFiles(int fileCount)
@@ -155,7 +154,7 @@ public partial class GameDirectoryViewModel : ViewModel
         if (fileCount < 1)
             return;
 
-        Application.Current.Dispatcher.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             var looseFilesContainer = DirectoryFiles.FirstOrDefault(x => x.IsLooseFilesContainer);
             if (looseFilesContainer is not null)

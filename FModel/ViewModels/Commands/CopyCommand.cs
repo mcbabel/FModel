@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows;
 using CUE4Parse.FileProvider.Objects;
 using FModel.Framework;
+using FModel.Framework.Ui;
 
 namespace FModel.ViewModels.Commands;
 

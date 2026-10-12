@@ -1,11 +1,9 @@
 using System;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.TextFormatting;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using FModel.Extensions;
-using FModel.Services;
-using FModel.ViewModels;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Rendering;
 
 namespace FModel.Views.Resources.Controls;
 
@@ -32,22 +30,23 @@ public class JumpVisualLineText : VisualLineText
         if (text.Count != 2) // ": "
             TextRunProperties.SetForegroundBrush(Brushes.Plum);
 
-        return new TextCharacters(text.Text, text.Offset, text.Count, TextRunProperties);
+        return new TextCharacters(text.Text.AsMemory(text.Offset, text.Count), TextRunProperties);
     }
 
-    private bool JumpIsClickable() => !string.IsNullOrEmpty(_jump) && Keyboard.Modifiers == ModifierKeys.None;
+    private bool JumpIsClickable(KeyModifiers modifiers) => !string.IsNullOrEmpty(_jump) && modifiers == KeyModifiers.None;
 
-    protected override void OnQueryCursor(QueryCursorEventArgs e)
+    protected override void OnQueryCursor(PointerEventArgs e)
     {
-        if (!JumpIsClickable())
+        if (!JumpIsClickable(e.KeyModifiers))
             return;
+        if (e.Source is InputElement inputElement)
+            inputElement.Cursor = new Cursor(StandardCursorType.Hand);
         e.Handled = true;
-        e.Cursor = Cursors.Hand;
     }
 
-    protected override void OnMouseDown(MouseButtonEventArgs e)
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        if (e.ChangedButton != MouseButton.Left || !JumpIsClickable())
+        if (!e.GetCurrentPoint(null).Properties.IsLeftButtonPressed || !JumpIsClickable(e.KeyModifiers))
             return;
         if (e.Handled || OnJumpClicked == null)
             return;

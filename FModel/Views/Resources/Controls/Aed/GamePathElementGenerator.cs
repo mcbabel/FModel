@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using FModel.Extensions;
-using ICSharpCode.AvalonEdit.Rendering;
+using AvaloniaEdit.Rendering;
 
 namespace FModel.Views.Resources.Controls;
 

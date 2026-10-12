@@ -1,66 +1,70 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data.Converters;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using AvaloniaEdit.Editing;
 using FModel.Extensions;
+using FModel.Framework.Ui;
 using FModel.Services;
 using FModel.Settings;
 using FModel.ViewModels;
 using FModel.Views;
 using FModel.Views.Resources.Controls;
-using ICSharpCode.AvalonEdit.Editing;
 
 namespace FModel;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
-public partial class MainWindow
+public partial class MainWindow : FWindow
 {
-    public static MainWindow Instance => (MainWindow) Application.Current.MainWindow;
+    public static MainWindow Instance => (MainWindow) AppWindows.Main;
     private ThreadWorkerViewModel _threadWorkerView => ApplicationService.ThreadWorkerView;
     private ApplicationViewModel _applicationView => ApplicationService.ApplicationView;
     private DiscordHandler _discordHandler => DiscordService.DiscordHandler;
 
+    /// <summary>Status bar text: "{Label} …" while loading, "… ESC to Cancel" when the operation can be canceled.</summary>
+    public static readonly IMultiValueConverter StatusTextConverter = new FuncMultiValueConverter<object, string>(values =>
+    {
+        var list = values.ToList();
+        var label = list.ElementAtOrDefault(0) as string ?? string.Empty;
+        var kind = list.ElementAtOrDefault(1) is EStatusKind k ? k : EStatusKind.Ready;
+        var canBeCanceled = list.ElementAtOrDefault(2) is true;
+
+        if (kind != EStatusKind.Loading) return label;
+        return canBeCanceled ? $"{label} …    ESC to Cancel" : $"{label} …";
+    });
+
     public MainWindow()
     {
-        CommandBindings.Add(new CommandBinding(new RoutedCommand("ReloadMappings", typeof(MainWindow), new InputGestureCollection { new KeyGesture(Key.F12) }), OnMappingsReload));
-        CommandBindings.Add(new CommandBinding(ApplicationCommands.Find, (_, _) => OnOpenAvalonFinder()));
-        CommandBindings.Add(new CommandBinding(NavigationCommands.BrowseBack, (_, _) =>
-        {
-            if (UserSettings.Default.FeaturePreviewNewAssetExplorer && !_applicationView.IsAssetsExplorerVisible)
-            {
-                // back browsing the json view will reopen the assets explorer
-                _applicationView.IsAssetsExplorerVisible = true;
-                return;
-            }
-
-            if (LeftTabControl.SelectedIndex == 2)
-            {
-                LeftTabControl.SelectedIndex = 1;
-            }
-            else if (LeftTabControl.SelectedIndex == 1 && AssetsFolderName.SelectedItem is TreeItem { Parent: TreeItem parent })
-            {
-                AssetsFolderName.Focus();
-                SelectFolder(parent);
-            }
-        }));
+        var area = ScreenInfo.PrimaryWorkingAreaDipsOf(this);
+        Width = area.Width * 0.90;
+        Height = area.Height * 0.95;
 
         DataContext = _applicationView;
         InitializeComponent();
 
-        AssetsExplorer.ItemContainerGenerator.StatusChanged += ItemContainerGenerator_StatusChanged;
-        AssetsListExplorer.ItemContainerGenerator.StatusChanged += ItemContainerGenerator_StatusChanged;
-        AssetsListName.ItemContainerGenerator.StatusChanged += ItemContainerGenerator_StatusChanged;
+        AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel);
+        AddHandler(PointerPressedEvent, OnWindowPointerPressed, RoutingStrategies.Tunnel);
+        AssetsListName.AddHandler(DoubleTappedEvent, OnAssetsListMouseDoubleClick, RoutingStrategies.Tunnel);
+        AssetsListName.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
+        AssetsExplorer.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
+        AssetsListExplorer.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
+
         AssetsExplorer.SelectionChanged += (_, e) => SyncSelection(AssetsListName, e);
         AssetsListExplorer.SelectionChanged += (_, e) => SyncSelection(AssetsListName, e);
         AssetsListName.SelectionChanged += (_, e) => SyncSelection(AssetsExplorer, e);
+
+        _threadWorkerView.PropertyChanged += OnThreadWorkerPropertyChanged;
+
+        Closing += OnClosing;
+        Loaded += OnLoaded;
 
         FLogger.Logger = LogRtbName;
     }
@@ -68,20 +72,23 @@ public partial class MainWindow
     // Hack to sync selection between packages tab and explorer
     private void SyncSelection(ListBox target, SelectionChangedEventArgs e)
     {
+        if (target.SelectedItems is not { } selectedItems)
+            return;
+
         foreach (var added in e.AddedItems.OfType<GameFileViewModel>())
         {
-            if (!target.SelectedItems.Contains(added))
-                target.SelectedItems.Add(added);
+            if (!selectedItems.Contains(added))
+                selectedItems.Add(added);
         }
 
         foreach (var removed in e.RemovedItems.OfType<GameFileViewModel>())
         {
-            if (target.SelectedItems.Contains(removed))
-                target.SelectedItems.Remove(removed);
+            if (selectedItems.Contains(removed))
+                selectedItems.Remove(removed);
         }
     }
 
-    private void OnClosing(object sender, CancelEventArgs e)
+    private void OnClosing(object sender, WindowClosingEventArgs e)
     {
         _discordHandler.Dispose();
     }
@@ -130,22 +137,80 @@ public partial class MainWindow
             }),
             UserSettings.Default.DecompileLua ? ApplicationViewModel.InitUnluac() : Task.CompletedTask
         ).ConfigureAwait(false);
-
-#if DEBUG
-        // await _threadWorkerView.Begin(cancellationToken =>
-        //     _applicationView.CUE4Parse.Extract(cancellationToken,
-        //         _applicationView.CUE4Parse.Provider["Marvel/Content/Marvel/Wwise/Assets/Events/Music/music_new/event/Entry.uasset"]));
-#endif
     }
 
-    private void OnGridSplitterDoubleClick(object sender, MouseButtonEventArgs e)
+    private void OnThreadWorkerPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        // these flags are raised and immediately lowered, read them synchronously
+        switch (e.PropertyName)
+        {
+            case nameof(ThreadWorkerViewModel.StatusChangeAttempted) when _threadWorkerView.StatusChangeAttempted:
+                Dispatcher.UIThread.Post(() => FlashStatusBar(["#CE5555", "#C22B2B", "#CE5555", "#C22B2B", "#CE5555"], 200));
+                break;
+            case nameof(ThreadWorkerViewModel.OperationCancelled) when _threadWorkerView.OperationCancelled:
+                Dispatcher.UIThread.Post(() => FlashStatusBar(["#C22B2B", "#CE5555"], 1000));
+                break;
+        }
+    }
+
+    private int _flashId;
+    private async void FlashStatusBar(string[] colors, int stepMs)
+    {
+        var id = ++_flashId;
+        foreach (var color in colors)
+        {
+            if (id != _flashId) return;
+            MainStatusBar.Background = new SolidColorBrush(Color.Parse(color));
+            await Task.Delay(stepMs);
+        }
+
+        if (id == _flashId)
+            MainStatusBar.ClearValue(BackgroundProperty);
+    }
+
+    private void OnGridSplitterDoubleClick(object sender, TappedEventArgs e)
     {
         RootGrid.ColumnDefinitions[0].Width = GridLength.Auto;
     }
 
-    private void OnWindowKeyDown(object sender, KeyEventArgs e)
+    private void OnWindowPointerPressed(object sender, PointerPressedEventArgs e)
     {
-        if (e.OriginalSource is TextBox || e.OriginalSource is TextArea && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+        // mouse "back" button, WPF NavigationCommands.BrowseBack
+        if (e.GetCurrentPoint(this).Properties.IsXButton1Pressed)
+        {
+            OnBrowseBack();
+            e.Handled = true;
+        }
+    }
+
+    private void OnBrowseBack()
+    {
+        if (UserSettings.Default.FeaturePreviewNewAssetExplorer && !_applicationView.IsAssetsExplorerVisible)
+        {
+            // back browsing the json view will reopen the assets explorer
+            _applicationView.IsAssetsExplorerVisible = true;
+            return;
+        }
+
+        if (LeftTabControl.SelectedIndex == 2)
+        {
+            LeftTabControl.SelectedIndex = 1;
+        }
+        else if (LeftTabControl.SelectedIndex == 1 && AssetsFolderName.SelectedItem is TreeItem { Parent: TreeItem parent })
+        {
+            AssetsFolderName.Focus();
+            SelectFolder(parent);
+        }
+    }
+
+    private async void OnWindowKeyDown(object sender, KeyEventArgs e)
+    {
+        var modifiers = e.KeyModifiers;
+        var ctrl = modifiers.HasFlag(KeyModifiers.Control);
+        var shift = modifiers.HasFlag(KeyModifiers.Shift);
+        var alt = modifiers.HasFlag(KeyModifiers.Alt);
+
+        if (e.Source is TextBox || e.Source is Visual v && v.FindAncestorOfType<TextArea>(true) != null && ctrl && e.Key != Key.F)
             return;
 
         if (_threadWorkerView.CanBeCanceled && e.Key == Key.Escape)
@@ -153,38 +218,22 @@ public partial class MainWindow
             _applicationView.Status.SetStatus(EStatusKind.Stopping);
             _threadWorkerView.Cancel();
         }
-        else if (_applicationView.Status.IsReady && e.Key == Key.F && Keyboard.Modifiers.HasFlag(ModifierKeys.Control) && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+        else if (e.Key == Key.F12)
+            await _applicationView.CUE4Parse.InitMappings(true);
+        else if (e.Key == Key.Left && alt)
+            OnBrowseBack();
+        else if (_applicationView.Status.IsReady && e.Key == Key.F && ctrl && shift)
             OnSearchViewClick(null, null);
-        else if (_applicationView.Status.IsReady && e.Key == Key.R && Keyboard.Modifiers.HasFlag(ModifierKeys.Control) && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+        else if (_applicationView.Status.IsReady && e.Key == Key.R && ctrl && shift)
             OnRefViewClick(null, null);
-        else if (e.Key == Key.F3)
+        else if (e.Key == Key.F3 || e.Key == Key.F && ctrl && !shift)
             OnOpenAvalonFinder();
         else if (e.Key == Key.Left && !_applicationView.IsAssetsExplorerVisible && _applicationView.CUE4Parse.TabControl.SelectedTab is { HasImage: true })
             _applicationView.CUE4Parse.TabControl.SelectedTab.GoPreviousImage();
         else if (e.Key == Key.Right && !_applicationView.IsAssetsExplorerVisible && _applicationView.CUE4Parse.TabControl.SelectedTab is { HasImage: true })
             _applicationView.CUE4Parse.TabControl.SelectedTab.GoNextImage();
-        else if (_applicationView.Status.IsReady && _applicationView.IsAssetsExplorerVisible && Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
-        {
-            var categoryIndex = e.SystemKey switch
-            {
-                Key.D0 or Key.NumPad0 => 0,
-                Key.D1 or Key.NumPad1 => 1,
-                Key.D2 or Key.NumPad2 => 2,
-                Key.D3 or Key.NumPad3 => 3,
-                Key.D4 or Key.NumPad4 => 4,
-                Key.D5 or Key.NumPad5 => 5,
-                Key.D6 or Key.NumPad6 => 6,
-                Key.D7 or Key.NumPad7 => 7,
-                Key.D8 or Key.NumPad8 => 8,
-                Key.D9 or Key.NumPad9 => 9,
-                _ => -1
-            };
-
-            if (categoryIndex < 0)
-                return;
-
+        else if (_applicationView.Status.IsReady && _applicationView.IsAssetsExplorerVisible && alt && GetCategoryIndex(e.Key) is var categoryIndex and >= 0)
             CategoriesSelector.SelectedIndex = categoryIndex;
-        }
         else if (_applicationView.Status.IsReady && UserSettings.Default.ExportData.IsTriggered(e.Key))
             OnExportHotkey("Save_Data");
         else if (_applicationView.Status.IsReady && UserSettings.Default.ExportProperties.IsTriggered(e.Key))
@@ -213,13 +262,28 @@ public partial class MainWindow
             _applicationView.CUE4Parse.TabControl.GoRightTab();
         else if (UserSettings.Default.DirLeftTab.IsTriggered(e.Key) && _applicationView.SelectedLeftTabIndex > 0)
             _applicationView.SelectedLeftTabIndex--;
-        else if (UserSettings.Default.DirRightTab.IsTriggered(e.Key) && _applicationView.SelectedLeftTabIndex < LeftTabControl.Items.Count - 1)
+        else if (UserSettings.Default.DirRightTab.IsTriggered(e.Key) && _applicationView.SelectedLeftTabIndex < LeftTabControl.ItemCount - 1)
             _applicationView.SelectedLeftTabIndex++;
         else
             return;
 
         e.Handled = true;
     }
+
+    private static int GetCategoryIndex(Key key) => key switch
+    {
+        Key.D0 or Key.NumPad0 => 0,
+        Key.D1 or Key.NumPad1 => 1,
+        Key.D2 or Key.NumPad2 => 2,
+        Key.D3 or Key.NumPad3 => 3,
+        Key.D4 or Key.NumPad4 => 4,
+        Key.D5 or Key.NumPad5 => 5,
+        Key.D6 or Key.NumPad6 => 6,
+        Key.D7 or Key.NumPad7 => 7,
+        Key.D8 or Key.NumPad8 => 8,
+        Key.D9 or Key.NumPad9 => 9,
+        _ => -1
+    };
 
     private void OnSearchViewClick(object sender, RoutedEventArgs e)
     {
@@ -235,10 +299,10 @@ public partial class MainWindow
 
     private void OnTabItemChange(object sender, SelectionChangedEventArgs e)
     {
-        if (e.OriginalSource is not TabControl tabControl)
+        if (!ReferenceEquals(e.Source, LeftTabControl))
             return;
 
-        switch (tabControl.SelectedIndex)
+        switch (LeftTabControl.SelectedIndex)
         {
             case 0:
                 DirectoryFilesListBox.Focus();
@@ -252,11 +316,6 @@ public partial class MainWindow
         }
     }
 
-    private async void OnMappingsReload(object sender, ExecutedRoutedEventArgs e)
-    {
-        await _applicationView.CUE4Parse.InitMappings(true);
-    }
-
     private void OnOpenAvalonFinder()
     {
         if (_applicationView.IsAssetsExplorerVisible)
@@ -267,38 +326,25 @@ public partial class MainWindow
         else if (_applicationView.CUE4Parse.TabControl.SelectedTab is { } tab)
         {
             tab.HasSearchOpen = true;
-            AvalonEditor.YesWeSearch.Focus();
-            AvalonEditor.YesWeSearch.SelectAll();
-        }
-    }
-
-    private void OnFolderOpenAssets(object sender, EventArgs e) => _applicationView.SelectedLeftTabIndex = 2;
-
-    private void OnPreviewTexturesToggled(object sender, RoutedEventArgs e) => ItemContainerGenerator_StatusChanged(AssetsExplorer.ItemContainerGenerator, EventArgs.Empty);
-    private void ItemContainerGenerator_StatusChanged(object sender, EventArgs e)
-    {
-        if (sender is not ItemContainerGenerator { Status: GeneratorStatus.ContainersGenerated } generator)
-            return;
-
-        var list = ReferenceEquals(generator, AssetsExplorer.ItemContainerGenerator) ? AssetsExplorer
-            : ReferenceEquals(generator, AssetsListExplorer.ItemContainerGenerator) ? AssetsListExplorer
-            : AssetsListName;
-
-        if (!list.IsVisible || list.FindVisualChild<VirtualizingPanel>() is not { } panel)
-            return;
-
-        foreach (var container in panel.Children.OfType<ListBoxItem>())
-        {
-            if (container is FrameworkElement { IsVisible: true, DataContext: GameFileViewModel file })
+            if (AvalonEditor.YesWeSearch is { } search)
             {
-                file.OnIsVisible();
+                search.Focus();
+                search.SelectAll();
             }
         }
     }
 
+    private void OnFolderOpenAssets(object sender, RoutedEventArgs e) => _applicationView.SelectedLeftTabIndex = 2;
+
+    private void OnPreviewTexturesToggled(object sender, RoutedEventArgs e)
+    {
+        if (PreviewTexturesToggle.IsChecked == true)
+            AssetsExplorer.RefreshVisibleItems();
+    }
+
     private void OnAssetsTreeSelectedItemChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is not ListBox { SelectedItem: TreeItem })
+        if (sender is not ListBox { SelectedItem: TreeItem } || !ReferenceEquals(e.Source, sender))
             return;
 
         _applicationView.IsAssetsExplorerVisible = true;
@@ -322,9 +368,8 @@ public partial class MainWindow
             _applicationView.IsAssetsExplorerVisible = true;
         }
 
-        var list = useExplorer ? UserSettings.Default.ExplorerViewMode == EExplorerViewMode.List ? AssetsListExplorer : AssetsExplorer : AssetsListName;
-        list.GetBindingExpression(ItemsControl.ItemsSourceProperty)?.UpdateTarget();
-        list.UnselectAll();
+        ListBox list = useExplorer ? UserSettings.Default.ExplorerViewMode == EExplorerViewMode.List ? AssetsListExplorer : AssetsExplorer : AssetsListName;
+        list.SelectedItems?.Clear();
         list.SelectedItem = asset;
         UpdateLayout();
         var container = list.RevealItem(asset);
@@ -332,11 +377,11 @@ public partial class MainWindow
         container?.Focus();
     }
 
-    private async void OnAssetsListMouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private async void OnAssetsListMouseDoubleClick(object sender, TappedEventArgs e)
     {
         if (sender is not ListBox listBox) return;
 
-        var selectedItems = listBox.SelectedItems.OfType<GameFileViewModel>().Select(gvm => gvm.Asset).ToArray();
+        var selectedItems = listBox.SelectedItems?.OfType<GameFileViewModel>().Select(gvm => gvm.Asset).ToArray() ?? [];
         if (selectedItems.Length == 0) return;
 
         await _threadWorkerView.Begin(cancellationToken => { _applicationView.CUE4Parse.ExtractSelected(cancellationToken, selectedItems); });
@@ -351,7 +396,7 @@ public partial class MainWindow
         }
     }
 
-    private void OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private void OnMouseDoubleClick(object sender, TappedEventArgs e)
     {
         if (!_applicationView.Status.IsReady || sender is not ListBox listBox) return;
         UserSettings.Default.LoadingMode = ELoadingMode.Multiple;
@@ -370,6 +415,7 @@ public partial class MainWindow
         switch (listBox.SelectedItem)
         {
             case GameFileViewModel file:
+                e.Handled = true;
                 _applicationView.IsAssetsExplorerVisible = false;
                 ApplicationService.ApplicationView.SelectedLeftTabIndex = 2;
                 await _threadWorkerView.Begin(cancellationToken => _applicationView.CUE4Parse.ExtractSelected(cancellationToken, [file.Asset]));
@@ -391,35 +437,26 @@ public partial class MainWindow
         }
     }
 
-    private void FeaturePreviewOnUnchecked(object sender, RoutedEventArgs e)
+    private void FeaturePreviewOnCheckedChanged(object sender, RoutedEventArgs e)
     {
-        _applicationView.IsAssetsExplorerVisible = false;
+        if (sender is CheckBox { IsChecked: false })
+            _applicationView.IsAssetsExplorerVisible = false;
     }
 
     private void OnExportHotkey(string trigger)
     {
-        if (!_applicationView.Status.IsReady || Keyboard.FocusedElement is not DependencyObject focused)
+        if (!_applicationView.Status.IsReady || Keyboard.FocusedElement is not Visual focused)
             return;
 
-        IList selection = focused.FindAncestor<ListBox>() == AssetsFolderName
+        var focusedList = focused.FindAncestorOfType<ListBox>(true);
+        IList selection = ReferenceEquals(focusedList, AssetsFolderName)
             ? new[] { AssetsFolderName.SelectedItem }
-            : focused.FindAncestor<ListBox>()?.SelectedItems;
+            : focusedList?.SelectedItems;
 
         var exportable = selection?.OfType<object>().Where(static item => item is TreeItem or GameFileViewModel).ToArray() ?? [];
         if (exportable.Length == 0)
             return;
 
         _applicationView.RightClickMenuCommand.Execute(new object[] { trigger, exportable });
-    }
-
-    private CustomPopupPlacement[] OnQueueToastCustomPopupPlacement(Size popupSize, Size targetSize, Point offset)
-    {
-        return
-        [
-            new CustomPopupPlacement(
-                new Point((targetSize.Width - popupSize.Width) / 2, -popupSize.Height - 10),
-                PopupPrimaryAxis.Horizontal
-            )
-        ];
     }
 }
