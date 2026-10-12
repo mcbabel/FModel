@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using AvaloniaEdit;
+using AvaloniaEdit.Document;
 using CUE4Parse.Utils;
 using FModel.Extensions;
 using FModel.Framework;
@@ -21,6 +22,9 @@ namespace FModel.Views.Resources.Controls;
 /// </summary>
 public partial class AvalonEditor : UserControl
 {
+    /// <summary>Shown by tabs without content: AvaloniaEdit throws on mouse input when the editor has no document.</summary>
+    public static TextDocument EmptyDocument { get; } = new();
+
     public static TextEditor YesWeEditor;
     public static TextBox YesWeSearch;
     private readonly Dictionary<string, NavigationList<int>> _savedCarets = new();

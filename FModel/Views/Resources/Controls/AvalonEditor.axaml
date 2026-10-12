@@ -1,7 +1,8 @@
 <UserControl x:Class="FModel.Views.Resources.Controls.AvalonEditor"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:avalonEdit="https://github.com/avaloniaui/avaloniaedit">
+             xmlns:avalonEdit="https://github.com/avaloniaui/avaloniaedit"
+             xmlns:controls="using:FModel.Views.Resources.Controls">
     <UserControl.Styles>
         <Style Selector="Grid#SearchBar">
             <Setter Property="ZIndex" Value="0" />
@@ -90,7 +91,7 @@
             </Button>
         </Grid>
 
-        <avalonEdit:TextEditor x:Name="MyAvalonEditor" Grid.Row="0" Grid.RowSpan="2" SyntaxHighlighting="{Binding Highlighter}" Document="{Binding Document}"
+        <avalonEdit:TextEditor x:Name="MyAvalonEditor" Grid.Row="0" Grid.RowSpan="2" SyntaxHighlighting="{Binding Highlighter}" Document="{Binding Document, TargetNullValue={x:Static controls:AvalonEditor.EmptyDocument}, FallbackValue={x:Static controls:AvalonEditor.EmptyDocument}}"
                                FontFamily="{DynamicResource CodeFontFamily}" FontSize="{Binding FontSize}" IsReadOnly="True" ShowLineNumbers="True" Foreground="#DAE5F2"
                                Background="{DynamicResource Layer3BackgroundBrush}"
                                TextChanged="OnTextChanged" PointerHover="OnMouseHover" PointerHoverStopped="OnMouseHoverStopped" />
