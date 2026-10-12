@@ -137,6 +137,13 @@ public class FModelApiEndpoint : AbstractApiProvider
 
             const string message = "A new update is available!";
             Log.Warning("{message} Version {CurrentVersion} ({Hash})", message, currentVersion, targetHash);
+            if (!OperatingSystem.IsWindows())
+            {
+                // the update server only knows the official Windows builds, whose commit never matches a Linux build:
+                // don't nag with a Windows download on every launch
+                _applicationView.IsUpdateAvailable = false;
+                return;
+            }
             Helper.OpenWindow<FWindow>(message, () => new UpdateView { Title = message, CanResize = false }.ShowDialog());
         }
         else

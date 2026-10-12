@@ -234,6 +234,37 @@ public class Snooper : GameWindow
         WindowShouldClose(true, true);
     }
 
+    private static bool _glfwConfigured;
+
+    /// <summary>
+    /// Must run before GLFW gets initialized.
+    /// OpenTK's default error callback throws from native code which kills the process (e.g. on Wayland:
+    /// "The platform does not provide the window position"), so errors are logged instead.
+    /// On Linux GLFW is forced onto X11 (XWayland on Wayland sessions) like the rest of the UI,
+    /// because native Wayland doesn't support window positioning/centering the viewer relies on.
+    /// Set FMODEL_GLFW_WAYLAND=1 to use native Wayland anyway.
+    /// </summary>
+    public static void ConfigureGlfw(GLFWCallbacks.ErrorCallback errorCallback)
+    {
+        if (_glfwConfigured) return;
+        _glfwConfigured = true;
+
+        GLFWProvider.SetErrorCallback(errorCallback);
+        if (OperatingSystem.IsLinux() &&
+            !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DISPLAY")) &&
+            Environment.GetEnvironmentVariable("FMODEL_GLFW_WAYLAND") != "1")
+        {
+            try
+            {
+                GLFW.InitHint(InitHintPlatform.Platform, Platform.X11);
+            }
+            catch
+            {
+                // GLFW < 3.4
+            }
+        }
+    }
+
     public static int GetMaxRefreshFrequency()
     {
         var rf = 60;

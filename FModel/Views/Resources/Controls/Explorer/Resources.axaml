@@ -6,7 +6,7 @@
         xmlns:listExplorer="using:FModel.Views.Resources.Controls.ListExplorer">
     <!-- Notes:
          * AssetExplorerListBox / FolderTree use StyleKeyOverride=ListBox, select them with "ListBox.Class".
-         * The WPF VirtualizingWrapPanel (NuGet) is replaced by a plain (non virtualizing) WrapPanel.
+         * The WPF VirtualizingWrapPanel (NuGet) is replaced by explorer:VirtualizingWrapPanel.
          * The WPF EventSetters (double click / right click) are implemented by explorer:AssetExplorerBehavior. -->
     <Styles.Resources>
         <LinearGradientBrush x:Key="TiledFolderTabBrush" StartPoint="0%,0%" EndPoint="0%,100%">
@@ -66,7 +66,7 @@
         <Setter Property="ItemTemplate" Value="{DynamicResource TiledExplorerTemplateSelector}" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
-                <WrapPanel Orientation="Horizontal" />
+                <explorer:VirtualizingWrapPanel />
             </ItemsPanelTemplate>
         </Setter>
         <Setter Property="Template">

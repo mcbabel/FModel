@@ -133,10 +133,8 @@ public class CUE4ParseViewModel : ViewModel
 
             return Dispatcher.UIThread.Invoke(delegate
             {
+                Snooper.ConfigureGlfw(_glfwErrorCallback);
                 var htz = Snooper.GetMaxRefreshFrequency();
-                // OpenTK's default GLFW error callback throws from native code, which would kill the process
-                // when the GPU/driver doesn't provide OpenGL 4.6: log instead and let window creation fail normally
-                GLFW.SetErrorCallback(_glfwErrorCallback);
                 return _snooper = new Snooper(
                     new GameWindowSettings { UpdateFrequency = htz },
                     new NativeWindowSettings
@@ -161,7 +159,8 @@ public class CUE4ParseViewModel : ViewModel
     private static readonly GLFWCallbacks.ErrorCallback _glfwErrorCallback = (error, description) =>
     {
         Log.Error("GLFW error {Error}: {Description}", error, description);
-        FLogger.Append(ELog.Error, () => FLogger.Text($"3D Viewer: {description} (OpenGL 4.6 is required)", Constants.WHITE, true));
+        if (error is ErrorCode.VersionUnavailable or ErrorCode.ApiUnavailable)
+            FLogger.Append(ELog.Error, () => FLogger.Text($"3D Viewer: {description} (OpenGL 4.6 is required)", Constants.WHITE, true));
     };
 
     public AbstractVfsFileProvider Provider { get; }
