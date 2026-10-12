@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 
 namespace FModel.Framework.Ui;
@@ -15,6 +18,35 @@ public class FWindow : Window
     private static WindowIcon _appIcon;
     private bool _isDialog;
     private bool? _dialogResult;
+
+    private static readonly HashSet<MenuBase> _openMenus = [];
+
+    static FWindow()
+    {
+        MenuBase.OpenedEvent.AddClassHandler<MenuBase>((menu, _) => _openMenus.Add(menu), handledEventsToo: true);
+        MenuBase.ClosedEvent.AddClassHandler<MenuBase>((menu, _) => _openMenus.Remove(menu), handledEventsToo: true);
+    }
+
+    /// <summary>
+    /// The synchronous dialogs run a nested loop inside the menu item click handler, before the menu closes itself:
+    /// close the open menus first like WPF does (otherwise they stay open behind the dialog).
+    /// </summary>
+    private static void CloseOpenMenus()
+    {
+        foreach (var menu in _openMenus.ToArray())
+        {
+            try
+            {
+                menu.Close();
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        _openMenus.Clear();
+    }
 
     public FWindow()
     {
@@ -46,6 +78,7 @@ public class FWindow : Window
     /// <summary>Synchronous, modal ShowDialog like WPF (pumps a nested dispatcher loop).</summary>
     public bool? ShowDialog()
     {
+        CloseOpenMenus();
         var owner = OwnerWindow ?? AppWindows.Active;
         _isDialog = true;
         try
