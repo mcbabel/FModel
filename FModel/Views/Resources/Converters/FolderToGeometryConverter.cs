@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace FModel.Views.Resources.Converters;
 
@@ -45,10 +45,10 @@ public class FolderToGeometryConverter : IValueConverter
             _ => (null, "NeutralBrush"),
         };
 
-        if (targetType == typeof(Geometry) && geometry != null)
-            return Application.Current.FindResource(geometry) as Geometry;
-        if (targetType == typeof(Brush))
-            return Application.Current.FindResource(brush) as Brush;
+        if (typeof(Geometry).IsAssignableFrom(targetType))
+            return geometry != null ? AppResources.Find(geometry) as Geometry : null;
+        if (typeof(IBrush).IsAssignableFrom(targetType))
+            return AppResources.Find(brush) as IBrush;
 
         return null;
     }

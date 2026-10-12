@@ -1,10 +1,17 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data.Converters;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using CUE4Parse.FileProvider.Objects;
+using CUE4Parse.UE4.VirtualFileSystem;
+using FModel.Framework.Ui;
 using FModel.Services;
 using FModel.ViewModels;
 
@@ -16,8 +23,29 @@ public enum ESearchViewTab
     RefView
 }
 
-public partial class SearchView
+/// <summary>DataContext of <see cref="SearchView"/> (was an anonymous type in WPF).</summary>
+public sealed class SearchViewContext
 {
+    public ApplicationViewModel mainApplication { get; init; }
+    public SearchViewModel SearchTab { get; init; }
+    public SearchViewModel RefTab { get; init; }
+}
+
+public partial class SearchView : FWindow
+{
+    /// <summary>Sorts the "Archive" column by archive name (WPF used a non-existent "Archive" property).</summary>
+    public static readonly IComparer ArchiveComparer = Comparer<object>.Create((a, b) =>
+        string.Compare((a as VfsEntry)?.Vfs.Name, (b as VfsEntry)?.Vfs.Name, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>"{count} References for {name}", or "By Reference" while no reference search was done.</summary>
+    public static readonly IMultiValueConverter RefTabHeaderConverter = new FuncMultiValueConverter<object, string>(values =>
+    {
+        var list = values.ToList();
+        if (list.ElementAtOrDefault(0) is not int count || list.ElementAtOrDefault(1) is not string name)
+            return "By Reference";
+        return string.Format(CultureInfo.CurrentCulture, "{0:### ### ##0} References for {1}", count, name);
+    });
+
     private ThreadWorkerViewModel _threadWorkerView => ApplicationService.ThreadWorkerView;
     private ApplicationViewModel _applicationView => ApplicationService.ApplicationView;
     private SearchViewModel _searchViewModel => _applicationView.CUE4Parse.SearchVm;
@@ -27,13 +55,21 @@ public partial class SearchView
 
     public SearchView()
     {
-        DataContext = new
+        var area = ScreenInfo.PrimaryWorkingAreaDipsOf(this);
+        Width = area.Width * 0.65;
+        Height = area.Height * 0.75;
+
+        DataContext = new SearchViewContext
         {
             mainApplication = _applicationView,
             SearchTab = _searchViewModel,
             RefTab = _refViewModel,
         };
         InitializeComponent();
+
+        AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel);
+        SearchListView.DoubleTapped += OnAssetRowDoubleTapped;
+        RefListView.DoubleTapped += OnAssetRowDoubleTapped;
 
         Activate();
         SearchTextBox.Focus();
@@ -75,7 +111,7 @@ public partial class SearchView
 
     private void OnTabItemChange(object sender, SelectionChangedEventArgs e)
     {
-        if (e.OriginalSource is not TabControl tabControl)
+        if (!ReferenceEquals(e.Source, SearchTabControl) || sender is not TabControl tabControl)
             return;
 
         _currentTab = tabControl.SelectedIndex switch
@@ -104,7 +140,7 @@ public partial class SearchView
         _ => null
     };
 
-    private ListView CurrentListView => _currentTab switch
+    private DataGrid CurrentListView => _currentTab switch
     {
         ESearchViewTab.SearchView => SearchListView,
         ESearchViewTab.RefView => RefListView,
@@ -120,7 +156,17 @@ public partial class SearchView
 
     private async void OnSearchSortClick(object sender, RoutedEventArgs e)
     {
-        await CurrentViewModel?.CycleSortSizeMode();
+        if (CurrentViewModel is { } viewModel)
+            await viewModel.CycleSortSizeMode();
+    }
+
+    // WPF: MouseDoubleClick on ListViewItem
+    private void OnAssetRowDoubleTapped(object sender, TappedEventArgs e)
+    {
+        if ((e.Source as Visual)?.FindAncestorOfType<DataGridRow>(true) == null)
+            return;
+
+        OnAssetDoubleClick(sender, e);
     }
 
     private void OnAssetDoubleClick(object sender, RoutedEventArgs e)
@@ -178,15 +224,15 @@ public partial class SearchView
         CurrentViewModel?.RefreshFilter();
     }
 
-    private void OnStateChanged(object sender, EventArgs e)
+    // WPF: StateChanged
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        switch (WindowState)
-        {
-            case WindowState.Normal:
-                Activate();
-                CurrentTextBox?.Focus();
-                CurrentTextBox?.SelectAll();
-                return;
-        }
+        base.OnPropertyChanged(change);
+        if (change.Property != WindowStateProperty || WindowState != WindowState.Normal || SearchTabControl == null)
+            return;
+
+        Activate();
+        CurrentTextBox?.Focus();
+        CurrentTextBox?.SelectAll();
     }
 }

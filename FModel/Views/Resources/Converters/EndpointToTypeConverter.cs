@@ -5,6 +5,7 @@ using FModel.Settings;
 
 namespace FModel.Views.Resources.Converters;
 
+/// <summary>Returns true (for IsVisible) when the endpoint of the given type (ConverterParameter) is valid.</summary>
 public class EndpointToTypeConverter : IValueConverter
 {
     public static readonly EndpointToTypeConverter Instance = new();
@@ -12,13 +13,7 @@ public class EndpointToTypeConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (parameter is not EEndpointType type) throw new NotImplementedException();
-
-        var isValid = UserSettings.IsEndpointValid(type, out _);
-        return targetType switch
-        {
-            not null when targetType == typeof(Visibility) => isValid ? Visibility.Visible : Visibility.Collapsed,
-            _ => throw new NotImplementedException()
-        };
+        return UserSettings.IsEndpointValid(type, out _);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

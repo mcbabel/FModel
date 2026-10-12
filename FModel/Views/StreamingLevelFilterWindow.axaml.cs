@@ -1,13 +1,19 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using FModel.Framework.Ui;
 using FModel.ViewModels;
 
 namespace FModel.Views;
 
-public partial class StreamingLevelFilterWindow
+public partial class StreamingLevelFilterWindow : FWindow
 {
     public StreamingLevelFilterWindow(StreamingLevelFilterViewModel vm)
     {
+        // WPF: Width = 28% of the screen width, Height = 60% of the screen height
+        var area = ScreenInfo.PrimaryWorkingAreaDipsOf(this);
+        Width = area.Width * 0.28;
+        Height = area.Height * 0.60;
+
         InitializeComponent();
         DataContext = vm;
     }

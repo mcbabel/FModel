@@ -1,27 +1,49 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using FModel.Extensions;
 using FModel.ViewModels;
 
 namespace FModel.Views.Resources.Controls;
 
+/// <summary>
+/// Flat ListBox showing <see cref="AssetsFolderViewModel.VisibleFolders"/> as a tree (indentation via TreeItem.Indent).
+/// The expander arrow of each row is a ToggleButton with the "FolderExpanderStyle" class.
+/// </summary>
 public sealed class FolderTree : ListBox
 {
-    public static readonly DependencyProperty FoldersProperty = DependencyProperty.Register(nameof(Folders), typeof(AssetsFolderViewModel), typeof(FolderTree));
+    public static readonly StyledProperty<AssetsFolderViewModel> FoldersProperty =
+        AvaloniaProperty.Register<FolderTree, AssetsFolderViewModel>(nameof(Folders));
 
-    public static readonly RoutedEvent ExpandArrowEvent = EventManager.RegisterRoutedEvent("ExpandArrow", RoutingStrategy.Direct, typeof(RoutedEventHandler), typeof(FolderTree));
-    public static readonly RoutedEvent CollapseArrowEvent = EventManager.RegisterRoutedEvent("CollapseArrow", RoutingStrategy.Direct, typeof(RoutedEventHandler), typeof(FolderTree));
+    public static readonly RoutedEvent<RoutedEventArgs> OpenAssetsEvent =
+        RoutedEvent.Register<FolderTree, RoutedEventArgs>(nameof(OpenAssets), RoutingStrategies.Bubble);
+
+    protected override Type StyleKeyOverride => typeof(ListBox);
 
     public AssetsFolderViewModel Folders
     {
-        get => (AssetsFolderViewModel) GetValue(FoldersProperty);
+        get => GetValue(FoldersProperty);
         set => SetValue(FoldersProperty, value);
     }
 
-    public event EventHandler OpenAssets;
+    public event EventHandler<RoutedEventArgs> OpenAssets
+    {
+        add => AddHandler(OpenAssetsEvent, value);
+        remove => RemoveHandler(OpenAssetsEvent, value);
+    }
+
+    public FolderTree()
+    {
+        AddHandler(PointerPressedEvent, OnPreviewPointerPressed, RoutingStrategies.Tunnel);
+        AddHandler(DoubleTappedEvent, OnRowDoubleTapped, RoutingStrategies.Bubble, handledEventsToo: true);
+        AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
+    }
+
+    private void RaiseOpenAssets() => RaiseEvent(new RoutedEventArgs(OpenAssetsEvent, this));
 
     public void SelectFolder(TreeItem folder)
     {
@@ -34,7 +56,10 @@ public sealed class FolderTree : ListBox
     {
         if (SelectedItem is TreeItem folder)
         {
-            this.RevealItem(folder)?.Focus();
+            if (this.RevealItem(folder) is { } container)
+                container.Focus();
+            else
+                Focus();
         }
         else
         {
@@ -47,54 +72,51 @@ public sealed class FolderTree : ListBox
         if (Folders == null)
             return;
 
-        var wasExpanded = folder.IsExpanded;
-        Folders.Toggle(folder);
-        if (folder.IsExpanded == wasExpanded)
-            return;
-
-        if (ItemContainerGenerator.ContainerFromItem(folder) is ListBoxItem row)
+        // only animate the arrow when the user toggles a folder (not when a recycled row gets another folder)
+        var arrow = (ContainerFromItem(folder) as ListBoxItem)?.FindVisualChild<ToggleButton>();
+        if (arrow != null)
         {
-            row.FindVisualChild<ToggleButton>()?.RaiseEvent(new RoutedEventArgs(folder.IsExpanded ? ExpandArrowEvent : CollapseArrowEvent));
+            arrow.Classes.Add("animate");
+            DispatcherTimer.RunOnce(() => arrow.Classes.Remove("animate"), TimeSpan.FromMilliseconds(250));
         }
+
+        Folders.Toggle(folder);
     }
 
-    protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
+    private static Control ContainerOf(object source) => (source as StyledElement)?.FindAncestor<ListBoxItem>();
+
+    private void OnPreviewPointerPressed(object sender, PointerPressedEventArgs e)
     {
-        if (e.OriginalSource is DependencyObject source && source.FindAncestor<ToggleButton>() is { DataContext: TreeItem folder } && ContainerFromElement(this, source) is ListBoxItem)
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            return;
+
+        if (e.Source is StyledElement source && source.FindAncestor<ToggleButton>() is { DataContext: TreeItem folder } && ContainerOf(source) != null)
         {
             e.Handled = true;
             ToggleFolder(folder);
-            return;
         }
-
-        base.OnPreviewMouseLeftButtonDown(e);
     }
 
-    protected override void OnPreviewMouseDoubleClick(MouseButtonEventArgs e)
+    private void OnRowDoubleTapped(object sender, TappedEventArgs e)
     {
-        if (e.ChangedButton == MouseButton.Left && e.OriginalSource is DependencyObject source && source.FindAncestor<ToggleButton>() == null && ContainerFromElement(this, source) is ListBoxItem { DataContext: TreeItem folder })
-        {
-            e.Handled = true;
-            if (folder.Folders.Count > 0)
-            {
-                ToggleFolder(folder);
-            }
-            else if (folder.AssetsList.Assets.Count > 0)
-            {
-                OpenAssets?.Invoke(this, EventArgs.Empty);
-            }
-        }
+        if (e.Source is not StyledElement source || source.FindAncestor<ToggleButton>() != null || ContainerOf(source) is not { DataContext: TreeItem folder })
+            return;
 
-        base.OnPreviewMouseDoubleClick(e);
+        e.Handled = true;
+        if (folder.Folders.Count > 0)
+        {
+            ToggleFolder(folder);
+        }
+        else if (folder.AssetsList.Assets.Count > 0)
+        {
+            RaiseOpenAssets();
+        }
     }
 
-    protected override void OnPreviewKeyDown(KeyEventArgs e)
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (Folders == null || SelectedItem is not TreeItem folder)
-        {
-            base.OnPreviewKeyDown(e);
+        if (Folders == null || SelectedItem is not TreeItem folder || ItemCount == 0)
             return;
-        }
 
         switch (e.Key)
         {
@@ -102,13 +124,13 @@ public sealed class FolderTree : ListBox
                 SelectFolder((TreeItem) Items[Math.Max(0, SelectedIndex - 1)]);
                 break;
             case Key.Down:
-                SelectFolder((TreeItem) Items[Math.Min(Items.Count - 1, SelectedIndex + 1)]);
+                SelectFolder((TreeItem) Items[Math.Min(ItemCount - 1, SelectedIndex + 1)]);
                 break;
             case Key.Home:
                 SelectFolder((TreeItem) Items[0]);
                 break;
             case Key.End:
-                SelectFolder((TreeItem) Items[Items.Count - 1]);
+                SelectFolder((TreeItem) Items[ItemCount - 1]);
                 break;
             case Key.Left:
                 if (folder.IsExpanded)
@@ -134,7 +156,7 @@ public sealed class FolderTree : ListBox
                 if ((folder.IsExpanded || folder.Folders.Count == 0) && folder.AssetsList.Assets.Count > 0)
                 {
                     e.Handled = true;
-                    OpenAssets?.Invoke(this, EventArgs.Empty);
+                    RaiseOpenAssets();
                     return;
                 }
 
@@ -148,7 +170,6 @@ public sealed class FolderTree : ListBox
                 }
                 break;
             default:
-                base.OnPreviewKeyDown(e);
                 return;
         }
 

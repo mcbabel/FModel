@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using CSCore.DSP;
+using FModel.Framework.Audio;
 
 namespace FModel.Views.Resources.Controls.Aup;
 
@@ -25,10 +25,14 @@ public class SpectrumProvider : FftProvider
 
     public bool GetFftData(float[] fftResultBuffer, object context)
     {
-        if (_contexts.Contains(context))
-            return false;
+        lock (_contexts)
+        {
+            if (_contexts.Contains(context))
+                return false;
 
-        _contexts.Add(context);
+            _contexts.Add(context);
+        }
+
         GetFftData(fftResultBuffer);
         return true;
     }
@@ -37,12 +41,12 @@ public class SpectrumProvider : FftProvider
     {
         base.Add(samples, count);
         if (count > 0)
-            _contexts.Clear();
+            lock (_contexts) _contexts.Clear();
     }
 
     public override void Add(float left, float right)
     {
         base.Add(left, right);
-        _contexts.Clear();
+        lock (_contexts) _contexts.Clear();
     }
 }

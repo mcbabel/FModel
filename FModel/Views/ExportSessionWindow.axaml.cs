@@ -1,15 +1,34 @@
-using System.Diagnostics;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
+using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Data.Converters;
+using Avalonia.Interactivity;
+using FModel.Framework.Ui;
 using FModel.ViewModels;
+using Serilog.Events;
 
 namespace FModel.Views;
 
-public partial class ExportSessionWindow
+public partial class ExportSessionWindow : FWindow
 {
+    /// <summary>"Start an export…" placeholder: visible when not running and there are no class groups (WPF MultiDataTrigger).</summary>
+    public static readonly IMultiValueConverter PlaceholderVisibilityConverter = new FuncMultiValueConverter<object, bool>(values =>
+    {
+        var list = values.ToList();
+        return list.ElementAtOrDefault(0) is false && list.ElementAtOrDefault(1) is 0;
+    });
+
+    /// <summary>Error and Fatal log levels share the same icon.</summary>
+    public static readonly IValueConverter IsErrorLevelConverter =
+        new FuncValueConverter<object, bool>(level => level is LogEventLevel.Error or LogEventLevel.Fatal);
+
     public ExportSessionWindow()
     {
+        // WPF: Width = 40% of the screen width, Height = 75% of the screen height
+        var area = ScreenInfo.PrimaryWorkingAreaDipsOf(this);
+        Width = area.Width * 0.40;
+        Height = area.Height * 0.75;
+
         InitializeComponent();
     }
 
@@ -65,7 +84,7 @@ public partial class ExportSessionWindow
         {
             if (File.Exists(path) || Directory.Exists(path))
             {
-                Process.Start("explorer.exe", $"/select,\"{path}\"");
+                Shell.RevealInFileManager(path);
             }
         }
         catch

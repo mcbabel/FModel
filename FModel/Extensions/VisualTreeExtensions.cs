@@ -1,28 +1,28 @@
-﻿using System.Windows;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.VisualTree;
 
 namespace FModel.Extensions;
 
 public static class VisualTreeExtensions
 {
-    public static T FindAncestor<T>(this DependencyObject current) where T : DependencyObject
+    /// <summary>Returns the element itself or its closest visual (or, outside the visual tree, logical) ancestor of type T.</summary>
+    public static T FindAncestor<T>(this StyledElement current) where T : class
     {
         while (current != null)
         {
             if (current is T t)
                 return t;
-            current = current is FrameworkContentElement contentElement
-                ? contentElement.Parent
-                : VisualTreeHelper.GetParent(current);
+            current = current is Visual visual && visual.GetVisualParent() is StyledElement visualParent
+                ? visualParent
+                : current.Parent;
         }
         return null;
     }
 
-    public static T? FindVisualChild<T>(this DependencyObject parent) where T : DependencyObject
+    public static T? FindVisualChild<T>(this Visual parent) where T : class
     {
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        foreach (var child in parent.GetVisualChildren())
         {
-            var child = VisualTreeHelper.GetChild(parent, i);
             if (child is T result)
                 return result;
 
@@ -32,5 +32,4 @@ public static class VisualTreeExtensions
 
         return null;
     }
-
 }

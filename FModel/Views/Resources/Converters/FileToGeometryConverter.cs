@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
+using Avalonia;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace FModel.Views.Resources.Converters;
 
@@ -9,9 +11,9 @@ public class FileToGeometryConverter : IMultiValueConverter
 {
     public static readonly FileToGeometryConverter Instance = new();
 
-    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
     {
-        if (values.Length < 3 || values[0] is not EAssetCategory category || values[1] is not string resolvedAssetType || values[2] is not EAssetFamily family)
+        if (values.Count < 3 || values[0] is not EAssetCategory category || values[1] is not string resolvedAssetType || values[2] is not EAssetFamily family)
             return null;
 
         resolvedAssetType = resolvedAssetType.ToLowerInvariant();
@@ -122,16 +124,21 @@ public class FileToGeometryConverter : IMultiValueConverter
             _ => (geometry, brush),
         };
 
-        if (targetType == typeof(Geometry))
-            return Application.Current.FindResource(geometry) as Geometry;
-        if (targetType == typeof(Brush))
-            return Application.Current.FindResource(brush) as Brush;
+        if (typeof(Geometry).IsAssignableFrom(targetType))
+            return AppResources.Find(geometry) as Geometry;
+        if (typeof(IBrush).IsAssignableFrom(targetType))
+            return AppResources.Find(brush) as IBrush;
 
         return null;
     }
+}
 
-    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+internal static class AppResources
+{
+    public static object Find(string key)
     {
-        throw new NotImplementedException();
+        var app = Application.Current;
+        if (key == null || app == null) return null;
+        return app.TryGetResource(key, app.ActualThemeVariant, out var value) ? value : null;
     }
 }

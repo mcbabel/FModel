@@ -1,90 +1,41 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using CSCore;
-using CSCore.Codecs;
-using CSCore.Codecs.AAC;
-using CSCore.Codecs.AIFF;
-using CSCore.Codecs.DDP;
-using CSCore.Codecs.FLAC;
-using CSCore.Codecs.MP1;
-using CSCore.Codecs.MP2;
-using CSCore.Codecs.MP3;
-using CSCore.Codecs.WAV;
-using CSCore.Codecs.WMA;
-using CSCore.MediaFoundation;
 
-namespace FModel.Views.Resources.Controls.Aup;
+namespace FModel.Framework.Audio;
 
-public class CustomCodecFactory
+/// <summary>
+/// Creates a decoder for in-memory audio data (replacement of the CSCore based CustomCodecFactory).
+/// Supports RIFF/WAVE (PCM, IEEE float, A-law, µ-law, extensible), Ogg Vorbis and MPEG audio (mp1/mp2/mp3).
+/// </summary>
+public static class AudioCodecFactory
 {
-    private readonly Dictionary<string, CodecFactoryEntry> _codecs;
-
-    /// <summary>
-    /// TODO add MSADPCM, OPUS, WEM decoders
-    /// </summary>
-    public CustomCodecFactory()
+    /// <exception cref="NotSupportedException">the format (or the WAVE encoding) is not supported</exception>
+    public static IAudioDecoder GetCodec(byte[] data, string extension)
     {
-        _codecs = new Dictionary<string, CodecFactoryEntry>
-        {
-            ["mp3"] = new(s =>
-            {
-                try
-                {
-                    return new DmoMp3Decoder(s);
-                }
-                catch (Exception)
-                {
-                    if (Mp3MediafoundationDecoder.IsSupported)
-                        return new Mp3MediafoundationDecoder(s);
-                    throw;
-                }
-            }, "mp3", "mpeg3"),
-            ["wav"] = new(s =>
-            {
-                IWaveSource res = new WaveFileReader(s);
-                if (res.WaveFormat.WaveFormatTag is AudioEncoding.Pcm or AudioEncoding.IeeeFloat or AudioEncoding.Extensible) return res;
-                res.Dispose();
-                res = new MediaFoundationDecoder(s);
+        if (data == null || data.Length == 0)
+            throw new NotSupportedException("Audio data is empty");
 
-                return res;
-            }, "wav", "wave"),
-            ["ogg"] = new(s => new NVorbisSource(s).ToWaveSource(), "ogg"),
-            ["flac"] = new(s => new FlacFile(s), "flac", "fla"),
-            ["aiff"] = new(s => new AiffReader(s), "aiff", "aif", "aifc")
-        };
+        var ext = extension?.ToLowerInvariant() ?? string.Empty;
 
-        if (AacDecoder.IsSupported)
-        {
-            _codecs["aac"] = new CodecFactoryEntry(s => new AacDecoder(s),
-                "aac", "adt", "adts", "m2ts", "mp2", "3g2", "3gp2", "3gp", "3gpp", "m4a", "m4v", "mp4v", "mp4", "mov");
-        }
+        // detect by content first, the extension can lie
+        if (StartsWith(data, 0, "RIFF") && data.Length >= 12 && StartsWith(data, 8, "WAVE"))
+            return new WavDecoder(data);
+        if (StartsWith(data, 0, "OggS"))
+            return new VorbisDecoder(new MemoryStream(data, false));
+        if (StartsWith(data, 0, "ID3") || IsMpegFrameSync(data) || ext is "mp3" or "mpeg3" or "mp2" or "mp1")
+            return new Mp3Decoder(new MemoryStream(data, false));
 
-        if (WmaDecoder.IsSupported)
-        {
-            _codecs["wma"] = new CodecFactoryEntry(s => new WmaDecoder(s), "asf", "wm", "wmv", "wma");
-        }
-
-        if (Mp1Decoder.IsSupported)
-        {
-            _codecs["mp1"] = new CodecFactoryEntry(s => new Mp1Decoder(s), "mp1", "m2ts");
-        }
-
-        if (Mp2Decoder.IsSupported)
-        {
-            _codecs["mp2"] = new CodecFactoryEntry(s => new Mp2Decoder(s), "mp2", "m2ts");
-        }
-
-        if (DDPDecoder.IsSupported)
-        {
-            _codecs["ddp"] = new CodecFactoryEntry(s => new DDPDecoder(s),
-                "mp2", "m2ts", "m4a", "m4v", "mp4v", "mp4", "mov", "asf", "wm", "wmv", "wma", "avi", "ac3", "ec3");
-        }
+        throw new NotSupportedException($"Unsupported audio format '{extension}'");
     }
 
-    public IWaveSource GetCodec(byte[] data, string ext)
+    private static bool StartsWith(byte[] data, int offset, string magic)
     {
-        var stream = new MemoryStream(data) { Position = 0 };
-        return _codecs.TryGetValue(ext, out var codecFactoryEntry) ? codecFactoryEntry.GetCodecAction(stream) : new MediaFoundationDecoder(stream);
+        if (data.Length < offset + magic.Length) return false;
+        for (var i = 0; i < magic.Length; i++)
+            if (data[offset + i] != magic[i]) return false;
+        return true;
     }
+
+    private static bool IsMpegFrameSync(byte[] data)
+        => data.Length >= 4 && data[0] == 0xFF && (data[1] & 0xE0) == 0xE0 && (data[1] & 0x06) != 0 && (data[2] & 0xF0) != 0xF0;
 }

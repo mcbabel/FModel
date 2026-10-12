@@ -45,26 +45,26 @@ public class AboutViewModel : ViewModel
 
     public async Task Initialize()
     {
-        await Task.WhenAll(
-            Task.Run(() =>
-            {
-                DescriptionLabel = "FModel is an archive explorer for Unreal Engine games that uses CUE4Parse as its core parsing library, providing robust support for the latest UE4 and UE5 archive formats. It aims to deliver a modern and intuitive user interface, powerful features, and a comprehensive set of tools for previewing and converting game packages, empowering YOU to understand games' inner workings with ease.";
-                ContributorsLabel = $"FModel owes its continued existence to the passionate individuals who have generously contributed their time and expertise. Contributions from individuals such as {string.Join(", ", "GMatrixGames", "amr", "LongerWarrior", "MinshuG", "InTheShade", "Officer")}, and countless others, both in the past and those yet to come, ensure the continuous development and success of this project. If you are benefiting from FModel and would like to support its continued improvements, please consider making a donation.";
-                ReferencesLabel = string.Join(", ",
-                    "Avalonia", "AvaloniaEdit", "OpenAL Soft", "CUE4Parse", "DiscordRichPresence",
-                    "EpicManifestParser", "ImGui.NET", "K4os.Compression.LZ4", "Newtonsoft.Json", "NVorbis", "Oodle.NET",
-                    "NLayer", "OpenTK", "RestSharp", "Serilog", "SixLabors.ImageSharp", "SkiaSharp");
-            }),
-            Task.Run(() =>
-            {
-                var donators = _apiEndpointView.FModelApi.GetDonators();
-                if (donators == null) return;
+        // labels are bound to the ui: compute in the background, assign on the calling (ui) thread
+        DescriptionLabel = "FModel is an archive explorer for Unreal Engine games that uses CUE4Parse as its core parsing library, providing robust support for the latest UE4 and UE5 archive formats. It aims to deliver a modern and intuitive user interface, powerful features, and a comprehensive set of tools for previewing and converting game packages, empowering YOU to understand games' inner workings with ease.";
+        ContributorsLabel = $"FModel owes its continued existence to the passionate individuals who have generously contributed their time and expertise. Contributions from individuals such as {string.Join(", ", "GMatrixGames", "amr", "LongerWarrior", "MinshuG", "InTheShade", "Officer")}, and countless others, both in the past and those yet to come, ensure the continuous development and success of this project. If you are benefiting from FModel and would like to support its continued improvements, please consider making a donation.";
+        ReferencesLabel = string.Join(", ",
+            "Avalonia", "AvaloniaEdit", "OpenAL Soft", "CUE4Parse", "DiscordRichPresence",
+            "EpicManifestParser", "ImGui.NET", "K4os.Compression.LZ4", "Newtonsoft.Json", "NVorbis", "Oodle.NET",
+            "NLayer", "OpenTK", "RestSharp", "Serilog", "SixLabors.ImageSharp", "SkiaSharp");
 
-                var sb = new StringBuilder();
-                sb.AppendJoin<Donator>(", ", donators);
-                sb.Append('.');
-                DonatorsLabel = sb.ToString();
-            })
-        ).ConfigureAwait(false);
+        var donatorsLabel = await Task.Run(() =>
+        {
+            var donators = _apiEndpointView.FModelApi.GetDonators();
+            if (donators == null) return null;
+
+            var sb = new StringBuilder();
+            sb.AppendJoin<Donator>(", ", donators);
+            sb.Append('.');
+            return sb.ToString();
+        });
+
+        if (donatorsLabel != null)
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => DonatorsLabel = donatorsLabel);
     }
 }

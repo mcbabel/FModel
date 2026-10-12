@@ -15,7 +15,12 @@ public class AesManagerViewModel : ViewModel
     private ThreadWorkerViewModel _threadWorkerView => ApplicationService.ThreadWorkerView;
 
     public FullyObservableCollection<FileItem> AesKeys { get; private set; } // holds all aes keys even the main one
-    public ListCollectionView AesKeysView { get; private set; } // holds all aes key ordered by name for the ui
+    private ListCollectionView _aesKeysView;
+    public ListCollectionView AesKeysView // holds all aes key ordered by name for the ui
+    {
+        get => _aesKeysView;
+        private set => SetProperty(ref _aesKeysView, value);
+    }
     public bool HasChange { get; set; }
 
     private AesResponse _keysFromSettings;
@@ -37,7 +42,8 @@ public class AesManagerViewModel : ViewModel
             _mainKey.Key = Helper.FixKey(_keysFromSettings.MainKey);
             AesKeys = new FullyObservableCollection<FileItem>(EnumerateAesKeys());
             AesKeys.ItemPropertyChanged += AesKeysOnItemPropertyChanged;
-            AesKeysView = new ListCollectionView(AesKeys) { SortDescriptions = { new SortDescription("Name", ListSortDirection.Ascending) } };
+            var view = new ListCollectionView(AesKeys) { SortDescriptions = { new SortDescription("Name", ListSortDirection.Ascending) } };
+            Avalonia.Threading.Dispatcher.UIThread.Invoke(() => AesKeysView = view); // notify the ui (refresh button) on the ui thread
         });
     }
 

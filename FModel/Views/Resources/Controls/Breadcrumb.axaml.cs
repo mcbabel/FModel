@@ -1,25 +1,31 @@
+using System;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Media;
 using FModel.Services;
 
 namespace FModel.Views.Resources.Controls;
 
-public partial class Breadcrumb
+public partial class Breadcrumb : UserControl
 {
     private const string NavigateNext = "M9.31 6.71c-.39.39-.39 1.02 0 1.41L13.19 12l-3.88 3.88c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l4.59-4.59c.39-.39.39-1.02 0-1.41L10.72 6.7c-.38-.38-1.02-.38-1.41.01z";
+
+    private static readonly IBrush HoverBorderBrush = new SolidColorBrush(Color.FromRgb(127, 127, 144));
+    private static readonly IBrush HoverBackground = new SolidColorBrush(Color.FromRgb(72, 73, 92));
 
     public Breadcrumb()
     {
         InitializeComponent();
     }
 
-    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    protected override void OnDataContextChanged(EventArgs e)
     {
-        if (e.NewValue is not string pathAtThisPoint) return;
+        base.OnDataContextChanged(e);
+        if (DataContext is not string pathAtThisPoint) return;
         InMeDaddy.Children.Clear();
 
         var folders = pathAtThisPoint.Split('/');
@@ -31,7 +37,7 @@ public partial class Breadcrumb
                 BorderBrush = Brushes.Transparent,
                 Background = Brushes.Transparent,
                 Padding = new Thickness(6, 3, 6, 3),
-                Cursor = Cursors.Hand,
+                Cursor = new Cursor(StandardCursorType.Hand),
                 Tag = i + 1,
                 IsEnabled = i < folders.Length - 1,
                 Child = new TextBlock
@@ -41,9 +47,9 @@ public partial class Breadcrumb
                 }
             };
 
-            border.MouseEnter += OnMouseEnter;
-            border.MouseLeave += OnMouseLeave;
-            border.MouseUp += OnMouseClick;
+            border.PointerEntered += OnMouseEnter;
+            border.PointerExited += OnMouseLeave;
+            border.PointerReleased += OnMouseClick;
 
             InMeDaddy.Children.Add(border);
             if (i >= folders.Length - 1) continue;
@@ -71,16 +77,16 @@ public partial class Breadcrumb
         }
     }
 
-    private void OnMouseEnter(object sender, MouseEventArgs e)
+    private static void OnMouseEnter(object sender, PointerEventArgs e)
     {
         if (sender is Border border)
         {
-            border.BorderBrush = new SolidColorBrush(Color.FromRgb(127, 127, 144));
-            border.Background = new SolidColorBrush(Color.FromRgb(72, 73, 92));
+            border.BorderBrush = HoverBorderBrush;
+            border.Background = HoverBackground;
         }
     }
 
-    private void OnMouseLeave(object sender, MouseEventArgs e)
+    private static void OnMouseLeave(object sender, PointerEventArgs e)
     {
         if (sender is Border border)
         {
@@ -89,7 +95,7 @@ public partial class Breadcrumb
         }
     }
 
-    private void OnMouseClick(object sender, MouseButtonEventArgs e)
+    private static void OnMouseClick(object sender, PointerReleasedEventArgs e)
     {
         if (sender is not Border { DataContext: string pathAtThisPoint, Tag: int index }) return;
 

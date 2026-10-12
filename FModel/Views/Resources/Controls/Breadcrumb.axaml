@@ -1,0 +1,5 @@
+<UserControl x:Class="FModel.Views.Resources.Controls.Breadcrumb"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel x:Name="InMeDaddy" Orientation="Horizontal" HorizontalAlignment="Right" Height="24" />
+</UserControl>

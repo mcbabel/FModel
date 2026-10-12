@@ -1,9 +1,10 @@
-using System.Windows.Controls;
+using Avalonia.Controls;
 
 namespace FModel.Extensions;
 
 public static class ListBoxExtensions
 {
+    /// <summary>Scrolls the item into view, realizes its container and returns it.</summary>
     public static ListBoxItem RevealItem(this ListBox list, object item)
     {
         var index = list.Items.IndexOf(item);
@@ -12,19 +13,11 @@ public static class ListBoxExtensions
 
         list.ApplyTemplate();
         list.UpdateLayout();
-        if (list.FindVisualChild<VirtualizingPanel>() is { } panel)
-        {
-            panel.BringIndexIntoViewPublic(index);
-        }
-        else
-        {
-            list.ScrollIntoView(item);
-        }
+        list.ScrollIntoView(index);
+        list.UpdateLayout();
 
-        list.UpdateLayout();
-        var container = list.ItemContainerGenerator.ContainerFromItem(item) as ListBoxItem;
+        var container = list.ContainerFromIndex(index) as ListBoxItem;
         container?.BringIntoView();
-        list.UpdateLayout();
         return container;
     }
 }

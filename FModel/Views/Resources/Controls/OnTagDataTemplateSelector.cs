@@ -1,13 +1,13 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 
 namespace FModel.Views.Resources.Controls;
 
-public class OnTagDataTemplateSelector : DataTemplateSelector
+/// <summary>Builds the application resource DataTemplate whose key is the (string) item.</summary>
+public class OnTagDataTemplateSelector : IDataTemplate
 {
-    public override DataTemplate SelectTemplate(object item, DependencyObject container)
-    {
-        if (item is not string s || container is not FrameworkElement f) return null;
-        return f.FindResource(s) as DataTemplate;
-    }
+    public bool Match(object data) => data is string;
+
+    public Control Build(object param)
+        => param is string s ? TypeDataTemplateSelector.Find(s)?.Build(param) : null;
 }

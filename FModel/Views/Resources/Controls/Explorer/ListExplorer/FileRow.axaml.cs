@@ -1,10 +1,10 @@
-using System.Windows.Controls;
+using Avalonia.Controls;
 
 namespace FModel.Views.Resources.Controls.ListExplorer;
 
-public partial class FolderRow : UserControl
+public partial class FileRow : UserControl
 {
-    public FolderRow()
+    public FileRow()
     {
         InitializeComponent();
     }

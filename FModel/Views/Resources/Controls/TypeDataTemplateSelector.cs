@@ -1,28 +1,36 @@
-using System.Windows;
-using System.Windows.Controls;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using FModel.ViewModels;
 
 namespace FModel.Views.Resources.Controls;
 
-public sealed class TypeDataTemplateSelector : DataTemplateSelector
+/// <summary>Picks <see cref="FolderTemplate"/> for <see cref="TreeItem"/> and <see cref="FileTemplate"/> for <see cref="GameFileViewModel"/>
+/// (or the application resources named by FolderTemplateKey / FileTemplateKey).</summary>
+public sealed class TypeDataTemplateSelector : IDataTemplate
 {
+    public IDataTemplate FolderTemplate { get; set; }
+    public IDataTemplate FileTemplate { get; set; }
     public object FolderTemplateKey { get; set; }
     public object FileTemplateKey { get; set; }
 
-    public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
-    {
-        if (container is not FrameworkElement element)
-            return base.SelectTemplate(item, container);
+    public bool Match(object data) => data is TreeItem or GameFileViewModel;
 
-        var key = item switch
+    public Control Build(object param)
+    {
+        var template = param switch
         {
-            TreeItem => FolderTemplateKey,
-            GameFileViewModel => FileTemplateKey,
+            TreeItem => FolderTemplate ?? Find(FolderTemplateKey),
+            GameFileViewModel => FileTemplate ?? Find(FileTemplateKey),
             _ => null
         };
+        return template?.Build(param);
+    }
 
-        return key is not null
-            ? element.TryFindResource(key) as DataTemplate
-            : base.SelectTemplate(item, container);
+    internal static IDataTemplate Find(object key)
+    {
+        var app = Application.Current;
+        if (key == null || app == null) return null;
+        return app.TryGetResource(key, app.ActualThemeVariant, out var value) ? value as IDataTemplate : null;
     }
 }

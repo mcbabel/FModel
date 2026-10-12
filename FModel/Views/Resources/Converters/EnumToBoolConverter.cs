@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 
 namespace FModel.Views.Resources.Converters;
@@ -26,8 +27,12 @@ public sealed class EnumToBoolConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is true && parameter is not null
-            ? parameter
-            : Binding.DoNothing;
+        if (value is not true || parameter is null)
+            return BindingOperations.DoNothing;
+
+        var enumType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+        if (parameter is string text && enumType is { IsEnum: true })
+            return Enum.Parse(enumType, text, ignoreCase: true);
+        return parameter;
     }
 }

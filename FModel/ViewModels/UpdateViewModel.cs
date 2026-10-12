@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -10,7 +12,7 @@ using FModel.Services;
 using FModel.Settings;
 using FModel.ViewModels.ApiEndpoints.Models;
 using FModel.ViewModels.Commands;
-using FModel.Views.Resources.Converters;
+using Avalonia.Threading;
 
 namespace FModel.ViewModels;
 
@@ -22,15 +24,24 @@ public partial class UpdateViewModel : ViewModel
     public RemindMeCommand RemindMeCommand => _remindMeCommand ??= new RemindMeCommand(this);
 
     public RangeObservableCollection<GitHubCommit> Commits { get; }
-    public ListCollectionView CommitsView { get; }
+
+    /// <summary>
+    /// <see cref="Commits"/> grouped by (local) commit date, in order of first appearance
+    /// (replacement of the WPF CollectionView PropertyGroupDescription on Commit.Author.Date).
+    /// </summary>
+    public ObservableCollection<CommitGroup> CommitGroups { get; } = [];
+
+    private bool _hasCommits;
+    public bool HasCommits
+    {
+        get => _hasCommits;
+        private set => SetProperty(ref _hasCommits, value);
+    }
 
     public UpdateViewModel()
     {
         Commits = [];
-        CommitsView = new ListCollectionView(Commits)
-        {
-            GroupDescriptions = { new PropertyGroupDescription("Commit.Author.Date", new DateTimeToDateConverter()) }
-        };
+        Commits.CollectionChanged += OnCommitsChanged;
 
         if (UserSettings.Default.NextUpdateCheck < DateTime.Now)
             RemindMeCommand.Execute(this, null);
@@ -115,7 +126,7 @@ public partial class UpdateViewModel : ViewModel
                     .ToArray();
 
                 if (coAuthors.Length > 0)
-                    commit.CoAuthors = coAuthors;
+                    Dispatcher.UIThread.Post(() => commit.CoAuthors = coAuthors);
             }
         });
     }
@@ -126,7 +137,13 @@ public partial class UpdateViewModel : ViewModel
         {
             var qa = await _apiEndpointView.GitHubApi.GetReleaseAsync("qa");
             var assets = qa.Assets.OrderByDescending(x => x.CreatedAt).ToList();
+            await Dispatcher.UIThread.InvokeAsync(() => ApplyAssets(assets));
+        });
+    }
 
+    private void ApplyAssets(List<GitHubAsset> assets)
+    {
+        {
             for (var i = 0; i < assets.Count; i++)
             {
                 var asset = assets[i];
@@ -153,7 +170,50 @@ public partial class UpdateViewModel : ViewModel
                     });
                 }
             }
-        });
+        }
+    }
+
+    private void OnCommitsChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(RebuildGroups);
+            return;
+        }
+
+        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
+        {
+            foreach (GitHubCommit commit in e.NewItems)
+                AddToGroup(commit);
+        }
+        else
+        {
+            RebuildGroups();
+        }
+
+        HasCommits = Commits.Count > 0;
+    }
+
+    private void RebuildGroups()
+    {
+        CommitGroups.Clear();
+        foreach (var commit in Commits)
+            AddToGroup(commit);
+
+        HasCommits = Commits.Count > 0;
+    }
+
+    private void AddToGroup(GitHubCommit commit)
+    {
+        var date = DateOnly.FromDateTime((commit.Commit?.Author?.Date ?? DateTime.MinValue).ToLocalTime());
+        var group = CommitGroups.FirstOrDefault(x => x.Date == date);
+        if (group == null)
+        {
+            group = new CommitGroup(date);
+            CommitGroups.Add(group);
+        }
+
+        group.Commits.Add(commit);
     }
 
     public void DownloadLatest()
@@ -163,4 +223,16 @@ public partial class UpdateViewModel : ViewModel
 
     [GeneratedRegex(@"Co-authored-by:\s*(.+?)\s*<(.+?)>", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
     private static partial Regex GetCoAuthorRegex();
+}
+
+public class CommitGroup
+{
+    public DateOnly Date { get; }
+    public string Header => string.Format(CultureInfo.InvariantCulture, "Commits on {0:MMM d, yyyy}", Date); // WPF HeaderStringFormat
+    public ObservableCollection<GitHubCommit> Commits { get; } = [];
+
+    public CommitGroup(DateOnly date)
+    {
+        Date = date;
+    }
 }
