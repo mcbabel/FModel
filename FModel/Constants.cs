@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
+using System.Reflection;
 using CUE4Parse.UE4.Objects.Core.Misc;
 using CUE4Parse.Utils;
 
@@ -9,9 +10,11 @@ namespace FModel;
 
 public static class Constants
 {
-    public static readonly string APP_PATH = Path.GetFullPath(Environment.GetCommandLineArgs()[0]);
-    public static readonly string APP_VERSION = FileVersionInfo.GetVersionInfo(APP_PATH).FileVersion;
-    public static readonly string APP_COMMIT_ID = FileVersionInfo.GetVersionInfo(APP_PATH).ProductVersion?.SubstringAfter('+');
+    public static readonly string APP_PATH = Environment.ProcessPath ?? Path.GetFullPath(Environment.GetCommandLineArgs()[0]);
+    // read from the assembly attributes: FileVersionInfo can't read ELF/single-file executables on Linux
+    public static readonly string APP_VERSION = typeof(Constants).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.0.0.0";
+    public static readonly string APP_COMMIT_ID = typeof(Constants).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion is { } info && info.Contains('+') && info.SubstringAfter('+') is { Length: >= 7 } commit
+        ? commit : "0000000000000000000000000000000000000000";
     public static readonly string APP_SHORT_COMMIT_ID = APP_COMMIT_ID[..7];
     public static readonly DateTime APP_BUILD_DATE = File.GetLastWriteTime(APP_PATH);
 
