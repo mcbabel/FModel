@@ -1,7 +1,11 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Input;
+using Avalonia.Media;
 using FModel.Framework;
+using FModel.Framework.Ui;
 
 namespace FModel.Views.Resources.Controls;
 
@@ -10,49 +14,41 @@ namespace FModel.Views.Resources.Controls;
 /// </summary>
 public class HotkeyTextBox : TextBox
 {
+    protected override Type StyleKeyOverride => typeof(TextBox);
+
+    public static readonly StyledProperty<Hotkey> HotKeyProperty =
+        AvaloniaProperty.Register<HotkeyTextBox, Hotkey>(nameof(HotKey), new Hotkey(Key.None), defaultBindingMode: BindingMode.TwoWay);
+
     public Hotkey HotKey
     {
-        get => (Hotkey) GetValue(HotKeyProperty);
+        get => GetValue(HotKeyProperty);
         set => SetValue(HotKeyProperty, value);
-    }
-
-    public static readonly DependencyProperty HotKeyProperty = DependencyProperty.Register("HotKey", typeof(Hotkey),
-        typeof(HotkeyTextBox), new FrameworkPropertyMetadata(new Hotkey(Key.None), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, HotKeyChanged));
-
-    private static void HotKeyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-    {
-        if (sender is not HotkeyTextBox control) return;
-        control.Text = control.HotKey.ToString();
     }
 
     public HotkeyTextBox()
     {
         IsReadOnly = true;
-        IsReadOnlyCaretVisible = false;
         IsUndoEnabled = false;
+        CaretBrush = Brushes.Transparent;
+        ContextFlyout = null;
+        ContextMenu = null;
 
-        if (ContextMenu != null)
-            ContextMenu.Visibility = Visibility.Collapsed;
-
-        Text = HotKey.ToString();
+        Text = HotKey?.ToString();
     }
 
-    private static bool HasKeyChar(Key key) =>
-        // A - Z
-        key is >= Key.A and <= Key.Z or
-            // 0 - 9
-            Key.D0 and <= Key.D9 or
-            // Numpad 0 - 9
-            Key.NumPad0 and <= Key.NumPad9 or
-            // The rest
-            Key.OemQuestion or Key.OemQuotes or Key.OemPlus or Key.OemOpenBrackets or Key.OemCloseBrackets or Key.OemMinus or Key.DeadCharProcessed or Key.Oem1 or Key.Oem5 or Key.Oem7 or Key.OemPeriod or Key.OemComma or Key.Add or Key.Divide or Key.Multiply or Key.Subtract or Key.Oem102 or Key.Decimal;
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == HotKeyProperty)
+            Text = HotKey?.ToString() ?? string.Empty;
+    }
 
-    protected override void OnPreviewKeyDown(KeyEventArgs e)
+    protected override void OnKeyDown(KeyEventArgs e)
     {
         e.Handled = true;
 
         // Get modifiers and key data
-        var modifiers = Keyboard.Modifiers;
+        var modifiers = Keyboard.FromKeyModifiers(e.KeyModifiers);
         var key = e.Key;
 
         switch (key)
@@ -60,10 +56,6 @@ public class HotkeyTextBox : TextBox
             // If nothing was pressed - return
             case Key.None:
                 return;
-            // If Alt is used as modifier - the key needs to be extracted from SystemKey
-            case Key.System:
-                key = e.SystemKey;
-                break;
             // If Delete/Backspace/Escape is pressed without modifiers - clear current value and return
             case Key.Delete or Key.Back or Key.Escape when modifiers == ModifierKeys.None:
                 HotKey = new Hotkey(Key.None);
