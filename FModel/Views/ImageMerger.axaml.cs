@@ -1,140 +1,198 @@
-using AdonisUI.Controls;
-using FModel.Extensions;
-using FModel.Settings;
-using FModel.Views.Resources.Controls;
-using Microsoft.Win32;
-using Serilog;
-using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
+using FModel.Framework.Ui;
+using FModel.Settings;
+using FModel.Views.Resources.Controls;
+using Serilog;
+using SkiaSharp;
+using OpenFileDialog = FModel.Framework.Ui.OpenFileDialog;
+using SaveFileDialog = FModel.Framework.Ui.SaveFileDialog;
 
 namespace FModel.Views;
 
-public partial class ImageMerger
+public partial class ImageMerger : FWindow
 {
+    /// <summary>An image of the merge list (WPF stored the path in ListBoxItem.ContentStringFormat).</summary>
+    public sealed class ImageItem
+    {
+        public string FilePath { get; init; }
+        public string Name { get; init; }
+        public override string ToString() => Name;
+    }
+
     private const string FILENAME = "Preview.png";
+    private static readonly string[] _imageExtensions = [".png", ".bmp", ".jpg", ".jpeg", ".jfif", ".jpe", ".tiff", ".tif"];
+
+    private readonly ObservableCollection<ImageItem> _images = [];
     private byte[] _imageBuffer;
+    private Bitmap _preview;
 
     public ImageMerger()
     {
         InitializeComponent();
+        ImagesListBox.ItemsSource = _images;
+
+        // WPF: Height = 65% of the screen height, Width = 55% of the screen width
+        var screen = ScreenInfo.PrimaryWorkingAreaDips;
+        Height = Math.Round(screen.Height * 0.65);
+        Width = Math.Round(screen.Width * 0.55);
+
+        // WPF: MouseUp + Thumb.DragCompleted on both sliders redraw the preview once the value is final
+        SizeSlider.AddHandler(PointerReleasedEvent, OnSliderReleased, RoutingStrategies.Bubble, handledEventsToo: true);
+        MarginSlider.AddHandler(PointerReleasedEvent, OnSliderReleased, RoutingStrategies.Bubble, handledEventsToo: true);
+
+        AddHandler(DragDrop.DragOverEvent, OnDragOver);
+        AddHandler(DragDrop.DropEvent, OnDrop);
     }
 
-    private async void DrawPreview(object sender, DragCompletedEventArgs dragCompletedEventArgs)
+    private async void OnSliderReleased(object sender, PointerReleasedEventArgs e)
     {
         if (ImagePreview.Source != null)
-            await DrawPreview().ConfigureAwait(false);
+            await DrawPreview();
     }
 
-    private async void Click_DrawPreview(object sender, MouseButtonEventArgs e)
+    private void SetCommandsEnabled(bool enabled)
     {
-        if (ImagePreview.Source != null)
-            await DrawPreview().ConfigureAwait(false);
+        AddButton.IsEnabled = enabled;
+        UpButton.IsEnabled = enabled;
+        DownButton.IsEnabled = enabled;
+        DeleteButton.IsEnabled = enabled;
+        ClearButton.IsEnabled = enabled;
+        SizeSlider.IsEnabled = enabled;
+        OpenImageButton.IsEnabled = enabled;
+        SaveImageButton.IsEnabled = enabled;
     }
 
     private async Task DrawPreview()
     {
-        AddButton.IsEnabled = false;
-        UpButton.IsEnabled = false;
-        DownButton.IsEnabled = false;
-        DeleteButton.IsEnabled = false;
-        ClearButton.IsEnabled = false;
-        SizeSlider.IsEnabled = false;
-        OpenImageButton.IsEnabled = false;
-        SaveImageButton.IsEnabled = false;
-
-        var margin = UserSettings.Default.ImageMergerMargin;
-        int num = 1, curW = 0, curH = 0, maxWidth = 0, maxHeight = 0, lineMaxHeight = 0, imagesPerRow = Convert.ToInt32(SizeSlider.Value);
-        var positions = new Dictionary<int, SKPoint>();
-        var images = new SKBitmap[ImagesListBox.Items.Count];
-        for (var i = 0; i < images.Length; i++)
+        if (_images.Count == 0)
         {
-            var item = (ListBoxItem) ImagesListBox.Items[i];
-            var ms = new MemoryStream();
-            var stream = new FileStream(item.ContentStringFormat, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-            if (item.ContentStringFormat.EndsWith(".tif"))
-            {
-                await using var tmp = new MemoryStream();
-                await stream.CopyToAsync(tmp);
-                System.Drawing.Image.FromStream(tmp).Save(ms, ImageFormat.Png);
-            }
-            else
-            {
-                await stream.CopyToAsync(ms);
-            }
-
-            var image = SKBitmap.Decode(ms.ToArray());
-            positions[i] = new SKPoint(curW, curH);
-            images[i] = image;
-
-            if (image.Height > lineMaxHeight)
-                lineMaxHeight = image.Height;
-
-            if (num % imagesPerRow == 0)
-            {
-                maxWidth = curW + image.Width + margin;
-                curH += lineMaxHeight + margin;
-                if (curH > maxHeight)
-                    maxHeight = curH;
-
-                curW = 0;
-                lineMaxHeight = 0;
-            }
-            else
-            {
-                maxHeight = curH + lineMaxHeight + margin;
-                curW += image.Width + margin;
-                if (curW > maxWidth)
-                    maxWidth = curW;
-            }
-
-            num++;
+            ClearPreview();
+            return;
         }
 
-        await Task.Run(() =>
+        SetCommandsEnabled(false);
+        try
         {
-            using var bmp = new SKBitmap(maxWidth - margin, maxHeight - margin, SKColorType.Rgba8888, SKAlphaType.Premul);
-            using var canvas = new SKCanvas(bmp);
+            var margin = UserSettings.Default.ImageMergerMargin;
+            var imagesPerRow = Math.Max(1, Convert.ToInt32(SizeSlider.Value));
+            var paths = _images.Select(x => x.FilePath).ToArray();
 
-            for (var i = 0; i < images.Length; i++)
+            var (buffer, bitmap) = await Task.Run(() => Merge(paths, imagesPerRow, margin));
+            if (buffer == null) return;
+
+            _imageBuffer = buffer;
+            ImagePreview.Source = _preview = bitmap; // previous bitmap may still be shown in the popout, let the GC collect it
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "Failed to merge images");
+            FLogger.Append(ELog.Error, () => FLogger.Text($"Failed to merge images: {e.Message}", Constants.WHITE, true));
+        }
+        finally
+        {
+            SetCommandsEnabled(true);
+        }
+    }
+
+    private static (byte[], Bitmap) Merge(string[] paths, int imagesPerRow, int margin)
+    {
+        int num = 1, curW = 0, curH = 0, maxWidth = 0, maxHeight = 0, lineMaxHeight = 0;
+        var positions = new List<SKPoint>();
+        var images = new List<SKBitmap>();
+        try
+        {
+            foreach (var path in paths)
             {
-                using (images[i])
+                SKBitmap image;
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    image = SKBitmap.Decode(stream);
+
+                if (image == null) // SkiaSharp cannot decode TIFF files (WPF used System.Drawing for those)
                 {
-                    canvas.DrawBitmap(images[i], positions[i], new SKPaint { FilterQuality = SKFilterQuality.High, IsAntialias = true });
+                    Log.Warning("Unsupported image format \"{Path}\"", path);
+                    FLogger.Append(ELog.Warning, () => FLogger.Text($"Could not decode '{Path.GetFileName(path)}', unsupported image format", Constants.WHITE, true));
+                    continue;
                 }
+
+                positions.Add(new SKPoint(curW, curH));
+                images.Add(image);
+
+                if (image.Height > lineMaxHeight)
+                    lineMaxHeight = image.Height;
+
+                if (num % imagesPerRow == 0)
+                {
+                    maxWidth = curW + image.Width + margin;
+                    curH += lineMaxHeight + margin;
+                    if (curH > maxHeight)
+                        maxHeight = curH;
+
+                    curW = 0;
+                    lineMaxHeight = 0;
+                }
+                else
+                {
+                    maxHeight = curH + lineMaxHeight + margin;
+                    curW += image.Width + margin;
+                    if (curW > maxWidth)
+                        maxWidth = curW;
+                }
+
+                num++;
             }
 
-            using var data = bmp.Encode(SKEncodedImageFormat.Png, 100);
-            using var stream = new MemoryStream(_imageBuffer = data.ToArray());
-            var photo = new BitmapImage();
-            photo.BeginInit();
-            photo.CacheOption = BitmapCacheOption.OnLoad;
-            photo.StreamSource = stream;
-            photo.EndInit();
-            photo.Freeze();
+            if (images.Count == 0 || maxWidth - margin <= 0 || maxHeight - margin <= 0)
+                return (null, null);
 
-            Application.Current.Dispatcher.Invoke(delegate { ImagePreview.Source = photo; });
-        }).ContinueWith(t =>
+            using var bmp = new SKBitmap(maxWidth - margin, maxHeight - margin, SKColorType.Rgba8888, SKAlphaType.Premul);
+            using var canvas = new SKCanvas(bmp);
+            using var paint = new SKPaint { FilterQuality = SKFilterQuality.High, IsAntialias = true };
+
+            for (var i = 0; i < images.Count; i++)
+                canvas.DrawBitmap(images[i], positions[i], paint);
+
+            using var data = bmp.Encode(SKEncodedImageFormat.Png, 100);
+            var buffer = data.ToArray();
+            using var ms = new MemoryStream(buffer);
+            return (buffer, new Bitmap(ms));
+        }
+        finally
         {
-            AddButton.IsEnabled = true;
-            UpButton.IsEnabled = true;
-            DownButton.IsEnabled = true;
-            DeleteButton.IsEnabled = true;
-            ClearButton.IsEnabled = true;
-            SizeSlider.IsEnabled = true;
-            OpenImageButton.IsEnabled = true;
-            SaveImageButton.IsEnabled = true;
-        }, TaskScheduler.FromCurrentSynchronizationContext());
+            foreach (var image in images)
+                image.Dispose();
+        }
+    }
+
+    private void ClearPreview()
+    {
+        ImagePreview.Source = null;
+        _preview = null;
+        _imageBuffer = null;
+    }
+
+    private async Task AddImages(IEnumerable<string> files)
+    {
+        foreach (var file in files)
+        {
+            _images.Add(new ImageItem
+            {
+                FilePath = file,
+                Name = Path.GetFileNameWithoutExtension(file)
+            });
+        }
+
+        SizeSlider.Value = Math.Min(_images.Count, Math.Round(Math.Sqrt(_images.Count)));
+        await DrawPreview();
     }
 
     private async void OnImageAdd(object sender, RoutedEventArgs e)
@@ -149,131 +207,126 @@ public partial class ImageMerger
         var result = fileBrowser.ShowDialog();
         if (!result.HasValue || !result.Value) return;
 
-        foreach (var file in fileBrowser.FileNames)
-        {
-            ImagesListBox.Items.Add(new ListBoxItem
-            {
-                ContentStringFormat = file,
-                Content = Path.GetFileNameWithoutExtension(file)
-            });
-        }
+        await AddImages(fileBrowser.FileNames);
+    }
 
-        SizeSlider.Value = Math.Min(ImagesListBox.Items.Count, Math.Round(Math.Sqrt(ImagesListBox.Items.Count)));
-        await DrawPreview().ConfigureAwait(false);
+    private static string[] GetDroppedImages(DragEventArgs e)
+    {
+        return e.Data.GetFiles()?
+            .Select(x => x.TryGetLocalPath())
+            .Where(p => p != null && File.Exists(p) && _imageExtensions.Contains(Path.GetExtension(p), StringComparer.OrdinalIgnoreCase))
+            .ToArray() ?? [];
+    }
+
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        e.DragEffects = AddButton.IsEnabled && GetDroppedImages(e).Length > 0 ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private async void OnDrop(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        if (!AddButton.IsEnabled) return;
+
+        var files = GetDroppedImages(e);
+        if (files.Length > 0)
+            await AddImages(files);
     }
 
     private async void ModifyItemInList(object sender, RoutedEventArgs e)
     {
-        if (ImagesListBox.Items.Count <= 0 || ImagesListBox.SelectedItems.Count <= 0) return;
-        var indices = ImagesListBox.SelectedItems.Cast<ListBoxItem>().Select(i => ImagesListBox.Items.IndexOf(i)).ToArray();
+        if (_images.Count <= 0 || ImagesListBox.SelectedItems is not { Count: > 0 } selectedItems) return;
+        var selected = selectedItems.Cast<ImageItem>().ToList();
+        var indices = selected.Select(_images.IndexOf).OrderBy(i => i).ToArray();
         var reloadImage = false;
 
         switch (((Button) sender).Name)
         {
             case "UpButton":
             {
-                if (indices.Length > 0 && indices[0] > 0)
+                if (indices[0] > 0)
                 {
-                    for (var i = 0; i < ImagesListBox.Items.Count; i++)
-                    {
-                        if (!indices.Contains(i)) continue;
-                        var item = (ListBoxItem) ImagesListBox.Items[i];
-                        ImagesListBox.Items.Remove(item);
-                        ImagesListBox.Items.Insert(i - 1, item);
-                        item.IsSelected = true;
-                        reloadImage = true;
-                    }
-                }
-
-                ImagesListBox.SelectedItems.Add(indices);
-                if (reloadImage)
-                {
-                    await DrawPreview().ConfigureAwait(false);
+                    foreach (var i in indices)
+                        _images.Move(i, i - 1);
+                    reloadImage = true;
                 }
 
                 break;
             }
             case "DownButton":
             {
-                if (indices.Length > 0 && indices[^1] < ImagesListBox.Items.Count - 1)
+                if (indices[^1] < _images.Count - 1)
                 {
-                    for (var i = ImagesListBox.Items.Count - 1; i > -1; --i)
-                    {
-                        if (!indices.Contains(i)) continue;
-                        var item = (ListBoxItem) ImagesListBox.Items[i];
-                        ImagesListBox.Items.Remove(item);
-                        ImagesListBox.Items.Insert(i + 1, item);
-                        item.IsSelected = true;
-                        reloadImage = true;
-                    }
-                }
-
-                if (reloadImage)
-                {
-                    await DrawPreview().ConfigureAwait(false);
+                    foreach (var i in indices.Reverse())
+                        _images.Move(i, i + 1);
+                    reloadImage = true;
                 }
 
                 break;
             }
             case "DeleteButton":
             {
-                if (ImagesListBox.Items.Count > 0 && ImagesListBox.SelectedItems.Count > 0)
-                {
-                    for (var i = ImagesListBox.SelectedItems.Count - 1; i >= 0; --i)
-                        ImagesListBox.Items.Remove(ImagesListBox.SelectedItems[i]);
-                }
-
-                await DrawPreview().ConfigureAwait(false);
-
+                foreach (var item in selected)
+                    _images.Remove(item);
+                selected.Clear();
+                reloadImage = true;
                 break;
             }
         }
+
+        // keep the moved items selected
+        ImagesListBox.SelectedItems?.Clear();
+        foreach (var item in selected)
+            ImagesListBox.SelectedItems?.Add(item);
+
+        if (reloadImage)
+            await DrawPreview();
     }
 
     private void OnClear(object sender, RoutedEventArgs e)
     {
-        ImagesListBox.Items.Clear();
-        ImagePreview.Source = null;
+        _images.Clear();
+        ClearPreview();
     }
 
     private void OnOpenImage(object sender, RoutedEventArgs e)
     {
-        if (ImagePreview.Source == null) return;
+        if (_preview == null) return;
+        var size = _preview.Size;
         Helper.OpenWindow<FWindow>("Merged Image", () =>
         {
-            new ImagePopout
+            var popout = new ImagePopout
             {
                 Title = "Merged Image",
-                Width = ImagePreview.Source.Width,
-                Height = ImagePreview.Source.Height,
-                WindowState = ImagePreview.Source.Height > 1000 ? WindowState.Maximized : WindowState.Normal,
-                ImageCtrl = { Source = ImagePreview.Source }
-            }.Show();
+                Width = size.Width,
+                Height = size.Height,
+                WindowState = size.Height > 1000 ? WindowState.Maximized : WindowState.Normal
+            };
+            popout.ImageCtrl.Source = _preview;
+            popout.Show();
         });
     }
 
     private void OnSaveImage(object sender, RoutedEventArgs e)
     {
-        Application.Current.Dispatcher.Invoke(delegate
+        if (ImagePreview.Source == null || _imageBuffer == null) return;
+        var saveFileDialog = new SaveFileDialog
         {
-            if (ImagePreview.Source == null) return;
-            var saveFileDialog = new SaveFileDialog
-            {
-                Title = "Save Image",
-                FileName = FILENAME,
-                InitialDirectory = UserSettings.Default.OutputDirectory,
-                Filter = "Png Files (*.png)|*.png|All Files (*.*)|*.*"
-            };
-            var result = saveFileDialog.ShowDialog();
-            if (!result.HasValue || !result.Value) return;
+            Title = "Save Image",
+            FileName = FILENAME,
+            InitialDirectory = UserSettings.Default.OutputDirectory,
+            Filter = "Png Files (*.png)|*.png|All Files (*.*)|*.*"
+        };
+        var result = saveFileDialog.ShowDialog();
+        if (!result.HasValue || !result.Value) return;
 
-            using (var fs = new FileStream(saveFileDialog.FileName, FileMode.Create, FileAccess.Write, FileShare.Read))
-            {
-                fs.Write(_imageBuffer, 0, _imageBuffer.Length);
-            }
+        using (var fs = new FileStream(saveFileDialog.FileName, FileMode.Create, FileAccess.Write, FileShare.Read))
+        {
+            fs.Write(_imageBuffer, 0, _imageBuffer.Length);
+        }
 
-            SaveCheck(saveFileDialog.FileName, Path.GetFileName(saveFileDialog.FileName));
-        });
+        SaveCheck(saveFileDialog.FileName, Path.GetFileName(saveFileDialog.FileName));
     }
 
     private static void SaveCheck(string path, string fileName)
@@ -296,6 +349,7 @@ public partial class ImageMerger
 
     private void OnCopyImage(object sender, RoutedEventArgs e)
     {
-        ClipboardExtensions.SetImage(_imageBuffer, FILENAME);
+        if (_imageBuffer == null) return;
+        Clipboard.SetImage(_imageBuffer, FILENAME);
     }
 }

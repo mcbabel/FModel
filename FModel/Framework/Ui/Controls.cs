@@ -18,9 +18,22 @@ public class GroupBox : HeaderedContentControl
     }
 }
 
-/// <summary>WPF-like StatusBar: items are docked left, the last one fills (use HorizontalAlignment=Right on it).</summary>
+/// <summary>WPF-like StatusBar: items are laid out in a DockPanel (docked left, the last one fills);
+/// an item with HorizontalAlignment=Right is docked right by the theme.</summary>
 public class StatusBar : ItemsControl
 {
+    protected override bool NeedsContainerOverride(object item, int index, out object recycleKey)
+    {
+        if (item is Separator)
+        {
+            recycleKey = null;
+            return false;
+        }
+
+        return NeedsContainer<StatusBarItem>(item, out recycleKey);
+    }
+
+    protected override Control CreateContainerForItemOverride(object item, int index, object recycleKey) => new StatusBarItem();
 }
 
 public class StatusBarItem : ContentControl

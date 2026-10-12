@@ -1,0 +1,171 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:FModel.Views.Resources.Controls"
+        xmlns:converters="using:FModel.Views.Resources.Converters"
+        xmlns:avalonedit="https://github.com/avaloniaui/avaloniaedit"
+        xmlns:folding="using:AvaloniaEdit.Folding">
+    <!-- Styles of the controls in Views/Resources/Controls (ported from Views/Resources/Resources.xaml) -->
+    <Styles.Resources>
+        <!-- Consolas is not available on Linux: fall back to a common monospace font -->
+        <FontFamily x:Key="CodeFontFamily">Consolas, Cascadia Mono, DejaVu Sans Mono, Liberation Mono, Noto Sans Mono, monospace</FontFamily>
+
+        <ControlTemplate x:Key="CircleTemplate" TargetType="controls:Magnifier">
+            <Grid>
+                <Ellipse Fill="{TemplateBinding Background}" />
+                <Ellipse Stroke="{TemplateBinding BorderBrush}"
+                         StrokeThickness="{Binding BorderThickness, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static converters:BorderThicknessToStrokeThicknessConverter.Instance}}"
+                         Fill="{TemplateBinding LensBrush}" />
+            </Grid>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="RectangleTemplate" TargetType="controls:Magnifier">
+            <Grid Background="{TemplateBinding Background}">
+                <Rectangle Stroke="{TemplateBinding BorderBrush}"
+                           StrokeThickness="{Binding BorderThickness, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static converters:BorderThicknessToStrokeThicknessConverter.Instance}}"
+                           Fill="{TemplateBinding LensBrush}" />
+            </Grid>
+        </ControlTemplate>
+    </Styles.Resources>
+
+    <!-- HotkeyPresenter (StyleKey is ItemsControl, the class is added in code) -->
+    <Style Selector="ItemsControl.HotkeyPresenter">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+        </Setter>
+        <Setter Property="ItemTemplate">
+            <DataTemplate>
+                <Border Margin="2 0 0 0" Padding="5 2" CornerRadius="3"
+                        Background="{DynamicResource Layer1HighlightBrush}">
+                    <TextBlock Text="{Binding}" FontSize="10" />
+                </Border>
+            </DataTemplate>
+        </Setter>
+    </Style>
+
+    <!-- AvaloniaEdit TextEditor: keeps the tab scroll position through CustomScrollViewer.VerticalOffset -->
+    <Style Selector="avalonedit|TextEditor">
+        <Setter Property="FontFamily" Value="{DynamicResource CodeFontFamily}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                    <ScrollViewer Name="PART_ScrollViewer"
+                                  Focusable="False"
+                                  VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"
+                                  HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                                  VerticalContentAlignment="Top"
+                                  HorizontalContentAlignment="Left"
+                                  Padding="{TemplateBinding Padding}"
+                                  controls:CustomScrollViewer.VerticalOffset="{Binding ScrollPosition, Mode=TwoWay}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="avalonedit|TextEditor[WordWrap=True] /template/ ScrollViewer#PART_ScrollViewer">
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+    </Style>
+
+    <Style Selector="folding|FoldingMargin">
+        <Setter Property="FoldingMarkerBrush" Value="#262630" />
+        <Setter Property="FoldingMarkerBackgroundBrush" Value="#262630" />
+        <Setter Property="SelectedFoldingMarkerBrush" Value="#808080" />
+        <Setter Property="SelectedFoldingMarkerBackgroundBrush" Value="#2A2B34" />
+    </Style>
+
+    <!-- Logger (CustomRichTextBox, StyleKey is ContentControl) -->
+    <Style Selector="ContentControl.CustomRichTextBox">
+        <Setter Property="Height" Value="175" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4 2" />
+        <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontFamily" Value="{DynamicResource CodeFontFamily}" />
+    </Style>
+    <Style Selector="TextBlock.LogLink">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="Goldenrod" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="TextBlock.LogLink:pointerover">
+        <Setter Property="Foreground" Value="Gold" />
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
+
+    <!-- Magnifier -->
+    <Style Selector="controls|Magnifier">
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+    <Style Selector="controls|Magnifier[FrameType=Circle]">
+        <Setter Property="Template" Value="{StaticResource CircleTemplate}" />
+    </Style>
+    <Style Selector="controls|Magnifier[FrameType=Rectangle]">
+        <Setter Property="Template" Value="{StaticResource RectangleTemplate}" />
+    </Style>
+    <Style Selector="controls|Magnifier:disabled">
+        <Setter Property="Template" Value="{x:Null}" />
+    </Style>
+
+    <!-- FilterableComboBox (StyleKey is ComboBox, the class is added in code): editable template with a filter text box -->
+    <Style Selector="ComboBox.FilterableComboBox">
+        <Setter Property="PlaceholderText" Value="UE5 / UE4 / GameName..." />
+        <Setter Property="MaxDropDownHeight" Value="400" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel />
+            </ItemsPanelTemplate>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Name="PART_EditableTextBox" Grid.Column="0"
+                                 Text="{TemplateBinding Text, Mode=TwoWay}"
+                                 Watermark="{TemplateBinding PlaceholderText}"
+                                 Foreground="{TemplateBinding Foreground}"
+                                 Background="Transparent" BorderThickness="0" MinHeight="0"
+                                 Padding="{TemplateBinding Padding}"
+                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                 VerticalAlignment="Stretch" />
+                        <ToggleButton Name="toggle" Grid.Column="1"
+                                      Background="Transparent" BorderThickness="0" Padding="8 0"
+                                      ClickMode="Press" Focusable="False" VerticalAlignment="Stretch"
+                                      IsChecked="{TemplateBinding IsDropDownOpen, Mode=TwoWay}">
+                            <Path Width="8" Height="4" Stretch="Uniform"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z"
+                                  Fill="{TemplateBinding Foreground}" />
+                        </ToggleButton>
+                        <Popup Name="PART_Popup"
+                               MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                               MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                               IsLightDismissEnabled="True"
+                               IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+                               PlacementTarget="{TemplateBinding}"
+                               InheritsTransform="True">
+                            <Border Margin="0 1 0 0"
+                                    Background="{DynamicResource Layer1BackgroundBrush}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}">
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

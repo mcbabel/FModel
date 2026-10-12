@@ -1,0 +1,161 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:aup="using:FModel.Views.Resources.Controls.Aup"
+        xmlns:converters="using:FModel.Views.Resources.Converters">
+
+    <!-- playlist of the audio player -->
+    <Style Selector="ListBox.AudioFilesListBox">
+        <Setter Property="ItemsSource" Value="{Binding AudioPlayer.AudioFilesView}" />
+        <Setter Property="SelectedItem" Value="{Binding AudioPlayer.SelectedAudioFile, Mode=TwoWay}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ItemTemplate">
+            <DataTemplate>
+                <Grid ColumnDefinitions="*,25,Auto">
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Left" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="2" HorizontalAlignment="Right" Text="{Binding Length, Converter={x:Static converters:SizeToStringConverter.Instance}}" />
+                </Grid>
+            </DataTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.AudioFilesListBox > ListBoxItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="5 3" />
+    </Style>
+    <Style Selector="ListBox.AudioFilesListBox:empty">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <TextBlock Text="No audio to play at the moment" FontWeight="SemiBold" TextAlignment="Center"
+                               Foreground="{DynamicResource ErrorBrush}" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- play/pause button, add Classes.playing="{Binding AudioPlayer.PlayedFile.PlaybackState, Converter={x:Static EnumMatchConverter.Instance}, ConverterParameter=Playing}" -->
+    <Style Selector="Button.PlayPauseToolbarButton">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="ToolTip.Tip" Value="Play" />
+        <Setter Property="Content">
+            <Template>
+                <Viewbox Width="16" Height="16">
+                    <Canvas Width="24" Height="24">
+                        <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource PlayIcon}" />
+                    </Canvas>
+                </Viewbox>
+            </Template>
+        </Setter>
+    </Style>
+    <Style Selector="Button.PlayPauseToolbarButton.playing">
+        <Setter Property="ToolTip.Tip" Value="Pause" />
+        <Setter Property="Content">
+            <Template>
+                <Viewbox Width="16" Height="16">
+                    <Canvas Width="24" Height="24">
+                        <Path Fill="{DynamicResource ForegroundBrush}" Data="{StaticResource PauseIcon}" />
+                    </Canvas>
+                </Viewbox>
+            </Template>
+        </Setter>
+    </Style>
+    <Style Selector="Button.PlayPauseToolbarButton:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}" />
+    </Style>
+    <Style Selector="Button.PlayPauseToolbarButton[(LayerExtension.ComputedLayer)=2]:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}" />
+    </Style>
+    <Style Selector="Button.PlayPauseToolbarButton[(LayerExtension.ComputedLayer)=3]:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}" />
+    </Style>
+    <Style Selector="Button.PlayPauseToolbarButton[(LayerExtension.ComputedLayer)=4]:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}" />
+    </Style>
+
+    <Style Selector="aup|Timeline">
+        <Setter Property="ProgressBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#45B649" Offset="0.0" />
+                <GradientStop Color="#DCE35B" Offset="1.0" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="ProgressLineBrush" Value="Brown" />
+        <Setter Property="TickBrush" Value="#7F848E" />
+        <Setter Property="TimeBrush" Value="#DAE5F2" />
+        <Setter Property="MousePositionBrush" Value="Brown" />
+        <Setter Property="Height" Value="25" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Source" Value="{Binding AudioPlayer}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_TimelineArea" Background="Transparent">
+                    <Grid Name="PART_Timeline" ClipToBounds="True" RowDefinitions="20,*" ColumnDefinitions="Auto,*">
+                        <Rectangle Name="PART_MousePosition" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                                   Fill="{TemplateBinding MousePositionBrush}" Width="2" IsVisible="False" />
+                        <Grid Name="PART_Length" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" ClipToBounds="True" />
+                        <Grid Name="PART_ControlContainer" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                            <Border Name="PART_ProgressLine" BorderBrush="{TemplateBinding ProgressLineBrush}"
+                                    Background="{TemplateBinding ProgressBrush}"
+                                    VerticalAlignment="Stretch" HorizontalAlignment="Left" BorderThickness="0 0 1 0" />
+                        </Grid>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- custom drawn (see SpectrumAnalyzer.Render), it lies over the player buttons so it must not catch the mouse -->
+    <Style Selector="aup|SpectrumAnalyzer">
+        <Setter Property="FrequencyBarCount" Value="75" />
+        <Setter Property="FrequencyBarBorderBrush" Value="#DAE5F2" />
+        <Setter Property="FrequencyBarBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#B5AC49" Offset="0.0" />
+                <GradientStop Color="#3CA55C" Offset="1.0" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Source" Value="{Binding AudioPlayer}" />
+    </Style>
+
+    <Style Selector="aup|Timeclock">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Margin" Value="0 15 15 0" />
+        <Setter Property="Source" Value="{Binding AudioPlayer}" />
+        <Setter Property="TimeForeground" Value="#DAE5F2" />
+        <Setter Property="LabelForeground" Value="#E5C07B" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Name="PART_Timeclock" ClipToBounds="True" RowDefinitions="Auto,Auto">
+                    <LayoutTransformControl Grid.Row="0" HorizontalAlignment="Left">
+                        <LayoutTransformControl.LayoutTransform>
+                            <ScaleTransform ScaleX=".75" ScaleY=".75" />
+                        </LayoutTransformControl.LayoutTransform>
+                        <TextBlock Name="PART_Label"
+                                   Text="{TemplateBinding Label}"
+                                   FontFamily="{TemplateBinding LabelFont}"
+                                   Padding="0"
+                                   Foreground="{TemplateBinding LabelForeground}" />
+                    </LayoutTransformControl>
+                    <TextBlock Name="PART_Time"
+                               Text="00:00:00.00"
+                               Grid.Row="1"
+                               HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                               FontFamily="{TemplateBinding TimeFont}"
+                               Foreground="{TemplateBinding TimeForeground}" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

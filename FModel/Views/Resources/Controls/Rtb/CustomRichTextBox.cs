@@ -1,23 +1,18 @@
-﻿using System;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Threading;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Threading;
+using FModel.Framework.Ui;
 
 namespace FModel.Views.Resources.Controls;
-
-/// <summary>
-/// https://github.com/xceedsoftware/wpftoolkit/tree/master/ExtendedWPFToolkitSolution/Src/Xceed.Wpf.Toolkit/RichTextBox
-/// </summary>
-public interface ITextFormatter
-{
-    string GetText(FlowDocument document);
-    void SetText(FlowDocument document, string text);
-}
 
 public enum ELog
 {
@@ -36,11 +31,9 @@ public enum ELog
 /// the things displayed in ListBox (virtualized) should use a custom template
 /// see how logs work in ExportSessionViewModel
 /// </summary>
-public class FLogger : ITextFormatter
+public static class FLogger
 {
     public static CustomRichTextBox Logger;
-    private static readonly BrushConverter _brushConverter = new();
-    private static int _previous;
 
     private const string _at = "   at ";
     private const char _dot = '.';
@@ -49,7 +42,7 @@ public class FLogger : ITextFormatter
 
     public static void Append(ELog type, Action job)
     {
-        Application.Current.Dispatcher.Invoke(delegate
+        RunOnUiThread(() =>
         {
             switch (type)
             {
@@ -68,7 +61,7 @@ public class FLogger : ITextFormatter
             }
 
             job();
-        }, DispatcherPriority.Background);
+        });
     }
 
     public static void Append(Exception e)
@@ -112,208 +105,168 @@ public class FLogger : ITextFormatter
 
     public static void Text(string message, string color, bool newLine = false)
     {
-        try
-        {
-            Logger.Document.ContentEnd.InsertTextInRun(message);
-            Logger.Selection.Select(Logger.Document.ContentStart.GetPositionAtOffset(_previous), Logger.Document.ContentEnd);
-            Logger.Selection.ApplyPropertyValue(TextElement.ForegroundProperty, _brushConverter.ConvertFromString(color));
-        }
-        finally
-        {
-            Finally(newLine);
-        }
+        RunOnUiThread(() => Logger?.AppendText(message, color, newLine));
     }
 
     public static void Link(string message, string url, bool newLine = false)
     {
-        try
-        {
-            new Hyperlink(new Run(message), Logger.Document.ContentEnd)
-            {
-                NavigateUri = new Uri(url),
-                OverridesDefaultStyle = true,
-                Style = new Style(typeof(Hyperlink))
-                {
-                    Setters =
-                    {
-                        new Setter(FrameworkContentElement.CursorProperty, Cursors.Hand),
-                        new Setter(TextElement.ForegroundProperty, Brushes.Goldenrod),
-                        new Setter(TextElement.FontWeightProperty, FontWeights.Bold)
-                    },
-                    Triggers =
-                    {
-                        new Trigger
-                        {
-                            Property = UIElement.IsMouseOverProperty,
-                            Value = true,
-                            Setters =
-                            {
-                                new Setter(TextElement.ForegroundProperty, Brushes.Gold),
-                                new Setter(TextBlock.TextDecorationsProperty, TextDecorations.Underline)
-                            }
-                        }
-                    }
-                }
-            }.Click += (sender, _) =>
-            {
-                var uri = ((Hyperlink) sender).NavigateUri;
-                if (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
-                {
-                    Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
-                }
-                else
-                {
-                    Process.Start("explorer.exe", $"/select, \"{uri.AbsoluteUri}\"");
-                }
-            };
-        }
-        finally
-        {
-            Finally(newLine);
-        }
-    }
-
-    private const int MaxBlocks = 250; // in the meantime
-
-    private static void Finally(bool newLine)
-    {
-        if (newLine) Logger.Document.Blocks.Add(new Paragraph { Margin = new Thickness(0) });
-
-        while (Logger.Document.Blocks.Count > MaxBlocks)
-        {
-            Logger.Document.Blocks.Remove(Logger.Document.Blocks.FirstBlock);
-        }
-
-        Logger.ScrollToEnd();
-        _previous = Math.Abs(Logger.Document.ContentEnd.GetOffsetToPosition(Logger.Document.ContentStart)) - 2;
-    }
-
-    public string GetText(FlowDocument document)
-    {
-        return new TextRange(document.ContentStart, document.ContentEnd).Text;
-    }
-
-    public void SetText(FlowDocument document, string text)
-    {
-        new TextRange(document.ContentStart, document.ContentEnd).Text = text;
+        RunOnUiThread(() => Logger?.AppendLink(message, url, newLine));
     }
 
     public static void ClearLogs()
     {
-        Logger.Document.Blocks.Clear();
-        _previous = 0;
+        RunOnUiThread(() => Logger?.Clear());
+    }
+
+    private static void RunOnUiThread(Action action)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+            action();
+        else
+            Dispatcher.UIThread.Post(action, DispatcherPriority.Background);
     }
 }
 
-public class CustomRichTextBox : RichTextBox
+/// <summary>
+/// Read-only, selectable, colored log view (replacement of the WPF RichTextBox/FlowDocument).
+/// Style class "CustomRichTextBox" (see ControlStyles.axaml).
+/// </summary>
+public class CustomRichTextBox : ContentControl
 {
-    private bool _preventDocumentUpdate;
-    private bool _preventTextUpdate;
+    private const int MaxLines = 250; // in the meantime
+
+    private static readonly Dictionary<string, IBrush> _brushes = new();
+
+    private readonly ScrollViewer _scrollViewer;
+    private readonly SelectableTextBlock _textBlock;
+    private int _lineCount;
+    private bool _scrollPending;
+
+    protected override Type StyleKeyOverride => typeof(ContentControl);
 
     public CustomRichTextBox()
     {
+        _textBlock = new SelectableTextBlock
+        {
+            TextWrapping = TextWrapping.Wrap,
+            TextAlignment = TextAlignment.Left,
+            Inlines = new InlineCollection()
+        };
+        _scrollViewer = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+            Content = _textBlock
+        };
+        Content = _scrollViewer;
     }
 
-    public CustomRichTextBox(FlowDocument document) : base(document)
-    {
-    }
-
-    public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-        "Text", typeof(string), typeof(CustomRichTextBox),
-        new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
-            OnTextPropertyChanged, CoerceTextProperty, true, UpdateSourceTrigger.LostFocus));
-
+    /// <summary>Plain text of the whole log.</summary>
     public string Text
     {
-        get => (string) GetValue(TextProperty);
-        set => SetValue(TextProperty, value);
-    }
-
-    private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        ((CustomRichTextBox) d).UpdateDocumentFromText();
-    }
-
-    private static object CoerceTextProperty(DependencyObject d, object value)
-    {
-        return value ?? "";
-    }
-
-    public static readonly DependencyProperty TextFormatterProperty =
-        DependencyProperty.Register(
-            "TextFormatter", typeof(ITextFormatter), typeof(CustomRichTextBox),
-            new FrameworkPropertyMetadata(new FLogger(), OnTextFormatterPropertyChanged));
-
-    public ITextFormatter TextFormatter
-    {
-        get => (ITextFormatter) GetValue(TextFormatterProperty);
-        set => SetValue(TextFormatterProperty, value);
-    }
-
-    private static void OnTextFormatterPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is CustomRichTextBox richTextBox)
+        get
         {
-            richTextBox.OnTextFormatterPropertyChanged((ITextFormatter) e.OldValue, (ITextFormatter) e.NewValue);
+            var sb = new StringBuilder();
+            foreach (var inline in _textBlock.Inlines!)
+            {
+                switch (inline)
+                {
+                    case Run run:
+                        sb.Append(run.Text);
+                        break;
+                    case LineBreak:
+                        sb.AppendLine();
+                        break;
+                    case InlineUIContainer { Child: TextBlock link }:
+                        sb.Append(link.Text);
+                        break;
+                }
+            }
+            return sb.ToString();
         }
     }
 
-    protected virtual void OnTextFormatterPropertyChanged(ITextFormatter oldValue, ITextFormatter newValue)
+    internal void AppendText(string message, string color, bool newLine)
     {
-        UpdateTextFromDocument();
+        _textBlock.Inlines!.Add(new Run(message) { Foreground = GetBrush(color) });
+        Finally(newLine);
     }
 
-    protected override void OnTextChanged(TextChangedEventArgs e)
+    internal void AppendLink(string message, string url, bool newLine)
     {
-        UpdateTextFromDocument();
-        base.OnTextChanged(e);
+        var link = new TextBlock { Text = message, Classes = { "LogLink" } };
+        link.PointerPressed += (_, e) =>
+        {
+            if (!e.GetCurrentPoint(link).Properties.IsLeftButtonPressed) return;
+            e.Handled = true;
+            OpenLink(url);
+        };
+
+        _textBlock.Inlines!.Add(new InlineUIContainer(link) { BaselineAlignment = BaselineAlignment.TextBottom });
+        Finally(newLine);
     }
 
-    private void UpdateTextFromDocument()
+    private static void OpenLink(string url)
     {
-        if (_preventTextUpdate)
-            return;
-
-        _preventDocumentUpdate = true;
-        SetCurrentValue(TextProperty, TextFormatter.GetText(Document));
-        _preventDocumentUpdate = false;
-    }
-
-    private void UpdateDocumentFromText()
-    {
-        if (_preventDocumentUpdate)
-            return;
-
-        _preventTextUpdate = true;
-        TextFormatter.SetText(Document, Text);
-        _preventTextUpdate = false;
+        try
+        {
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+                Shell.Open(uri.AbsoluteUri);
+            else if (Directory.Exists(url))
+                Shell.Open(url);
+            else
+                Shell.RevealInFileManager(url);
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     public void Clear()
     {
-        Document.Blocks.Clear();
+        _textBlock.Inlines!.Clear();
+        _lineCount = 0;
     }
 
-    public override void BeginInit()
+    public void ScrollToEnd()
     {
-        base.BeginInit();
-        _preventTextUpdate = true;
-        _preventDocumentUpdate = true;
+        if (_scrollPending) return;
+        _scrollPending = true;
+        // after the new text has been measured
+        Dispatcher.UIThread.Post(() =>
+        {
+            _scrollPending = false;
+            _scrollViewer.ScrollToEnd();
+        }, DispatcherPriority.Background);
     }
 
-    public override void EndInit()
+    private void Finally(bool newLine)
     {
-        base.EndInit();
-        _preventTextUpdate = false;
-        _preventDocumentUpdate = false;
+        var inlines = _textBlock.Inlines!;
+        if (newLine)
+        {
+            inlines.Add(new LineBreak());
+            _lineCount++;
+        }
 
-        if (!string.IsNullOrEmpty(Text))
+        while (_lineCount > MaxLines && inlines.Count > 0)
         {
-            UpdateDocumentFromText();
+            var first = inlines[0];
+            inlines.RemoveAt(0);
+            if (first is LineBreak) _lineCount--;
         }
-        else
+
+        ScrollToEnd();
+    }
+
+    private static IBrush GetBrush(string color)
+    {
+        if (!_brushes.TryGetValue(color, out var brush))
         {
-            UpdateTextFromDocument();
+            brush = Brush.Parse(color).ToImmutable();
+            _brushes[color] = brush;
         }
+        return brush;
     }
 }

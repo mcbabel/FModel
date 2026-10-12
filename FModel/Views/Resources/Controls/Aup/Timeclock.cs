@@ -1,13 +1,16 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
+using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace FModel.Views.Resources.Controls.Aup;
 
-[TemplatePart(Name = "PART_Timeclock", Type = typeof(Grid))]
-[TemplatePart(Name = "PART_Time", Type = typeof(TextBlock))]
-public sealed class Timeclock : UserControl
+[TemplatePart("PART_Timeclock", typeof(Grid))]
+[TemplatePart("PART_Time", typeof(TextBlock))]
+public sealed class Timeclock : TemplatedControl
 {
     public enum EClockType
     {
@@ -15,110 +18,94 @@ public sealed class Timeclock : UserControl
         TimeRemaining
     }
 
-    private Grid _timeclockGrid;
-    private TextBlock _timeText;
     private const string DefaultTimeFormat = "hh\\:mm\\:ss\\.ff";
+
+    public static readonly StyledProperty<ISource> SourceProperty =
+        AvaloniaProperty.Register<Timeclock, ISource>(nameof(Source));
+
+    public static readonly StyledProperty<EClockType> ClockTypeProperty =
+        AvaloniaProperty.Register<Timeclock, EClockType>(nameof(ClockType), EClockType.TimeElapsed);
+
+    public static readonly StyledProperty<FontFamily> LabelFontProperty =
+        AvaloniaProperty.Register<Timeclock, FontFamily>(nameof(LabelFont), new FontFamily("Segoe UI"));
+
+    public static readonly StyledProperty<IBrush> LabelForegroundProperty =
+        AvaloniaProperty.Register<Timeclock, IBrush>(nameof(LabelForeground), Brushes.Coral);
+
+    public static readonly StyledProperty<FontFamily> TimeFontProperty =
+        AvaloniaProperty.Register<Timeclock, FontFamily>(nameof(TimeFont), new FontFamily("Ebrima"));
+
+    public static readonly StyledProperty<IBrush> TimeForegroundProperty =
+        AvaloniaProperty.Register<Timeclock, IBrush>(nameof(TimeForeground), Brushes.Silver);
+
+    public static readonly StyledProperty<string> LabelProperty =
+        AvaloniaProperty.Register<Timeclock, string>(nameof(Label), string.Empty);
+
+    public static readonly StyledProperty<string> TimeFormatProperty =
+        AvaloniaProperty.Register<Timeclock, string>(nameof(TimeFormat), DefaultTimeFormat, coerce: (_, v) =>
+        {
+            try
+            {
+                TimeSpan.Zero.ToString(v);
+                return v;
+            }
+            catch
+            {
+                return DefaultTimeFormat;
+            }
+        });
+
+    public ISource Source { get => GetValue(SourceProperty); set => SetValue(SourceProperty, value); }
+    public EClockType ClockType { get => GetValue(ClockTypeProperty); set => SetValue(ClockTypeProperty, value); }
+    public FontFamily LabelFont { get => GetValue(LabelFontProperty); set => SetValue(LabelFontProperty, value); }
+    public IBrush LabelForeground { get => GetValue(LabelForegroundProperty); set => SetValue(LabelForegroundProperty, value); }
+    public FontFamily TimeFont { get => GetValue(TimeFontProperty); set => SetValue(TimeFontProperty, value); }
+    public IBrush TimeForeground { get => GetValue(TimeForegroundProperty); set => SetValue(TimeForegroundProperty, value); }
+    public string Label { get => GetValue(LabelProperty); set => SetValue(LabelProperty, value); }
+    public string TimeFormat { get => GetValue(TimeFormatProperty); set => SetValue(TimeFormatProperty, value); }
 
     static Timeclock()
     {
-        DefaultStyleKeyProperty.OverrideMetadata(typeof(Timeclock), new FrameworkPropertyMetadata(typeof(Timeclock)));
+        CornerRadiusProperty.OverrideDefaultValue<Timeclock>(new CornerRadius(3));
     }
 
     private ISource _source;
-    public ISource Source
-    {
-        get => (ISource) GetValue(SourceProperty);
-        set => SetValue(SourceProperty, value);
-    }
-    public static readonly DependencyProperty SourceProperty =
-        DependencyProperty.Register("Source", typeof(ISource), typeof(Timeclock),
-            new UIPropertyMetadata(null, OnSourceChanged, OnCoerceSource));
+    private Grid _timeclockGrid;
+    private TextBlock _timeText;
 
-    public EClockType ClockType
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        get => (EClockType) GetValue(ClockTypeProperty);
-        set => SetValue(ClockTypeProperty, value);
-    }
-    public static readonly DependencyProperty ClockTypeProperty =
-        DependencyProperty.Register("ClockType", typeof(EClockType), typeof(Timeclock),
-            new UIPropertyMetadata(EClockType.TimeElapsed, OnClockTypeChanged, OnCoerceClockType));
+        base.OnPropertyChanged(change);
 
-    public FontFamily LabelFont
-    {
-        get => (FontFamily) GetValue(LabelFontProperty);
-        set => SetValue(LabelFontProperty, value);
-    }
-    public static readonly DependencyProperty LabelFontProperty =
-        DependencyProperty.Register("LabelFont", typeof(FontFamily), typeof(Timeclock),
-            new UIPropertyMetadata(new FontFamily("Segoe UI"), OnLabelFontChanged, OnCoerceLabelFont));
+        if (change.Property == SourceProperty)
+        {
+            if (_source != null)
+            {
+                _source.SourceEvent -= OnSourceEvent;
+                _source.SourcePropertyChangedEvent -= OnSourcePropertyChangedEvent;
+            }
 
-    public Brush LabelForeground
-    {
-        get => (Brush) GetValue(LabelForegroundProperty);
-        set => SetValue(LabelForegroundProperty, value);
-    }
-    public static readonly DependencyProperty LabelForegroundProperty =
-        DependencyProperty.Register("LabelForeground", typeof(Brush), typeof(Timeclock),
-            new UIPropertyMetadata(Brushes.Coral, OnLabelForegroundChanged, OnCoerceLabelForeground));
-
-    public FontFamily TimeFont
-    {
-        get => (FontFamily) GetValue(TimeFontProperty);
-        set => SetValue(TimeFontProperty, value);
-    }
-    public static readonly DependencyProperty TimeFontProperty =
-        DependencyProperty.Register("TimeFont", typeof(FontFamily), typeof(Timeclock),
-            new UIPropertyMetadata(new FontFamily("Ebrima"), OnTimeFontChanged, OnCoerceTimeFont));
-
-    public Brush TimeForeground
-    {
-        get => (Brush) GetValue(TimeForegroundProperty);
-        set => SetValue(TimeForegroundProperty, value);
-    }
-    public static readonly DependencyProperty TimeForegroundProperty =
-        DependencyProperty.Register("TimeForeground", typeof(Brush), typeof(Timeclock),
-            new UIPropertyMetadata(Brushes.Silver, OnTimeForegroundChanged, OnCoerceTimeForeground));
-
-    public CornerRadius CornerRadius
-    {
-        get => (CornerRadius) GetValue(CornerRadiusProperty);
-        set => SetValue(CornerRadiusProperty, value);
-    }
-    public static readonly DependencyProperty CornerRadiusProperty =
-        DependencyProperty.Register("CornerRadius", typeof(CornerRadius), typeof(Timeclock),
-            new UIPropertyMetadata(new CornerRadius(3), OnCornerRadiusChanged, OnCoerceCornerRadius));
-
-    public string Label
-    {
-        get => (string) GetValue(LabelProperty);
-        set => SetValue(LabelProperty, value);
-    }
-    public static readonly DependencyProperty LabelProperty =
-        DependencyProperty.Register("Label", typeof(string), typeof(Timeclock),
-            new UIPropertyMetadata(string.Empty, OnLabelChanged, OnCoerceLabel));
-
-    public string TimeFormat
-    {
-        get => (string) GetValue(TimeFormatProperty);
-        set => SetValue(TimeFormatProperty, value);
-    }
-    public static readonly DependencyProperty TimeFormatProperty =
-        DependencyProperty.Register("TimeFormat", typeof(string), typeof(Timeclock),
-            new UIPropertyMetadata(DefaultTimeFormat, OnTimeFormatChanged, OnCoerceTimeFormat));
-
-    private void OnSourceChanged(ISource oldValue, ISource newValue)
-    {
-        _source = Source;
-        _source.SourceEvent += OnSourceEvent;
-        _source.SourcePropertyChangedEvent += OnSourcePropertyChangedEvent;
-        OnSourceEvent(this, null);
+            _source = Source;
+            if (_source == null) return;
+            _source.SourceEvent += OnSourceEvent;
+            _source.SourcePropertyChangedEvent += OnSourcePropertyChangedEvent;
+            OnSourceEvent(this, null);
+        }
+        else if (change.Property == ClockTypeProperty || change.Property == TimeFormatProperty)
+        {
+            CalculateTime();
+        }
     }
 
     private void OnSourceEvent(object sender, SourceEventArgs e)
     {
         if (e is not { Event: ESourceEventType.Loading } || Source == null) return;
-        Label = Source.PlayedFile.FileName;
-        Dispatcher.BeginInvoke(CalculateTime);
+        var label = Source.PlayedFile.FileName;
+        Dispatcher.UIThread.Post(() =>
+        {
+            Label = label;
+            CalculateTime();
+        });
     }
 
     private void OnSourcePropertyChangedEvent(object sender, SourcePropertyChangedEventArgs e)
@@ -128,178 +115,12 @@ public sealed class Timeclock : UserControl
         CalculateTime();
     }
 
-    private ISource OnCoerceSource(ISource value) => value;
-    private static object OnCoerceSource(DependencyObject o, object value)
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        if (o is Timeclock timeclock)
-            return timeclock.OnCoerceSource((ISource) value);
-        return value;
-    }
+        base.OnApplyTemplate(e);
 
-    private static void OnSourceChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-    {
-        if (o is Timeclock timeclock)
-            timeclock.OnSourceChanged((ISource) e.OldValue, (ISource) e.NewValue);
-    }
-
-    private EClockType OnCoerceClockType(EClockType value) => value;
-    private static object OnCoerceClockType(DependencyObject o, object value)
-    {
-        if (o is Timeclock timeclock)
-            return timeclock.OnCoerceClockType((EClockType) value);
-        return value;
-    }
-
-    private void OnClockTypeChanged(EClockType oldValue, EClockType newValue) => CalculateTime();
-    private static void OnClockTypeChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-    {
-        if (o is Timeclock timeclock)
-            timeclock.OnClockTypeChanged((EClockType) e.OldValue, (EClockType) e.NewValue);
-    }
-
-    private FontFamily OnCoerceLabelFont(FontFamily value) => value;
-    private static object OnCoerceLabelFont(DependencyObject o, object value)
-    {
-        if (o is Timeclock timeclock)
-            return timeclock.OnCoerceLabelFont((FontFamily) value);
-        return value;
-    }
-
-    private void OnLabelFontChanged(FontFamily oldValue, FontFamily newValue)
-    {
-    }
-
-    private static void OnLabelFontChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-    {
-        if (o is Timeclock timeclock)
-            timeclock.OnLabelFontChanged((FontFamily) e.OldValue, (FontFamily) e.NewValue);
-    }
-
-    private Brush OnCoerceLabelForeground(Brush value) => value;
-    private static object OnCoerceLabelForeground(DependencyObject o, object value)
-    {
-        if (o is Timeclock timeclock)
-            return timeclock.OnCoerceLabelForeground((Brush) value);
-        return value;
-    }
-
-    private void OnLabelForegroundChanged(Brush oldValue, Brush newValue)
-    {
-    }
-
-    private static void OnLabelForegroundChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-    {
-        if (o is Timeclock timeclock)
-            timeclock.OnLabelForegroundChanged((Brush) e.OldValue, (Brush) e.NewValue);
-    }
-
-    private FontFamily OnCoerceTimeFont(FontFamily value) => value;
-    private static object OnCoerceTimeFont(DependencyObject o, object value)
-    {
-        if (o is Timeclock timeclock)
-            return timeclock.OnCoerceTimeFont((FontFamily) value);
-        return value;
-    }
-
-    private void OnTimeFontChanged(FontFamily oldValue, FontFamily newValue)
-    {
-    }
-
-    private static void OnTimeFontChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-    {
-        if (o is Timeclock timeclock)
-            timeclock.OnTimeFontChanged((FontFamily) e.OldValue, (FontFamily) e.NewValue);
-    }
-
-    private Brush OnCoerceTimeForeground(Brush value) => value;
-    private static object OnCoerceTimeForeground(DependencyObject o, object value)
-    {
-        if (o is Timeclock timeclock)
-            return timeclock.OnCoerceTimeForeground((Brush) value);
-        return value;
-    }
-
-    private void OnTimeForegroundChanged(Brush oldValue, Brush newValue)
-    {
-    }
-
-    private static void OnTimeForegroundChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-    {
-        if (o is Timeclock timeclock)
-            timeclock.OnTimeForegroundChanged((Brush) e.OldValue, (Brush) e.NewValue);
-    }
-
-    private CornerRadius OnCoerceCornerRadius(CornerRadius value) => value;
-    private static object OnCoerceCornerRadius(DependencyObject o, object value)
-    {
-        if (o is Timeclock timeclock)
-            return timeclock.OnCoerceCornerRadius((CornerRadius) value);
-        return value;
-    }
-
-    private void OnCornerRadiusChanged(CornerRadius oldValue, CornerRadius newValue)
-    {
-    }
-
-    private static void OnCornerRadiusChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-    {
-        if (o is Timeclock timeclock)
-            timeclock.OnCornerRadiusChanged((CornerRadius) e.OldValue, (CornerRadius) e.NewValue);
-    }
-
-    private string OnCoerceLabel(string value) => value;
-    private static object OnCoerceLabel(DependencyObject o, object value)
-    {
-        if (o is Timeclock timeclock)
-            return timeclock.OnCoerceLabel((string) value);
-        return value;
-    }
-
-    private void OnLabelChanged(string oldValue, string newValue)
-    {
-    }
-
-    private static void OnLabelChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-    {
-        if (o is Timeclock timeclock)
-            timeclock.OnLabelChanged((string) e.OldValue, (string) e.NewValue);
-    }
-
-    private string OnCoerceTimeFormat(string value) => value;
-    private static object OnCoerceTimeFormat(DependencyObject o, object value)
-    {
-        if (o is Timeclock timeclock)
-            return timeclock.OnCoerceTimeFormat((string) value);
-        return value;
-    }
-
-    private void OnTimeFormatChanged(string oldValue, string newValue)
-    {
-        try
-        {
-            TimeSpan.Zero.ToString(newValue);
-        }
-        catch
-        {
-            TimeFormat = DefaultTimeFormat;
-        }
-
-        CalculateTime();
-    }
-
-    private static void OnTimeFormatChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
-    {
-        if (o is Timeclock timeclock)
-            timeclock.OnTimeFormatChanged((string) e.OldValue, (string) e.NewValue);
-    }
-
-    public override void OnApplyTemplate()
-    {
-        base.OnApplyTemplate();
-
-        _timeclockGrid = GetTemplateChild("PART_Timeclock") as Grid;
-        _timeText = GetTemplateChild("PART_Time") as TextBlock;
-        _timeclockGrid.CacheMode = new BitmapCache();
+        _timeclockGrid = e.NameScope.Find<Grid>("PART_Timeclock");
+        _timeText = e.NameScope.Find<TextBlock>("PART_Time");
 
         OnSourceEvent(this, null);
     }
@@ -310,8 +131,9 @@ public sealed class Timeclock : UserControl
         {
             var position = _source.PlayedFile.Position;
             var length = _source.PlayedFile.Duration;
-            Dispatcher.BeginInvoke((Action) delegate
+            Post(() =>
             {
+                if (_timeText == null) return;
                 _timeText.Text = ClockType switch
                 {
                     EClockType.TimeElapsed => position.ToString(TimeFormat),
@@ -328,9 +150,16 @@ public sealed class Timeclock : UserControl
 
     private void ZeroTime()
     {
-        Dispatcher.BeginInvoke((Action) delegate
+        Post(() =>
         {
-            _timeText.Text = TimeSpan.Zero.ToString(TimeFormat);
+            if (_timeText != null)
+                _timeText.Text = TimeSpan.Zero.ToString(TimeFormat);
         });
+    }
+
+    private static void Post(Action action)
+    {
+        if (Dispatcher.UIThread.CheckAccess()) action();
+        else Dispatcher.UIThread.Post(action);
     }
 }

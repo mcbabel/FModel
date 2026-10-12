@@ -1,55 +1,77 @@
-using System.Windows;
-using System.Windows.Controls;
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Threading;
 
 namespace FModel.Views.Resources.Controls;
 
+/// <summary>
+/// Provides the two-way bindable attached property <c>CustomScrollViewer.VerticalOffset</c> for any <see cref="ScrollViewer"/>
+/// (used by the TextEditor template to remember the scroll position of each tab).
+/// </summary>
 public class CustomScrollViewer : ScrollViewer
 {
-    /// <summary>
-    /// VerticalOffset attached property
-    /// </summary>
-    public new static readonly DependencyProperty VerticalOffsetProperty =
-        DependencyProperty.RegisterAttached("VerticalOffset", typeof(double),
-            typeof(CustomScrollViewer), new FrameworkPropertyMetadata(double.NaN,
-                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnVerticalOffsetPropertyChanged));
+    protected override Type StyleKeyOverride => typeof(ScrollViewer);
 
-    /// <summary>
-    /// Just a flag that the binding has been applied.
-    /// </summary>
-    private static readonly DependencyProperty _verticalScrollBindingProperty =
-        DependencyProperty.RegisterAttached("_verticalScrollBinding", typeof(bool?), typeof(CustomScrollViewer));
+    public new static readonly AttachedProperty<double> VerticalOffsetProperty =
+        AvaloniaProperty.RegisterAttached<CustomScrollViewer, ScrollViewer, double>("VerticalOffset", double.NaN, defaultBindingMode: BindingMode.TwoWay);
 
-    public static double GetVerticalOffset(DependencyObject depObj)
+    /// <summary>Just a flag that the ScrollChanged handler has been attached.</summary>
+    private static readonly AttachedProperty<bool> _verticalScrollBindingProperty =
+        AvaloniaProperty.RegisterAttached<CustomScrollViewer, ScrollViewer, bool>("VerticalScrollBinding");
+
+    /// <summary>Set while an offset coming from the binding is waiting to be applied (layout may not be up to date yet).</summary>
+    private static readonly AttachedProperty<bool> _pendingProperty =
+        AvaloniaProperty.RegisterAttached<CustomScrollViewer, ScrollViewer, bool>("PendingVerticalOffset");
+
+    private static bool _updatingFromScroll;
+
+    static CustomScrollViewer()
     {
-        return (double) depObj.GetValue(VerticalOffsetProperty);
+        VerticalOffsetProperty.Changed.AddClassHandler<ScrollViewer>(OnVerticalOffsetPropertyChanged);
     }
 
-    public static void SetVerticalOffset(DependencyObject depObj, double value)
-    {
-        depObj.SetValue(VerticalOffsetProperty, value);
-    }
+    public static double GetVerticalOffset(ScrollViewer element) => element.GetValue(VerticalOffsetProperty);
+    public static void SetVerticalOffset(ScrollViewer element, double value) => element.SetValue(VerticalOffsetProperty, value);
 
-    private static void OnVerticalOffsetPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnVerticalOffsetPropertyChanged(ScrollViewer scrollViewer, AvaloniaPropertyChangedEventArgs e)
     {
-        var v = (double) e.NewValue;
-        if (d is not ScrollViewer scrollViewer || double.IsNaN(v))
+        if (_updatingFromScroll || e.NewValue is not double v || double.IsNaN(v))
             return;
 
         BindVerticalOffset(scrollViewer);
-        scrollViewer.ScrollToVerticalOffset(v);
+        scrollViewer.SetValue(_pendingProperty, true);
+        // apply once the new content has been measured
+        Dispatcher.UIThread.Post(() =>
+        {
+            scrollViewer.SetValue(_pendingProperty, false);
+            var target = GetVerticalOffset(scrollViewer);
+            if (double.IsNaN(target)) return;
+            scrollViewer.Offset = new Vector(scrollViewer.Offset.X, target);
+        }, DispatcherPriority.Background);
     }
 
     private static void BindVerticalOffset(ScrollViewer scrollViewer)
     {
-        if (scrollViewer.GetValue(_verticalScrollBindingProperty) != null)
+        if (scrollViewer.GetValue(_verticalScrollBindingProperty))
             return;
 
         scrollViewer.SetValue(_verticalScrollBindingProperty, true);
         scrollViewer.ScrollChanged += (_, se) =>
         {
-            if (se.VerticalChange == 0)
+            if (se.OffsetDelta.Y == 0 || scrollViewer.GetValue(_pendingProperty))
                 return;
-            SetVerticalOffset(scrollViewer, se.VerticalOffset);
+
+            _updatingFromScroll = true;
+            try
+            {
+                SetVerticalOffset(scrollViewer, scrollViewer.Offset.Y);
+            }
+            finally
+            {
+                _updatingFromScroll = false;
+            }
         };
     }
 }
