@@ -1,0 +1,80 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="using:FModel.Framework.Ui">
+  <!-- AdonisUI brushes. This dictionary must NOT contain the colors: a DynamicResource inside a
+       ResourceDictionary first looks in its own dictionary, then in the owner (Application.Resources
+       first, then Application.Styles) - this is what makes App-level color overrides work. -->
+  <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="AccentHighlightBrush" Color="{DynamicResource AccentHighlightColor}"/>
+  <SolidColorBrush x:Key="AccentIntenseHighlightBrush" Color="{DynamicResource AccentIntenseHighlightColor}"/>
+  <SolidColorBrush x:Key="AccentIntenseHighlightBorderBrush" Color="{DynamicResource AccentIntenseHighlightBorderColor}"/>
+  <SolidColorBrush x:Key="AccentInteractionBrush" Color="{DynamicResource AccentInteractionColor}"/>
+  <SolidColorBrush x:Key="AccentInteractionBorderBrush" Color="{DynamicResource AccentInteractionBorderColor}"/>
+  <SolidColorBrush x:Key="AccentInteractionForegroundBrush" Color="{DynamicResource AccentForegroundColor}"/>
+  <SolidColorBrush x:Key="Layer0BackgroundBrush" Color="{DynamicResource Layer0BackgroundColor}"/>
+  <SolidColorBrush x:Key="Layer0BorderBrush" Color="{DynamicResource Layer0BorderColor}"/>
+  <SolidColorBrush x:Key="Layer1BackgroundBrush" Color="{DynamicResource Layer1BackgroundColor}"/>
+  <SolidColorBrush x:Key="Layer1BorderBrush" Color="{DynamicResource Layer1BorderColor}"/>
+  <SolidColorBrush x:Key="Layer1HighlightBrush" Color="{DynamicResource Layer1HighlightColor}"/>
+  <SolidColorBrush x:Key="Layer1HighlightBorderBrush" Color="{DynamicResource Layer1HighlightBorderColor}"/>
+  <SolidColorBrush x:Key="Layer1IntenseHighlightBrush" Color="{DynamicResource Layer1IntenseHighlightColor}"/>
+  <SolidColorBrush x:Key="Layer1IntenseHighlightBorderBrush" Color="{DynamicResource Layer1IntenseHighlightBorderColor}"/>
+  <SolidColorBrush x:Key="Layer1InteractionBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="Layer1InteractionBorderBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="Layer1InteractionForegroundBrush" Color="{DynamicResource AccentForegroundColor}"/>
+  <SolidColorBrush x:Key="Layer2BackgroundBrush" Color="{DynamicResource Layer2BackgroundColor}"/>
+  <SolidColorBrush x:Key="Layer2BorderBrush" Color="{DynamicResource Layer2BorderColor}"/>
+  <SolidColorBrush x:Key="Layer2HighlightBrush" Color="{DynamicResource Layer2HighlightColor}"/>
+  <SolidColorBrush x:Key="Layer2HighlightBorderBrush" Color="{DynamicResource Layer2HighlightBorderColor}"/>
+  <SolidColorBrush x:Key="Layer2IntenseHighlightBrush" Color="{DynamicResource Layer2IntenseHighlightColor}"/>
+  <SolidColorBrush x:Key="Layer2IntenseHighlightBorderBrush" Color="{DynamicResource Layer2IntenseHighlightBorderColor}"/>
+  <SolidColorBrush x:Key="Layer2InteractionBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="Layer2InteractionBorderBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="Layer2InteractionForegroundBrush" Color="{DynamicResource AccentForegroundColor}"/>
+  <SolidColorBrush x:Key="Layer3BackgroundBrush" Color="{DynamicResource Layer3BackgroundColor}"/>
+  <SolidColorBrush x:Key="Layer3BorderBrush" Color="{DynamicResource Layer3BorderColor}"/>
+  <SolidColorBrush x:Key="Layer3HighlightBrush" Color="{DynamicResource Layer3HighlightColor}"/>
+  <SolidColorBrush x:Key="Layer3HighlightBorderBrush" Color="{DynamicResource Layer3HighlightBorderColor}"/>
+  <SolidColorBrush x:Key="Layer3IntenseHighlightBrush" Color="{DynamicResource Layer3IntenseHighlightColor}"/>
+  <SolidColorBrush x:Key="Layer3IntenseHighlightBorderBrush" Color="{DynamicResource Layer3IntenseHighlightBorderColor}"/>
+  <SolidColorBrush x:Key="Layer3InteractionBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="Layer3InteractionBorderBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="Layer3InteractionForegroundBrush" Color="{DynamicResource AccentForegroundColor}"/>
+  <SolidColorBrush x:Key="Layer4BackgroundBrush" Color="{DynamicResource Layer4BackgroundColor}"/>
+  <SolidColorBrush x:Key="Layer4BorderBrush" Color="{DynamicResource Layer4BorderColor}"/>
+  <SolidColorBrush x:Key="Layer4HighlightBrush" Color="{DynamicResource Layer4HighlightColor}"/>
+  <SolidColorBrush x:Key="Layer4HighlightBorderBrush" Color="{DynamicResource Layer4HighlightBorderColor}"/>
+  <SolidColorBrush x:Key="Layer4IntenseHighlightBrush" Color="{DynamicResource Layer4IntenseHighlightColor}"/>
+  <SolidColorBrush x:Key="Layer4IntenseHighlightBorderBrush" Color="{DynamicResource Layer4IntenseHighlightBorderColor}"/>
+  <SolidColorBrush x:Key="Layer4InteractionBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="Layer4InteractionBorderBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="Layer4InteractionForegroundBrush" Color="{DynamicResource AccentForegroundColor}"/>
+  <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource ForegroundColor}"/>
+  <SolidColorBrush x:Key="AccentForegroundBrush" Color="{DynamicResource AccentForegroundColor}"/>
+  <SolidColorBrush x:Key="DisabledForegroundBrush" Color="{DynamicResource DisabledForegroundColor}"/>
+  <SolidColorBrush x:Key="DisabledAccentForegroundBrush" Color="{DynamicResource DisabledAccentForegroundColor}"/>
+  <SolidColorBrush x:Key="SuccessBrush" Color="{DynamicResource SuccessColor}"/>
+  <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}"/>
+  <SolidColorBrush x:Key="AlertBrush" Color="{DynamicResource AlertColor}"/>
+  <SolidColorBrush x:Key="HyperlinkBrush" Color="{DynamicResource HyperlinkColor}"/>
+  <SolidColorBrush x:Key="WindowButtonHighlightBrush" Color="{DynamicResource WindowButtonHighlightColor}"/>
+  <SolidColorBrush x:Key="WindowButtonInteractionBrush" Color="{DynamicResource WindowButtonInteractionColor}"/>
+
+  <!-- SimpleTheme resource overrides so that controls without an Adonis template blend in -->
+  <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource ForegroundColor}"/>
+  <SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="{DynamicResource DisabledForegroundColor}"/>
+  <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource Layer1BackgroundColor}"/>
+  <SolidColorBrush x:Key="ThemeBorderLowBrush" Color="{DynamicResource Layer1BorderColor}"/>
+  <SolidColorBrush x:Key="ThemeBorderMidBrush" Color="{DynamicResource Layer1BorderColor}"/>
+  <SolidColorBrush x:Key="ThemeBorderHighBrush" Color="{DynamicResource Layer1HighlightBorderColor}"/>
+  <SolidColorBrush x:Key="ThemeControlLowBrush" Color="{DynamicResource Layer0BackgroundColor}"/>
+  <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource Layer1BackgroundColor}"/>
+  <SolidColorBrush x:Key="ThemeControlMidHighBrush" Color="{DynamicResource Layer1HighlightColor}"/>
+  <SolidColorBrush x:Key="ThemeControlHighBrush" Color="{DynamicResource Layer1IntenseHighlightColor}"/>
+  <SolidColorBrush x:Key="ThemeControlHighlightMidBrush" Color="{DynamicResource Layer1HighlightColor}"/>
+  <SolidColorBrush x:Key="ThemeAccentBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource AccentColor}"/>
+  <SolidColorBrush x:Key="HighlightForegroundBrush" Color="{DynamicResource AccentForegroundColor}"/>
+  <SolidColorBrush x:Key="HyperlinkVisitedBrush" Color="{DynamicResource HyperlinkColor}"/>
+  <FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI, Noto Sans, DejaVu Sans, Liberation Sans, sans-serif</FontFamily>
+  <x:Double x:Key="FontSizeNormal">12</x:Double>
+  <x:Double x:Key="ScrollBarThickness">16</x:Double>
+</ResourceDictionary>

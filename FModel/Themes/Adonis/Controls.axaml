@@ -1,0 +1,2493 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="using:FModel.Framework.Ui"
+                    xmlns:sys="using:System" xmlns:converters="using:Avalonia.Controls.Converters">
+  <!-- AdonisUI ClassicTheme port: ControlThemes. Generated - see FModel/Themes/AdonisTheme.axaml for the overview. -->
+
+  <!-- Port of adonisUi:Templates.Expander: a small down-pointing triangle filled with the Foreground of the hosting
+       ContentPresenter/ContentControl. Usage: <ContentControl ContentTemplate="{StaticResource ExpanderArrowTemplate}" Content=""/> -->
+  <DataTemplate x:Key="ExpanderArrowTemplate">
+    <Border Background="Transparent">
+      <Viewbox Width="6" Stretch="Uniform">
+        <Path Data="M 0 0 L 8 0 L 4 4 Z" Fill="{Binding $parent[ContentPresenter].Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Viewbox>
+    </Border>
+  </DataTemplate>
+
+  <converters:StringFormatConverter x:Key="AdonisStringFormatConverter"/>
+  <converters:PlatformKeyGestureConverter x:Key="AdonisKeyGestureConverter"/>
+
+  <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
+    <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontFamily" Value="Segoe UI, Noto Sans, DejaVu Sans, Liberation Sans, sans-serif"/>
+    <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Panel>
+          <Border Name="PART_TransparencyFallback" IsHitTestVisible="False"/>
+          <Border Background="{TemplateBinding Background}" IsHitTestVisible="False"/>
+          <Panel Margin="{TemplateBinding WindowDecorationMargin}" Background="Transparent"/>
+          <VisualLayerManager>
+            <VisualLayerManager.ChromeOverlayLayer>
+              <TitleBar/>
+            </VisualLayerManager.ChromeOverlayLayer>
+            <ContentPresenter Name="PART_ContentPresenter" Margin="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </VisualLayerManager>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type PopupRoot}" TargetType="PopupRoot">
+    <Setter Property="Background" Value="{x:Null}"/>
+    <Setter Property="TransparencyLevelHint" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontFamily" Value="Segoe UI, Noto Sans, DejaVu Sans, Liberation Sans, sans-serif"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <LayoutTransformControl LayoutTransform="{TemplateBinding Transform}">
+          <Panel>
+            <Border Name="PART_TransparencyFallback" IsHitTestVisible="False"/>
+            <VisualLayerManager IsPopup="True">
+              <ContentPresenter Name="PART_ContentPresenter" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}"
+                                Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+            </VisualLayerManager>
+          </Panel>
+        </LayoutTransformControl>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type OverlayPopupHost}" TargetType="OverlayPopupHost">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontFamily" Value="Segoe UI, Noto Sans, DejaVu Sans, Liberation Sans, sans-serif"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <LayoutTransformControl LayoutTransform="{TemplateBinding Transform}">
+          <VisualLayerManager IsPopup="True">
+            <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}"
+                              Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"/>
+          </VisualLayerManager>
+        </LayoutTransformControl>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type Label}" TargetType="Label">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Margin" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type HyperlinkButton}" TargetType="HyperlinkButton">
+    <Setter Property="Foreground" Value="{DynamicResource HyperlinkBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover">
+      <Setter Property="TextBlock.TextDecorations" Value="Underline"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type Button}" TargetType="Button">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True" Foreground="{TemplateBinding Foreground}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[IsDefault=True]">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer1InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer1InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer2InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer2InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer3InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer3InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer4InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer4InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^.ToolbarButton">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="2"/>
+    </Style>
+    <Style Selector="^.ToolbarButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2].ToolbarButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3].ToolbarButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4].ToolbarButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^.ToolbarButton:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer1InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer1InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2].ToolbarButton:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer2InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer2InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3].ToolbarButton:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer3InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer3InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4].ToolbarButton:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer4InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer4InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^.ToolbarButton:disabled">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^.AccentButton">
+      <Setter Property="ui:LayerExtension.Layer" Value="1"/>
+      <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^.AccentButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource AccentHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentHighlightBrush}"/>
+    </Style>
+    <Style Selector="^.AccentButton:pressed">
+      <Setter Property="Background" Value="{DynamicResource AccentInteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentInteractionBorderBrush}"/>
+    </Style>
+    <Style Selector="^.AccentButton:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledAccentForegroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^.AccentToolbarButton">
+      <Setter Property="ui:LayerExtension.Layer" Value="1"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="^.AccentToolbarButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource AccentHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentHighlightBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}"/>
+    </Style>
+    <Style Selector="^.AccentToolbarButton:disabled">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource DisabledAccentForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type RepeatButton}" TargetType="RepeatButton">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True" Foreground="{TemplateBinding Foreground}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[IsDefault=True]">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer1InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer1InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer2InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer2InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer3InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer3InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer4InteractionBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4InteractionBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer4InteractionForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ToggleButton}" TargetType="ToggleButton">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Panel>
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"/>
+          <Border Name="PART_InnerShadow" IsVisible="False" ClipToBounds="True" CornerRadius="{TemplateBinding CornerRadius}"
+                  BorderThickness="1" BorderBrush="{TemplateBinding BorderBrush}" Opacity="0.5"
+                  BoxShadow="inset 0 3 8 0 #000000"/>
+          <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="{TemplateBinding Padding}" RecognizesAccessKey="True" Foreground="{TemplateBinding Foreground}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^:checked /template/ Border#PART_InnerShadow">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+    <Style Selector="^.ToolbarToggleButton">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="2"/>
+    </Style>
+    <Style Selector="^.ToolbarToggleButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2].ToolbarToggleButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3].ToolbarToggleButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4].ToolbarToggleButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^.ToolbarToggleButton:disabled">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisToggleSwitchTheme" TargetType="ToggleButton">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="7"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Grid ColumnDefinitions="28,8,*" Background="Transparent">
+          <Panel Height="14" VerticalAlignment="Center">
+            <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"/>
+            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"/>
+            <Border Name="PART_Knob" Background="{TemplateBinding Foreground}" Margin="4,0" Width="8" Height="8" CornerRadius="4"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" Opacity="0.5" RenderTransform="translateX(0px)">
+              <Border.Transitions>
+                <Transitions>
+                  <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1"/>
+                </Transitions>
+              </Border.Transitions>
+            </Border>
+          </Panel>
+          <ContentPresenter Name="PART_ContentPresenter" Grid.Column="2" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:checked /template/ Border#PART_Knob">
+      <Setter Property="Opacity" Value="1"/>
+      <Setter Property="RenderTransform" Value="translateX(12px)"/>
+    </Style>
+    <Style Selector="^:checked:not(:disabled)">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:checked:not(:disabled) /template/ Border#PART_Knob">
+      <Setter Property="Background" Value="{DynamicResource AccentForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="4,0,0,0"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Grid ColumnDefinitions="Auto,*" Background="Transparent">
+          <Border Name="PART_Box" Width="14" Height="14" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                  Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+            <Panel Margin="2">
+              <Path Name="PART_CheckMark" Stretch="Uniform" Stroke="{TemplateBinding Foreground}" StrokeThickness="2" IsVisible="False"
+                    Data="M 0.5 0.5 L 7.5 7.5 M 0.5 7.5 L 7.5 0.5"/>
+              <Border Name="PART_Indeterminate" Width="7" Height="7" Background="{TemplateBinding Foreground}" IsVisible="False"/>
+            </Panel>
+          </Border>
+          <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^:checked /template/ Path#PART_CheckMark">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+    <Style Selector="^:indeterminate /template/ Border#PART_Indeterminate">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type RadioButton}" TargetType="RadioButton">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="4,0,0,0"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Grid ColumnDefinitions="Auto,*" Background="Transparent">
+          <Panel Width="14" Height="14" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+            <Ellipse Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="1"/>
+            <Ellipse Name="PART_CheckMark" Margin="4" Fill="{TemplateBinding Foreground}" IsVisible="False"/>
+          </Panel>
+          <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^:checked /template/ Ellipse#PART_CheckMark">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisSplitButtonPart" TargetType="Button">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Foreground" Value="{Binding $parent[SplitButton].Foreground}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True" Foreground="{TemplateBinding Foreground}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^#PART_PrimaryButton:pressed">
+      <Setter Property="Background" Value="{DynamicResource Layer1InteractionBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource Layer1InteractionForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type SplitButton}" TargetType="SplitButton">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Panel>
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"/>
+          <Grid ColumnDefinitions="*,Auto,Auto" Margin="{TemplateBinding BorderThickness}">
+            <Button Name="PART_PrimaryButton" Theme="{StaticResource AdonisSplitButtonPart}" Content="{TemplateBinding Content}"
+                    ContentTemplate="{TemplateBinding ContentTemplate}" Command="{TemplateBinding Command}" CommandParameter="{TemplateBinding CommandParameter}"
+                    Padding="{TemplateBinding Padding}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                    Focusable="False"/>
+            <Border Grid.Column="1" Width="1" Margin="0,4" Background="{TemplateBinding BorderBrush}"/>
+            <Button Name="PART_SecondaryButton" Grid.Column="2" Theme="{StaticResource AdonisSplitButtonPart}" Width="16" Padding="5,0"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Stretch" Focusable="False">
+              <Viewbox Width="6" Stretch="Uniform"><Path Data="M 0 0 L 8 0 L 4 4 Z" Fill="{Binding $parent[SplitButton].Foreground}"/></Viewbox>
+            </Button>
+          </Grid>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^:flyout-open">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+  </ControlTheme>
+
+
+  <MenuFlyout x:Key="AdonisTextBoxContextFlyout" Placement="Bottom">
+    <MenuItem Header="Cut" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" InputGesture="{x:Static TextBox.CutGesture}"/>
+    <MenuItem Header="Copy" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}"/>
+    <MenuItem Header="Paste" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" InputGesture="{x:Static TextBox.PasteGesture}"/>
+  </MenuFlyout>
+
+  <ControlTheme x:Key="{x:Type TextBox}" TargetType="TextBox">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}"/>
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource AccentForegroundBrush}"/>
+    <Setter Property="ContextFlyout" Value="{StaticResource AdonisTextBoxContextFlyout}"/>
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="PART_Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" ClipToBounds="True">
+          <Panel>
+            <Border Opacity="0.05" IsHitTestVisible="False">
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                  <GradientStop Color="#000000" Offset="0"/>
+                  <GradientStop Color="Transparent" Offset="0.25"/>
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+            <DockPanel Margin="{TemplateBinding Padding}" Cursor="IBeam">
+              <DataValidationErrors>
+                <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                  <ContentPresenter Grid.Column="0" Content="{TemplateBinding InnerLeftContent}"/>
+                  <ScrollViewer Name="PART_ScrollViewer" Grid.Column="1" Padding="0"
+                                AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                                BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}"
+                                HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                                IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}">
+                    <Panel>
+                      <TextBlock Name="PART_Watermark" Opacity="0.5" Text="{TemplateBinding Watermark}"
+                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                 TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" IsHitTestVisible="False">
+                        <TextBlock.IsVisible>
+                          <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding ElementName="PART_TextPresenter" Path="PreeditText" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                          </MultiBinding>
+                        </TextBlock.IsVisible>
+                      </TextBlock>
+                      <TextPresenter Name="PART_TextPresenter" CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}" CaretBrush="{TemplateBinding CaretBrush}"
+                                     CaretIndex="{TemplateBinding CaretIndex}" LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
+                                     PasswordChar="{TemplateBinding PasswordChar}" RevealPassword="{TemplateBinding RevealPassword}"
+                                     SelectionBrush="{TemplateBinding SelectionBrush}" SelectionStart="{TemplateBinding SelectionStart}"
+                                     SelectionEnd="{TemplateBinding SelectionEnd}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                     Text="{TemplateBinding Text, Mode=TwoWay}" TextAlignment="{TemplateBinding TextAlignment}"
+                                     TextWrapping="{TemplateBinding TextWrapping}"/>
+                    </Panel>
+                  </ScrollViewer>
+                  <ContentPresenter Grid.Column="2" Content="{TemplateBinding InnerRightContent}"/>
+                </Grid>
+              </DataValidationErrors>
+            </DockPanel>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^:error">
+      <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ComboBoxItem}" TargetType="ComboBoxItem">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:focus-visible">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:focus-visible">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:focus-visible">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:focus-visible">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ComboBox}" TargetType="ComboBox">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="MaxDropDownHeight" Value="360"/>
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Panel>
+          <Border Name="PART_Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"/>
+          <Grid ColumnDefinitions="*,20">
+            <TextBlock Name="PlaceholderTextBlock" Margin="{TemplateBinding Padding}" Opacity="0.5"
+                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                       Foreground="{TemplateBinding PlaceholderForeground}" Text="{TemplateBinding PlaceholderText}">
+              <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                  <Binding Path="SelectionBoxItem" RelativeSource="{RelativeSource TemplatedParent}" Converter="{x:Static ObjectConverters.IsNull}"/>
+                  <Binding Path="!IsEditable" RelativeSource="{RelativeSource TemplatedParent}"/>
+                </MultiBinding>
+              </TextBlock.IsVisible>
+            </TextBlock>
+            <ContentControl Margin="{TemplateBinding Padding}" IsHitTestVisible="False"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                            IsVisible="{TemplateBinding IsEditable, Converter={x:Static BoolConverters.Not}}"/>
+            <TextBox Name="PART_EditableTextBox" Padding="{TemplateBinding Padding}" Foreground="{TemplateBinding Foreground}"
+                     Background="Transparent" BorderThickness="0" Text="{TemplateBinding Text, Mode=TwoWay}"
+                     Watermark="{TemplateBinding PlaceholderText}"
+                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                     IsVisible="{TemplateBinding IsEditable}"/>
+            <ContentControl Grid.Column="1" Foreground="{TemplateBinding Foreground}" IsHitTestVisible="False"
+                            HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Border Background="Transparent"><Viewbox Width="6" Stretch="Uniform"><Path Data="M 0 0 L 8 0 L 4 4 Z" Fill="{Binding $parent[ContentControl].Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Viewbox></Border>
+            </ContentControl>
+          </Grid>
+          <Popup Name="PART_Popup" MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                 MaxHeight="{TemplateBinding MaxDropDownHeight}" IsLightDismissEnabled="True"
+                 IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}" PlacementTarget="{TemplateBinding}" InheritsTransform="True">
+            <Border Background="{DynamicResource Layer1BackgroundBrush}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+              <ScrollViewer Padding="0" HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                            IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}">
+                <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+              </ScrollViewer>
+            </Border>
+          </Popup>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:focus-within">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2] /template/ Popup#PART_Popup > Border">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3] /template/ Popup#PART_Popup > Border">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4] /template/ Popup#PART_Popup > Border">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[IsEditable=true]">
+      <Setter Property="IsTabStop" Value="False"/>
+      <Setter Property="KeyboardNavigation.TabNavigation" Value="Local"/>
+    </Style>
+    <Style Selector="^:error">
+      <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover:not(:selected)">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover:not(:selected)">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover:not(:selected)">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover:not(:selected)">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled:selected">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledAccentForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="PART_Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer Name="PART_ScrollViewer" Margin="{TemplateBinding Padding}" Padding="0"
+                        AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                        BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}"
+                        HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                        IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                        IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}">
+            <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisTreeViewItemExpanderTheme" TargetType="ToggleButton">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="RenderTransform" Value="rotate(-90deg)"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}"><Viewbox Width="6" Stretch="Uniform"><Path Data="M 0 0 L 8 0 L 4 4 Z" Fill="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Viewbox></Border>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="Transitions"><Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/></Transitions></Setter>
+    <Style Selector="^:checked">
+      <Setter Property="RenderTransform" Value="rotate(-45deg)"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type TreeViewItem}" TargetType="TreeViewItem">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <StackPanel>
+          <Border Name="PART_HeaderBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                  Focusable="True" TemplatedControl.IsTemplateFocusTarget="True">
+            <Grid Name="PART_Header" ColumnDefinitions="Auto,*">
+              <ToggleButton Name="PART_ExpandCollapseChevron" Theme="{StaticResource AdonisTreeViewItemExpanderTheme}" Width="12" Height="12"
+                            Margin="8,0" Focusable="False" ClickMode="Press" Foreground="{TemplateBinding Foreground}"
+                            IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"/>
+              <ContentPresenter Name="PART_HeaderPresenter" Grid.Column="1" Margin="0,4,8,4" Focusable="False"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalAlignment}"
+                                Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}"/>
+            </Grid>
+          </Border>
+          <ItemsPresenter Name="PART_ItemsPresenter" Margin="28,0,0,0" IsVisible="{TemplateBinding IsExpanded}" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:not(:selected) /template/ Border#PART_HeaderBorder:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:not(:selected) /template/ Border#PART_HeaderBorder:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:not(:selected) /template/ Border#PART_HeaderBorder:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:not(:selected) /template/ Border#PART_HeaderBorder:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
+      <Setter Property="IsVisible" Value="True"/>
+      <Setter Property="Opacity" Value="0"/>
+      <Setter Property="IsHitTestVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled:selected">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledAccentForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type TreeView}" TargetType="TreeView">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="PART_Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer Name="PART_ScrollViewer" Margin="{TemplateBinding Padding}" Padding="0"
+                        AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                        BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}"
+                        HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                        IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}">
+            <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="1,1,1,0"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="ui:LayerExtension.IncreaseLayer" Value="True"/>
+    <Setter Property="Margin" Value="0,2,0,0"/>
+    <Setter Property="VerticalAlignment" Value="Bottom"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="PART_Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <ContentPresenter Name="PART_ContentPresenter" Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" RecognizesAccessKey="True"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:selected">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:selected">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:selected">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+    </Style>
+    <Style Selector="^:selected">
+      <Setter Property="Margin" Value="0,0,0,-1"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type TabControl}" TargetType="TabControl">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,12,8,8"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Grid RowDefinitions="Auto,*">
+          <ItemsPresenter Name="PART_ItemsPresenter" ZIndex="1" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+          <Border Grid.Row="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+            <ContentPresenter Name="PART_SelectedContentHost" Margin="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding SelectedContent}" ContentTemplate="{TemplateBinding SelectedContentTemplate}"/>
+          </Border>
+          <Border Name="PART_SelectedItemHighlight" Grid.Row="1" Height="4" VerticalAlignment="Top"
+                  Margin="{TemplateBinding BorderThickness}" Background="{DynamicResource Layer1HighlightBrush}"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2] /template/ Border#PART_SelectedItemHighlight">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3] /template/ Border#PART_SelectedItemHighlight">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4] /template/ Border#PART_SelectedItemHighlight">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ui:GroupBox}" TargetType="ui:GroupBox">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="HeaderBackground" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="8"/>
+    <Setter Property="ui:LayerExtension.IncreaseLayer" Value="True"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" ClipToBounds="True">
+          <Grid RowDefinitions="Auto,*">
+            <Border Name="PART_HeaderBorder" Background="{TemplateBinding HeaderBackground}"
+                    IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <ContentPresenter Name="PART_HeaderPresenter" Padding="{TemplateBinding Padding}" RecognizesAccessKey="True"
+                                Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}"/>
+            </Border>
+            <ContentPresenter Name="PART_ContentPresenter" Grid.Row="1" Padding="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+      <Setter Property="HeaderBackground" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+      <Setter Property="HeaderBackground" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+      <Setter Property="HeaderBackground" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ui:StatusBar}" TargetType="ui:StatusBar">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="MinHeight" Value="28"/>
+    <Setter Property="ui:LayerExtension.IncreaseLayer" Value="True"/>
+    <Setter Property="ItemsPanel"><ItemsPanelTemplate><DockPanel LastChildFill="True"/></ItemsPanelTemplate></Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+          <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ui:StatusBarItem}" TargetType="ui:StatusBarItem">
+    <Setter Property="Padding" Value="3"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="DockPanel.Dock" Value="Left"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[HorizontalAlignment=Right]">
+      <Setter Property="DockPanel.Dock" Value="Right"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisExpanderHeaderTheme" TargetType="ToggleButton">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Grid ColumnDefinitions="19,*" Background="{TemplateBinding Background}">
+          <Ellipse Width="19" Height="19" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          <ContentControl Name="PART_Arrow" Foreground="{TemplateBinding BorderBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                          RenderTransform="rotate(0deg)" Focusable="False" IsHitTestVisible="False">
+            <ContentControl.Transitions>
+              <Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/></Transitions>
+            </ContentControl.Transitions>
+            <Border Background="Transparent"><Viewbox Width="6" Stretch="Uniform"><Path Data="M 0 0 L 8 0 L 4 4 Z" Fill="{Binding $parent[ContentControl].Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Viewbox></Border>
+          </ContentControl>
+          <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1" Margin="4,0,0,0" VerticalAlignment="Center"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True"
+                            Content="{TemplateBinding Content}" ContentTemplate="{Binding $parent[Expander].HeaderTemplate}"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked /template/ ContentControl#PART_Arrow">
+      <Setter Property="RenderTransform" Value="rotate(-180deg)"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type Expander}" TargetType="Expander">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Top"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+          <DockPanel>
+            <ToggleButton Name="PART_toggle" DockPanel.Dock="Top" Theme="{StaticResource AdonisExpanderHeaderTheme}"
+                          Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                          BorderBrush="{TemplateBinding BorderBrush}" Foreground="{TemplateBinding Foreground}"/>
+            <ContentPresenter Name="PART_ContentPresenter" Padding="{TemplateBinding Padding}" IsVisible="{TemplateBinding IsExpanded}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[ExpandDirection=Up] /template/ ToggleButton#PART_toggle">
+      <Setter Property="DockPanel.Dock" Value="Bottom"/>
+    </Style>
+    <Style Selector="^[ExpandDirection=Left] /template/ ToggleButton#PART_toggle">
+      <Setter Property="DockPanel.Dock" Value="Right"/>
+    </Style>
+    <Style Selector="^[ExpandDirection=Right] /template/ ToggleButton#PART_toggle">
+      <Setter Property="DockPanel.Dock" Value="Left"/>
+    </Style>
+    <Style Selector="^:focus /template/ ToggleButton#PART_toggle">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisTopLevelMenuItem" TargetType="MenuItem">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="4,2"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <Panel>
+            <ContentPresenter Name="PART_HeaderPresenter" Padding="{TemplateBinding Padding}" Margin="4,0" VerticalAlignment="Center"
+                              Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}">
+              <ContentPresenter.DataTemplates>
+                <DataTemplate DataType="sys:String"><AccessText Text="{Binding}"/></DataTemplate>
+              </ContentPresenter.DataTemplates>
+            </ContentPresenter>
+            <Popup Name="PART_Popup" IsLightDismissEnabled="True" IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
+                   Placement="BottomEdgeAlignedLeft" OverlayInputPassThroughElement="{Binding $parent[Menu]}">
+            <Border Background="{DynamicResource Layer1BackgroundBrush}" BorderBrush="{DynamicResource Layer1BorderBrush}"
+                    BorderThickness="{DynamicResource AdonisBorderThickness}" CornerRadius="{DynamicResource AdonisCornerRadius}">
+              <ScrollViewer Padding="0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <ItemsPresenter Name="PART_ItemsPresenter" Grid.IsSharedSizeScope="True" ItemsPanel="{TemplateBinding ItemsPanel}"
+                                KeyboardNavigation.TabNavigation="Continue"/>
+              </ScrollViewer>
+            </Border>
+            </Popup>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    </Style>
+    <Style Selector="^:open">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="8,6"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="root" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid Margin="{TemplateBinding Padding}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="22"/>
+              <ColumnDefinition Width="*" MinWidth="130"/>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemIGT"/>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemArrow"/>
+            </Grid.ColumnDefinitions>
+            <ContentPresenter Name="PART_IconPresenter" Margin="0,0,4,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                              MaxWidth="16" MaxHeight="16" Content="{TemplateBinding Icon}"/>
+            <Viewbox Name="PART_CheckMark" Width="11" Height="11" Margin="0,0,4,0" IsVisible="False" Stretch="Uniform">
+              <Path Data="M 1 3 L 4 6 L 10 0" Stroke="{TemplateBinding Foreground}" StrokeThickness="2"/>
+            </Viewbox>
+            <ContentPresenter Name="PART_HeaderPresenter" Grid.Column="1" Margin="4,0" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                              Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}">
+              <ContentPresenter.DataTemplates>
+                <DataTemplate DataType="sys:String"><AccessText Text="{Binding}"/></DataTemplate>
+              </ContentPresenter.DataTemplates>
+            </ContentPresenter>
+            <TextBlock Name="PART_InputGestureText" Grid.Column="2" Margin="4,0" VerticalAlignment="Center"
+                       Text="{TemplateBinding InputGesture, Converter={StaticResource AdonisKeyGestureConverter}}"/>
+            <Viewbox Name="PART_Arrow" Grid.Column="3" Margin="4,4,0,4" Height="8" Stretch="Uniform" RenderTransform="rotate(-90deg)">
+              <Path Data="M 0 0 L 8 0 L 4 4 Z" Fill="{TemplateBinding Foreground}"/>
+            </Viewbox>
+            <Popup Name="PART_Popup" IsLightDismissEnabled="False" IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
+                   Placement="RightEdgeAlignedTop" HorizontalOffset="8" VerticalOffset="-7">
+            <Border Background="{DynamicResource Layer1BackgroundBrush}" BorderBrush="{DynamicResource Layer1BorderBrush}"
+                    BorderThickness="{DynamicResource AdonisBorderThickness}" CornerRadius="{DynamicResource AdonisCornerRadius}">
+              <ScrollViewer Padding="0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <ItemsPresenter Name="PART_ItemsPresenter" Grid.IsSharedSizeScope="True" ItemsPanel="{TemplateBinding ItemsPanel}"
+                                KeyboardNavigation.TabNavigation="Continue"/>
+              </ScrollViewer>
+            </Border>
+            </Popup>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:separator">
+      <Setter Property="Template"><ControlTemplate><Separator/></ControlTemplate></Setter>
+    </Style>
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+    </Style>
+    <Style Selector="^:empty /template/ Viewbox#PART_Arrow">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:checked /template/ Viewbox#PART_CheckMark">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+    <Style Selector="^:checked /template/ ContentPresenter#PART_IconPresenter">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type Menu}" TargetType="Menu">
+    <Setter Property="Background" Value="{DynamicResource Layer0BorderBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="ItemContainerTheme" Value="{StaticResource AdonisTopLevelMenuItem}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" KeyboardNavigation.TabNavigation="Continue"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ContextMenu}" TargetType="ContextMenu">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontWeight" Value="Normal"/>
+    <Setter Property="Focusable" Value="True"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="LayoutRoot" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer Padding="0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <ItemsPresenter Name="PART_ItemsPresenter" Grid.IsSharedSizeScope="True" ItemsPanel="{TemplateBinding ItemsPanel}"
+                            KeyboardNavigation.TabNavigation="Continue"/>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type MenuFlyoutPresenter}" TargetType="MenuFlyoutPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontWeight" Value="Normal"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="LayoutRoot" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer Padding="0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <ItemsPresenter Name="PART_ItemsPresenter" Grid.IsSharedSizeScope="True" ItemsPanel="{TemplateBinding ItemsPanel}"
+                            KeyboardNavigation.TabNavigation="Continue"/>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type Separator}" TargetType="Separator">
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="Margin" Value="0,2"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="Height" Value="1"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+          <Border Background="{TemplateBinding Foreground}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="Padding" Value="6,4"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontWeight" Value="Normal"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"/>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type GridSplitter}" TargetType="GridSplitter">
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Panel>
+          <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"/>
+          <Border Name="PART_Thumb" Background="{TemplateBinding Foreground}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                  Margin="{TemplateBinding Padding}" Opacity="0">
+            <Border.Transitions>
+              <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.25" Delay="0:0:0.15"/></Transitions>
+            </Border.Transitions>
+          </Border>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Border#PART_Thumb">
+      <Setter Property="Opacity" Value="1"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Padding" Value="4"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto" Background="{TemplateBinding Background}">
+          <ScrollContentPresenter Name="PART_ContentPresenter" Padding="{TemplateBinding Padding}"
+                                  HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
+                                  VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
+                                  HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
+                                  VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
+                                  ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
+            <ScrollContentPresenter.GestureRecognizers>
+              <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
+                                       CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
+                                       IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_ContentPresenter}"/>
+            </ScrollContentPresenter.GestureRecognizers>
+          </ScrollContentPresenter>
+          <ScrollBar Name="PART_HorizontalScrollBar" Grid.Row="1" Orientation="Horizontal"/>
+          <ScrollBar Name="PART_VerticalScrollBar" Grid.Column="1" Orientation="Vertical"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisScrollBarLineButton" TargetType="RepeatButton">
+    <Setter Property="Foreground" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    <Setter Property="Background" Value="{Binding $parent[ScrollBar].Background}"/>
+    <Setter Property="Padding" Value="2"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="ClipToBounds" Value="True"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}">
+          <Viewbox Margin="{TemplateBinding Padding}" MaxWidth="8" MaxHeight="8" Stretch="Uniform">
+            <ContentPresenter Content="{TemplateBinding Content}"/>
+          </Viewbox>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Foreground" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Foreground" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Foreground" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource Layer1BackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisScrollBarPageButton" TargetType="RepeatButton">
+    <Setter Property="Background" Value="{Binding $parent[ScrollBar].Background}"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Opacity" Value="0"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}"/>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisScrollBarThumb" TargetType="Thumb">
+    <Setter Property="Background" Value="{Binding $parent[ScrollBar].Foreground}"/>
+    <Setter Property="CornerRadius" Value="3"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ScrollBar}" TargetType="ScrollBar">
+    <Setter Property="Foreground" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="Cursor" Value="Arrow"/>
+    <Setter Property="ShowDelay" Value="0:0:0.1"/>
+    <Setter Property="HideDelay" Value="0:0:0.5"/>
+    <Style Selector="^:vertical">
+      <Setter Property="Width" Value="16"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+        <Border Background="Transparent" Margin="{TemplateBinding Padding}">
+          <Grid Name="PART_Grid" RowDefinitions="Auto,*,Auto" Margin="8,0,2,0">
+            <Grid.Transitions><Transitions><ThicknessTransition Property="Margin" Duration="0:0:0.1"/></Transitions></Grid.Transitions>
+            <RepeatButton Name="PART_LineUpButton" Classes="line"  Height="0" Theme="{StaticResource AdonisScrollBarLineButton}">
+              <RepeatButton.Transitions><Transitions><DoubleTransition Property="Height" Duration="0:0:0.1"/></Transitions></RepeatButton.Transitions>
+              <Path Data="M 0 6 L 10 6 L 5 0 Z" Fill="{Binding $parent[RepeatButton].Foreground}"/>
+            </RepeatButton>
+            <Track Name="PART_Track" Grid.Row="1" Orientation="Vertical" IsDirectionReversed="True"
+                   Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" ViewportSize="{TemplateBinding ViewportSize}"
+                   DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}" Value="{TemplateBinding Value, Mode=TwoWay}">
+              <Track.DecreaseButton>
+                <RepeatButton Name="PART_PageUpButton" Classes="page" Theme="{StaticResource AdonisScrollBarPageButton}"/>
+              </Track.DecreaseButton>
+              <Track.IncreaseButton>
+                <RepeatButton Name="PART_PageDownButton" Classes="page" Theme="{StaticResource AdonisScrollBarPageButton}"/>
+              </Track.IncreaseButton>
+              <Thumb Name="thumb" Theme="{StaticResource AdonisScrollBarThumb}"/>
+            </Track>
+            <RepeatButton Name="PART_LineDownButton" Classes="line" Grid.Row="2" Height="0" Theme="{StaticResource AdonisScrollBarLineButton}">
+              <RepeatButton.Transitions><Transitions><DoubleTransition Property="Height" Duration="0:0:0.1"/></Transitions></RepeatButton.Transitions>
+              <Path Data="M 0 0 L 5 6 L 10 0 Z" Fill="{Binding $parent[RepeatButton].Foreground}"/>
+            </RepeatButton>
+          </Grid>
+        </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="^:horizontal">
+      <Setter Property="Height" Value="16"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+        <Border Background="Transparent" Margin="{TemplateBinding Padding}">
+          <Grid Name="PART_Grid" ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,2">
+            <Grid.Transitions><Transitions><ThicknessTransition Property="Margin" Duration="0:0:0.1"/></Transitions></Grid.Transitions>
+            <RepeatButton Name="PART_LineUpButton" Classes="line"  Width="0" Theme="{StaticResource AdonisScrollBarLineButton}">
+              <RepeatButton.Transitions><Transitions><DoubleTransition Property="Width" Duration="0:0:0.1"/></Transitions></RepeatButton.Transitions>
+              <Path Data="M 6 0 L 6 10 L 0 5 Z" Fill="{Binding $parent[RepeatButton].Foreground}"/>
+            </RepeatButton>
+            <Track Name="PART_Track" Grid.Column="1" Orientation="Horizontal" IsDirectionReversed="False"
+                   Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" ViewportSize="{TemplateBinding ViewportSize}"
+                   DeferThumbDrag="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}" Value="{TemplateBinding Value, Mode=TwoWay}">
+              <Track.DecreaseButton>
+                <RepeatButton Name="PART_PageUpButton" Classes="page" Theme="{StaticResource AdonisScrollBarPageButton}"/>
+              </Track.DecreaseButton>
+              <Track.IncreaseButton>
+                <RepeatButton Name="PART_PageDownButton" Classes="page" Theme="{StaticResource AdonisScrollBarPageButton}"/>
+              </Track.IncreaseButton>
+              <Thumb Name="thumb" Theme="{StaticResource AdonisScrollBarThumb}"/>
+            </Track>
+            <RepeatButton Name="PART_LineDownButton" Classes="line" Grid.Column="2" Width="0" Theme="{StaticResource AdonisScrollBarLineButton}">
+              <RepeatButton.Transitions><Transitions><DoubleTransition Property="Width" Duration="0:0:0.1"/></Transitions></RepeatButton.Transitions>
+              <Path Data="M 0 0 L 6 5 L 0 10 Z" Fill="{Binding $parent[RepeatButton].Foreground}"/>
+            </RepeatButton>
+          </Grid>
+        </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Foreground" Value="{DynamicResource Layer2BorderBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Foreground" Value="{DynamicResource Layer3BorderBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Foreground" Value="{DynamicResource Layer4BorderBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[IsExpanded=True] /template/ Grid#PART_Grid">
+      <Setter Property="Margin" Value="0"/>
+    </Style>
+    <Style Selector="^[IsExpanded=True] /template/ RepeatButton.page">
+      <Setter Property="Opacity" Value="1"/>
+    </Style>
+    <Style Selector="^[IsExpanded=True] /template/ Thumb#thumb">
+      <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    <Style Selector="^:vertical[IsExpanded=True] /template/ RepeatButton.line">
+      <Setter Property="Height" Value="16"/>
+    </Style>
+    <Style Selector="^:horizontal[IsExpanded=True] /template/ RepeatButton.line">
+      <Setter Property="Width" Value="16"/>
+    </Style>
+    <Style Selector="^:vertical /template/ Thumb#thumb">
+      <Setter Property="MinHeight" Value="16"/>
+    </Style>
+    <Style Selector="^:horizontal /template/ Thumb#thumb">
+      <Setter Property="MinWidth" Value="16"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisSliderRepeatButton" TargetType="RepeatButton">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}"/>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="AdonisSliderThumb" TargetType="Thumb">
+    <Setter Property="Background" Value="{Binding $parent[Slider].Background}"/>
+    <Setter Property="BorderBrush" Value="{Binding $parent[Slider].BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{Binding $parent[Slider].BorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{Binding $parent[Slider].CornerRadius}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"/>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3IntenseHighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4IntenseHighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4IntenseHighlightBorderBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type Slider}" TargetType="Slider">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Style Selector="^:horizontal">
+      <Setter Property="Height" Value="16"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Panel Name="grid">
+            <Border Name="TrackBackground" Height="4" VerticalAlignment="Center" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"/>
+            <Track Name="PART_Track" Orientation="Horizontal" IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                   Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value, Mode=TwoWay}">
+              <Track.DecreaseButton><RepeatButton Name="PART_DecreaseButton" Theme="{StaticResource AdonisSliderRepeatButton}"/></Track.DecreaseButton>
+              <Track.IncreaseButton><RepeatButton Name="PART_IncreaseButton" Theme="{StaticResource AdonisSliderRepeatButton}"/></Track.IncreaseButton>
+              <Thumb Name="thumb" Width="10" VerticalAlignment="Stretch" Theme="{StaticResource AdonisSliderThumb}"/>
+            </Track>
+          </Panel>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="^:vertical">
+      <Setter Property="Width" Value="16"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Panel Name="grid">
+            <Border Name="TrackBackground" Width="4" HorizontalAlignment="Center" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"/>
+            <Track Name="PART_Track" Orientation="Vertical" IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                   Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value, Mode=TwoWay}">
+              <Track.DecreaseButton><RepeatButton Name="PART_DecreaseButton" Theme="{StaticResource AdonisSliderRepeatButton}"/></Track.DecreaseButton>
+              <Track.IncreaseButton><RepeatButton Name="PART_IncreaseButton" Theme="{StaticResource AdonisSliderRepeatButton}"/></Track.IncreaseButton>
+              <Thumb Name="thumb" Height="10" HorizontalAlignment="Stretch" Theme="{StaticResource AdonisSliderThumb}"/>
+            </Track>
+          </Panel>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ProgressBar}" TargetType="ProgressBar">
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource AdonisCornerRadius}"/>
+    <Setter Property="MinHeight" Value="4"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Panel>
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"/>
+          <Panel Name="PART_IndicatorHost" ClipToBounds="True">
+            <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}" CornerRadius="{TemplateBinding CornerRadius}"
+                    IsVisible="{Binding !IsIndeterminate, RelativeSource={RelativeSource TemplatedParent}}"/>
+            <Border Name="PART_IndeterminateIndicator" CornerRadius="{TemplateBinding CornerRadius}"
+                    IsVisible="{Binding IsIndeterminate, RelativeSource={RelativeSource TemplatedParent}}">
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                  <GradientStop Color="Transparent" Offset="0"/>
+                  <GradientStop Color="{DynamicResource AccentColor}" Offset="0.5"/>
+                  <GradientStop Color="Transparent" Offset="1"/>
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+          </Panel>
+          <LayoutTransformControl Name="PART_LayoutTransformControl" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  IsVisible="{Binding ShowProgressText, RelativeSource={RelativeSource TemplatedParent}}">
+            <TextBlock Foreground="{DynamicResource ForegroundBrush}">
+              <TextBlock.Text>
+                <MultiBinding Converter="{StaticResource AdonisStringFormatConverter}">
+                  <TemplateBinding Property="ProgressTextFormat"/>
+                  <Binding Path="Value" RelativeSource="{RelativeSource TemplatedParent}"/>
+                  <TemplateBinding Property="Percentage"/>
+                  <TemplateBinding Property="Minimum"/>
+                  <TemplateBinding Property="Maximum"/>
+                </MultiBinding>
+              </TextBlock.Text>
+            </TextBlock>
+          </LayoutTransformControl>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:horizontal /template/ Border#PART_Indicator">
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+      <Setter Property="VerticalAlignment" Value="Stretch"/>
+    </Style>
+    <Style Selector="^:vertical /template/ Border#PART_Indicator">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="VerticalAlignment" Value="Bottom"/>
+    </Style>
+    <Style Selector="^:vertical /template/ LayoutTransformControl#PART_LayoutTransformControl">
+      <Setter Property="LayoutTransform" Value="rotate(90deg)"/>
+    </Style>
+    <Style Selector="^:horizontal:indeterminate /template/ Border#PART_IndeterminateIndicator">
+      <Style.Animations>
+        <Animation Easing="LinearEasing" IterationCount="Infinite" Duration="0:0:2">
+          <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateStartingOffset}"/></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateEndingOffset}"/></KeyFrame>
+        </Animation>
+      </Style.Animations>
+      <Setter Property="Width" Value="{Binding TemplateSettings.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}"/>
+    </Style>
+    <Style Selector="^:vertical:indeterminate /template/ Border#PART_IndeterminateIndicator">
+      <Style.Animations>
+        <Animation Easing="LinearEasing" IterationCount="Infinite" Duration="0:0:2">
+          <KeyFrame Cue="0%"><Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateStartingOffset}"/></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateSettings.IndeterminateEndingOffset}"/></KeyFrame>
+        </Animation>
+      </Style.Animations>
+      <Setter Property="Height" Value="{Binding TemplateSettings.ContainerWidth, RelativeSource={RelativeSource TemplatedParent}}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer0BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:disabled">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type DataGridCell}" TargetType="DataGridCell">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="FocusAdorner" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="CellBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid ColumnDefinitions="*,Auto">
+            <ContentPresenter Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Foreground="{TemplateBinding Foreground}"/>
+            <Rectangle Name="PART_RightGridLine" Grid.Column="1" Width="1" VerticalAlignment="Stretch"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type DataGridColumnHeader}" TargetType="DataGridColumnHeader">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+    <Setter Property="SeparatorBrush" Value="Transparent"/>
+    <Setter Property="Padding" Value="4,2"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="MinHeight" Value="22"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="HeaderBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid ColumnDefinitions="*,Auto">
+            <Grid Margin="{TemplateBinding Padding}" ColumnDefinitions="*,Auto"
+                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+              <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+              <Path Name="SortIcon" Grid.Column="1" Width="8" Margin="4,0,0,0" VerticalAlignment="Center" Stretch="Uniform" IsVisible="False"
+                    Data="F1 M -5.215,6.099L 5.215,6.099L 0,0L -5.215,6.099 Z" Fill="{TemplateBinding Foreground}"/>
+            </Grid>
+            <Rectangle Name="VerticalSeparator" Grid.Column="1" Width="1" VerticalAlignment="Stretch" Fill="{TemplateBinding SeparatorBrush}"
+                       IsVisible="{TemplateBinding AreSeparatorsVisible}"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="Background" Value="{DynamicResource Layer2BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="Background" Value="{DynamicResource Layer3BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="Background" Value="{DynamicResource Layer4BackgroundBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer2HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer3HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource Layer4HighlightBorderBrush}"/>
+    </Style>
+    <Style Selector="^:dragIndicator">
+      <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+    <Style Selector="^:sortascending /template/ Path#SortIcon">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+    <Style Selector="^:sortdescending /template/ Path#SortIcon">
+      <Setter Property="IsVisible" Value="True"/>
+      <Setter Property="RenderTransform" Value="scaleY(-1)"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type DataGridRowHeader}" TargetType="DataGridRowHeader">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="SeparatorBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Grid Name="PART_Root" ColumnDefinitions="Auto,*" RowDefinitions="*,*,Auto">
+          <Border Grid.RowSpan="3" Grid.ColumnSpan="2" BorderBrush="{TemplateBinding SeparatorBrush}" BorderThickness="0,0,1,0">
+            <Grid Background="{TemplateBinding Background}">
+              <Rectangle Name="RowInvalidVisualElement" Stretch="Fill"/>
+              <Rectangle Name="BackgroundRectangle" Stretch="Fill"/>
+            </Grid>
+          </Border>
+          <Rectangle Name="HorizontalSeparator" Grid.Row="2" Grid.ColumnSpan="2" Height="1" Margin="1,0,1,0" HorizontalAlignment="Stretch"
+                     Fill="{TemplateBinding SeparatorBrush}" IsVisible="{TemplateBinding AreSeparatorsVisible}"/>
+          <ContentPresenter Grid.RowSpan="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{TemplateBinding Content}"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type DataGridRow}" TargetType="DataGridRow">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="{Binding $parent[DataGrid].RowBackground}"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="RowBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <DataGridFrozenGrid Name="PART_Root" ColumnDefinitions="Auto,*" RowDefinitions="*,Auto,Auto">
+            <Rectangle Name="BackgroundRectangle" Grid.RowSpan="2" Grid.ColumnSpan="2"/>
+            <DataGridRowHeader Name="PART_RowHeader" Grid.RowSpan="3" DataGridFrozenGrid.IsFrozen="True"/>
+            <DataGridCellsPresenter Name="PART_CellsPresenter" Grid.Column="1" DataGridFrozenGrid.IsFrozen="True"/>
+            <DataGridDetailsPresenter Name="PART_DetailsPresenter" Grid.Row="1" Grid.Column="1"/>
+            <Rectangle Name="PART_BottomGridLine" Grid.Row="2" Grid.Column="1" Height="1" HorizontalAlignment="Stretch"/>
+          </DataGridFrozenGrid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover:not(:selected)">
+      <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]:pointerover:not(:selected)">
+      <Setter Property="Background" Value="{DynamicResource Layer2HighlightBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]:pointerover:not(:selected)">
+      <Setter Property="Background" Value="{DynamicResource Layer3HighlightBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]:pointerover:not(:selected)">
+      <Setter Property="Background" Value="{DynamicResource Layer4HighlightBrush}"/>
+    </Style>
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:disabled:selected">
+      <Setter Property="Foreground" Value="{DynamicResource DisabledAccentForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type DataGrid}" TargetType="DataGrid">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource AdonisBorderThickness}"/>
+    <Setter Property="RowBackground" Value="Transparent"/>
+    <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="HeadersVisibility" Value="Column"/>
+    <Setter Property="SelectionMode" Value="Extended"/>
+    <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+    <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+    <Setter Property="DropLocationIndicatorTemplate"><Template><Rectangle Width="2" Fill="{DynamicResource AccentBrush}"/></Template></Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <Border Name="DataGridBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,*,Auto,Auto" ClipToBounds="True">
+            <DataGridColumnHeader Name="PART_TopLeftCornerHeader" Width="22"/>
+            <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter" Grid.Column="1"/>
+            <DataGridColumnHeader Name="PART_TopRightCornerHeader" Grid.Column="2"/>
+            <DataGridRowsPresenter Name="PART_RowsPresenter" Grid.Row="1" Grid.ColumnSpan="2"
+                                   ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
+              <DataGridRowsPresenter.GestureRecognizers>
+                <ScrollGestureRecognizer CanHorizontallyScroll="True" CanVerticallyScroll="True"
+                                         IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_RowsPresenter}"/>
+              </DataGridRowsPresenter.GestureRecognizers>
+            </DataGridRowsPresenter>
+            <Rectangle Name="PART_BottomRightCorner" Grid.Row="2" Grid.Column="2" Fill="Transparent"/>
+            <ScrollBar Name="PART_VerticalScrollbar" Grid.Row="1" Grid.Column="2" Orientation="Vertical"
+                       AllowAutoHide="{Binding Path=(ScrollViewer.AllowAutoHide), RelativeSource={RelativeSource TemplatedParent}}"/>
+            <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto,*">
+              <Rectangle Name="PART_FrozenColumnScrollBarSpacer"/>
+              <ScrollBar Name="PART_HorizontalScrollbar" Grid.Column="1" Orientation="Horizontal"
+                         AllowAutoHide="{Binding Path=(ScrollViewer.AllowAutoHide), RelativeSource={RelativeSource TemplatedParent}}"/>
+            </Grid>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=2]">
+      <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+      <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource Layer2BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=3]">
+      <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+      <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource Layer3BorderBrush}"/>
+    </Style>
+    <Style Selector="^[(ui|LayerExtension.ComputedLayer)=4]">
+      <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+      <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource Layer4BorderBrush}"/>
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>

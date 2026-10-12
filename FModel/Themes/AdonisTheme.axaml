@@ -1,16 +1,35 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="using:FModel.Framework.Ui">
+  <!--
+    AdonisUI ClassicTheme (Dark color scheme) for Avalonia.
+    Include after SimpleTheme:  <StyleInclude Source="avares://FModel/Themes/AdonisTheme.axaml"/>
+
+    Resource keys: AdonisUI color/brush names (AccentColor, AccentBrush, Layer0..4*Brush, ForegroundBrush, ...),
+    AdonisCornerRadius, AdonisBorderThickness, ExpanderArrowTemplate.
+    Layer system: ui:LayerExtension.Layer / IncreaseLayer / ComputedLayer (see Framework/Ui/LayerExtension.cs).
+    Style classes (AdonisUI named styles): Button.ToolbarButton, Button.AccentButton, Button.AccentToolbarButton,
+    ToggleButton.ToolbarToggleButton, ToggleButton.ToggleSwitch, CheckBox.ToggleSwitch.
+  -->
   <Styles.Resources>
-    <ControlTheme x:Key="{x:Type Button}" TargetType="Button">
-      <Setter Property="Background" Value="Red" />
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Border Background="{TemplateBinding Background}" Padding="8"><ContentPresenter Content="{TemplateBinding Content}"/></Border>
-        </ControlTemplate>
-      </Setter>
-      <Style Selector="^[(LayerExtension.ComputedLayer)=2]">
-        <Setter Property="Background" Value="Green" />
-      </Style>
-    </ControlTheme>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://FModel/Themes/Adonis/Colors.axaml"/>
+        <ResourceInclude Source="avares://FModel/Themes/Adonis/Brushes.axaml"/>
+        <ResourceInclude Source="avares://FModel/Themes/Adonis/Controls.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
   </Styles.Resources>
+
+  <!-- AdonisUI ToggleSwitch named style -->
+  <Style Selector="ToggleButton.ToggleSwitch, CheckBox.ToggleSwitch">
+    <Setter Property="Theme" Value="{StaticResource AdonisToggleSwitchTheme}"/>
+  </Style>
+
+  <!-- MenuItem.SeparatorStyleKey: separators inside menus -->
+  <Style Selector="ContextMenu > Separator, MenuItem > Separator, MenuFlyoutPresenter > Separator, MenuItem:separator Separator">
+    <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource Layer1BorderBrush}"/>
+    <Setter Property="Height" Value="3"/>
+    <Setter Property="Margin" Value="0"/>
+    <Setter Property="Padding" Value="8,1"/>
+  </Style>
 </Styles>

@@ -1,11 +1,10 @@
-﻿<UserControl x:Class="FModel.Views.Resources.Controls.CommitControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="FModel.Views.Resources.Controls.CommitControl"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:FModel.Views.Resources.Converters"
-             xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
-             xmlns:controls="clr-namespace:FModel.Views.Resources.Controls">
+             xmlns:converters="using:FModel.Views.Resources.Converters"
+             xmlns:controls="using:FModel.Views.Resources.Controls">
     <Border BorderThickness="1" CornerRadius="0.5"
-            BorderBrush="{DynamicResource {x:Static adonisUi:Brushes.Layer4BackgroundBrush}}">
+            BorderBrush="{DynamicResource Layer4BackgroundBrush}">
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -21,17 +20,8 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" Text="{Binding Commit.Message, Converter={x:Static converters:CommitMessageConverter.Instance}, ConverterParameter=Title}" FontWeight="Bold" TextWrapping="Wrap" />
-                <TextBlock Grid.Row="1" Text="{Binding Commit.Message, Converter={x:Static converters:CommitMessageConverter.Instance}, ConverterParameter=Description}" TextWrapping="Wrap">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Commit.Message, Converter={x:Static converters:CommitMessageConverter.Instance}, ConverterParameter=Description}" Value="">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                <TextBlock Grid.Row="1" Text="{Binding Commit.Message, Converter={x:Static converters:CommitMessageConverter.Instance}, ConverterParameter=Description}" TextWrapping="Wrap"
+                           IsVisible="{Binding $self.Text, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
                 <Grid Grid.Row="3">
                     <Grid.ColumnDefinitions>
@@ -50,15 +40,12 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Ellipse Width="16" Height="16" Margin="0,0,2,0">
-                                    <Ellipse.Fill>
-                                        <ImageBrush ImageSource="{Binding AvatarUrl}" />
-                                    </Ellipse.Fill>
-                                </Ellipse>
+                                <Ellipse Width="16" Height="16" Margin="0,0,2,0"
+                                         controls:RemoteImage.FillSource="{Binding AvatarUrl}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Grid.Column="2" FontSize="11">
+                    <TextBlock Grid.Column="2" FontSize="11" VerticalAlignment="Center">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0} committed {1}">
                                 <Binding Path="AuthorNames" />
@@ -76,58 +63,29 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
+                <!-- "Latest" badge (hidden when the commit is also the current one) -->
                 <Border Grid.Column="0"
-                        BorderThickness="1"
-                        CornerRadius="2.5"
-                        Padding="5,2"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center">
-                    <TextBlock FontSize="9" Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=Border}}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Asset.IsLatest}" Value="True">
-                                        <Setter Property="Text" Value="Latest" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
-                                        <Setter Property="Text" Value="Current" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Asset.IsLatest}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                    <Setter Property="BorderBrush" Value="#3fb950" />
-                                    <Setter Property="Background" Value="#0f3fb950" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsCurrent}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                    <Setter Property="BorderBrush" Value="#3f92b9" />
-                                    <Setter Property="Background" Value="#0f3f92b9" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
+                        BorderThickness="1" CornerRadius="2.5" Padding="5,2"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        BorderBrush="#3fb950" Background="#0f3fb950">
+                    <Border.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="Asset.IsLatest" FallbackValue="False" />
+                            <Binding Path="!IsCurrent" FallbackValue="False" />
+                        </MultiBinding>
+                    </Border.IsVisible>
+                    <TextBlock FontSize="9" Foreground="#3fb950" Text="Latest" />
+                </Border>
+                <!-- "Current" badge -->
+                <Border Grid.Column="0"
+                        BorderThickness="1" CornerRadius="2.5" Padding="5,2"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        BorderBrush="#3f92b9" Background="#0f3f92b9"
+                        IsVisible="{Binding IsCurrent}">
+                    <TextBlock FontSize="9" Foreground="#3f92b9" Text="Current" />
                 </Border>
 
-                <controls:CommitDownloaderControl Grid.Column="2" Commit="{Binding}">
-                    <controls:CommitDownloaderControl.Style>
-                        <Style TargetType="controls:CommitDownloaderControl">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsDownloadable}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </controls:CommitDownloaderControl.Style>
-                </controls:CommitDownloaderControl>
+                <controls:CommitDownloaderControl Grid.Column="2" Commit="{Binding}" IsVisible="{Binding IsDownloadable}" />
             </Grid>
         </Grid>
     </Border>

@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Media;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using AvaloniaEdit.Document;
 using CUE4Parse.UE4.Objects.Core.Misc;
 using CUE4Parse.UE4.Objects.Core.Serialization;
 using FModel.Extensions;
-using ICSharpCode.AvalonEdit.Document;
+using FModel.Framework.Ui;
 using Newtonsoft.Json;
 
 namespace FModel.Views.Resources.Controls;
 
-public partial class DictionaryEditor
+public partial class DictionaryEditor : FWindow
 {
     private readonly List<FCustomVersion> _defaultCustomVersions;
     private readonly Dictionary<string, bool> _defaultOptions;
@@ -27,6 +28,10 @@ public partial class DictionaryEditor
         _defaultMapStructTypes = new Dictionary<string, KeyValuePair<string, string>> { { "MapName", new KeyValuePair<string, string>("KeyType", "ValueType") } };
 
         InitializeComponent();
+
+        var area = ScreenInfo.PrimaryWorkingAreaDips;
+        MinWidth = area.Width * 0.30;
+        Height = area.Width * 0.20;
 
         Title = title;
         MyAvalonEditor.SyntaxHighlighting = AvalonExtensions.HighlighterSelector("");
@@ -66,19 +71,16 @@ public partial class DictionaryEditor
                     CustomVersions = JsonConvert.DeserializeObject<List<FCustomVersion>>(MyAvalonEditor.Document.Text);
                     // DialogResult = !CustomVersions.SequenceEqual(_defaultCustomVersions);
                     DialogResult = true;
-                    Close();
                     break;
                 case "Versioning Configuration (Options)":
                     Options = JsonConvert.DeserializeObject<Dictionary<string, bool>>(MyAvalonEditor.Document.Text);
                     // DialogResult = !Options.SequenceEqual(_defaultOptions);
                     DialogResult = true;
-                    Close();
                     break;
                 case "Versioning Configuration (MapStructTypes)":
                     MapStructTypes = JsonConvert.DeserializeObject<Dictionary<string, KeyValuePair<string, string>>>(MyAvalonEditor.Document.Text);
                     // DialogResult = !Options.SequenceEqual(_defaultOptions);
                     DialogResult = true;
-                    Close();
                     break;
                 default:
                     throw new NotImplementedException();
@@ -87,8 +89,13 @@ public partial class DictionaryEditor
         catch
         {
             HeBrokeIt.Text = "GG YOU BROKE THE FORMAT, FIX THE JSON OR RESET THE CHANGES!";
-            HeBrokeIt.Foreground = new SolidColorBrush((Color) ColorConverter.ConvertFromString(Constants.RED));
+            HeBrokeIt.Foreground = new SolidColorBrush(Color.Parse(Constants.RED));
         }
+    }
+
+    private void OnCancel(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
     }
 
     private void OnReset(object sender, RoutedEventArgs e)

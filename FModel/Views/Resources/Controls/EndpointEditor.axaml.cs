@@ -1,16 +1,17 @@
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Threading;
+using AvaloniaEdit.Document;
 using FModel.Extensions;
+using FModel.Framework.Ui;
 using FModel.Services;
 using FModel.Settings;
-using ICSharpCode.AvalonEdit.Document;
 using Newtonsoft.Json;
 
 namespace FModel.Views.Resources.Controls;
 
-public partial class EndpointEditor
+public partial class EndpointEditor : FWindow
 {
     private readonly EEndpointType _type;
     private bool _isTested;
@@ -22,6 +23,10 @@ public partial class EndpointEditor
         _isTested = endpoint.IsValid;
 
         InitializeComponent();
+
+        var area = ScreenInfo.PrimaryWorkingAreaDips;
+        Width = area.Width * 0.50;
+        Height = area.Width * 0.35;
 
         Title = title;
         TargetResponse.SyntaxHighlighting = EndpointResponse.SyntaxHighlighting = AvalonExtensions.HighlighterSelector("json");
@@ -53,7 +58,6 @@ public partial class EndpointEditor
     private void OnClick(object sender, RoutedEventArgs e)
     {
         DialogResult = _isTested && DataContext is EndpointSettings { IsValid: true };
-        Close();
     }
 
     private async void OnSend(object sender, RoutedEventArgs e)
@@ -61,7 +65,7 @@ public partial class EndpointEditor
         if (DataContext is not EndpointSettings endpoint) return;
 
         var body = await ApplicationService.ApiEndpointView.DynamicApi.GetRequestBody(default, endpoint.Url).ConfigureAwait(false);
-        Application.Current.Dispatcher.Invoke(delegate
+        Dispatcher.UIThread.Invoke(delegate
         {
             EndpointResponse.Document ??= new TextDocument();
             EndpointResponse.Document.Text = body.ToString(Formatting.Indented);
@@ -88,12 +92,12 @@ public partial class EndpointEditor
 
     private void OnSyntax(object sender, RoutedEventArgs e)
     {
-        Process.Start(new ProcessStartInfo { FileName = "https://support.smartbear.com/alertsite/docs/monitors/api/endpoint/jsonpath.html", UseShellExecute = true });
+        Shell.Open("https://support.smartbear.com/alertsite/docs/monitors/api/endpoint/jsonpath.html");
     }
 
     private void OnEvaluator(object sender, RoutedEventArgs e)
     {
-        Process.Start(new ProcessStartInfo { FileName = "https://jsonpath.com/", UseShellExecute = true });
+        Shell.Open("https://jsonpath.com/");
     }
 }
 

@@ -1,0 +1,66 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="using:FModel.Framework.Ui">
+  <!-- AdonisUI Dark color scheme (port of AdonisUI/ColorSchemes/Dark.xaml).
+       Override AccentColor / AlertColor / ErrorColor ... in Application.Resources: every brush
+       references its color through DynamicResource, so overrides propagate. -->
+  <Color x:Key="AccentColor">#425595</Color>
+  <Color x:Key="AccentHighlightColor">#5168B7</Color>
+  <Color x:Key="AccentIntenseHighlightColor">#5B74CD</Color>
+  <Color x:Key="AccentIntenseHighlightBorderColor">#5B74CD</Color>
+  <Color x:Key="AccentInteractionColor">#495EA6</Color>
+  <Color x:Key="AccentInteractionBorderColor">#495EA6</Color>
+  <Color x:Key="AccentInteractionForegroundColor">#FFFFFF</Color> <!-- alias of AccentForegroundColor in AdonisUI; brushes use AccentForegroundColor directly -->
+  <Color x:Key="Layer0BackgroundColor">#2A2B34</Color>
+  <Color x:Key="Layer0BorderColor">#2A2B34</Color>
+  <Color x:Key="Layer1BackgroundColor">#3D3D4C</Color>
+  <Color x:Key="Layer1BorderColor">#4A4A5E</Color>
+  <Color x:Key="Layer1HighlightColor">#4C4F62</Color>
+  <Color x:Key="Layer1HighlightBorderColor">#727290</Color>
+  <Color x:Key="Layer1IntenseHighlightColor">#5C5F74</Color>
+  <Color x:Key="Layer1IntenseHighlightBorderColor">#A9A9C0</Color>
+  <Color x:Key="Layer1InteractionColor">#425595</Color> <!-- alias of AccentColor in AdonisUI; brushes use AccentColor directly -->
+  <Color x:Key="Layer1InteractionBorderColor">#425595</Color> <!-- alias of AccentColor in AdonisUI; brushes use AccentColor directly -->
+  <Color x:Key="Layer1InteractionForegroundColor">#FFFFFF</Color> <!-- alias of AccentForegroundColor in AdonisUI; brushes use AccentForegroundColor directly -->
+  <Color x:Key="Layer2BackgroundColor">#32323F</Color>
+  <Color x:Key="Layer2BorderColor">#272730</Color>
+  <Color x:Key="Layer2HighlightColor">#3D3D4C</Color>
+  <Color x:Key="Layer2HighlightBorderColor">#585871</Color>
+  <Color x:Key="Layer2IntenseHighlightColor">#454555</Color>
+  <Color x:Key="Layer2IntenseHighlightBorderColor">#7B7B99</Color>
+  <Color x:Key="Layer2InteractionColor">#425595</Color> <!-- alias of AccentColor in AdonisUI; brushes use AccentColor directly -->
+  <Color x:Key="Layer2InteractionBorderColor">#425595</Color> <!-- alias of AccentColor in AdonisUI; brushes use AccentColor directly -->
+  <Color x:Key="Layer2InteractionForegroundColor">#FFFFFF</Color> <!-- alias of AccentForegroundColor in AdonisUI; brushes use AccentForegroundColor directly -->
+  <Color x:Key="Layer3BackgroundColor">#262630</Color>
+  <Color x:Key="Layer3BorderColor">#1F2029</Color>
+  <Color x:Key="Layer3HighlightColor">#3B3D4A</Color>
+  <Color x:Key="Layer3HighlightBorderColor">#484B60</Color>
+  <Color x:Key="Layer3IntenseHighlightColor">#464859</Color>
+  <Color x:Key="Layer3IntenseHighlightBorderColor">#717590</Color>
+  <Color x:Key="Layer3InteractionColor">#425595</Color> <!-- alias of AccentColor in AdonisUI; brushes use AccentColor directly -->
+  <Color x:Key="Layer3InteractionBorderColor">#425595</Color> <!-- alias of AccentColor in AdonisUI; brushes use AccentColor directly -->
+  <Color x:Key="Layer3InteractionForegroundColor">#FFFFFF</Color> <!-- alias of AccentForegroundColor in AdonisUI; brushes use AccentForegroundColor directly -->
+  <Color x:Key="Layer4BackgroundColor">#323341</Color>
+  <Color x:Key="Layer4BorderColor">#414255</Color>
+  <Color x:Key="Layer4HighlightColor">#38394A</Color>
+  <Color x:Key="Layer4HighlightBorderColor">#51516B</Color>
+  <Color x:Key="Layer4IntenseHighlightColor">#48495C</Color>
+  <Color x:Key="Layer4IntenseHighlightBorderColor">#7F7F90</Color>
+  <Color x:Key="Layer4InteractionColor">#425595</Color> <!-- alias of AccentColor in AdonisUI; brushes use AccentColor directly -->
+  <Color x:Key="Layer4InteractionBorderColor">#425595</Color> <!-- alias of AccentColor in AdonisUI; brushes use AccentColor directly -->
+  <Color x:Key="Layer4InteractionForegroundColor">#FFFFFF</Color> <!-- alias of AccentForegroundColor in AdonisUI; brushes use AccentForegroundColor directly -->
+  <Color x:Key="ForegroundColor">#F0F0F0</Color>
+  <Color x:Key="AccentForegroundColor">#FFFFFF</Color>
+  <Color x:Key="DisabledForegroundColor">#8E8E8E</Color>
+  <Color x:Key="DisabledAccentForegroundColor">#ACACAC</Color>
+  <Color x:Key="SuccessColor">#00B14A</Color>
+  <Color x:Key="ErrorColor">#B00020</Color>
+  <Color x:Key="AlertColor">#FFC107</Color>
+  <Color x:Key="HyperlinkColor">#3377C6</Color>
+  <Color x:Key="WindowButtonHighlightColor">#3D3D4C</Color>
+  <Color x:Key="WindowButtonInteractionColor">#4C4F62</Color>
+
+  <!-- dimensions -->
+  <CornerRadius x:Key="AdonisCornerRadius">0</CornerRadius>
+  <Thickness x:Key="AdonisBorderThickness">1</Thickness>
+  <x:Double x:Key="AdonisHorizontalSpace">8</x:Double>
+  <x:Double x:Key="AdonisVerticalSpace">8</x:Double>
+</ResourceDictionary>
