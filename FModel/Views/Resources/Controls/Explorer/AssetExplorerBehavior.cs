@@ -99,8 +99,8 @@ public sealed class AssetExplorerBehavior
         switch (item.DataContext)
         {
             case GameFileViewModel file:
-                ApplicationService.ApplicationView.SelectedLeftTabIndex = 2;
                 file.IsSelected = true;
+                ApplicationService.ApplicationView.SelectedLeftTabIndex = 2;
                 file.ExtractAsync();
                 break;
             case TreeItem folder:

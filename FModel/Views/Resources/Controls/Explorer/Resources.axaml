@@ -7,6 +7,9 @@
     <!-- Notes:
          * AssetExplorerListBox / FolderTree use StyleKeyOverride=ListBox, select them with "ListBox.Class".
          * The WPF VirtualizingWrapPanel (NuGet) is replaced by explorer:VirtualizingWrapPanel.
+         * The WPF IsSelected container bindings are not used: Avalonia pushes the container value back into the selection
+           when a (recycled) container gets prepared, which deselected items. MainWindow.SyncSelection keeps the lists and
+           GameFileViewModel.IsSelected in sync instead.
          * The WPF EventSetters (double click / right click) are implemented by explorer:AssetExplorerBehavior. -->
     <Styles.Resources>
         <LinearGradientBrush x:Key="TiledFolderTabBrush" StartPoint="0%,0%" EndPoint="0%,100%">
@@ -84,7 +87,6 @@
         </Setter>
     </Style>
     <Style Selector="ListBox.TiledExplorer > ListBoxItem">
-        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
         <Setter Property="Margin" Value="5" />
         <Setter Property="Padding" Value="5" />
         <Setter Property="BorderThickness" Value="1.5" />
@@ -156,7 +158,6 @@
         </Setter>
     </Style>
     <Style Selector="ListBox.ListExplorer > ListBoxItem">
-        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
@@ -183,7 +184,6 @@
     <Style Selector="ListBox.AssetsListBox > ListBoxItem">
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="5 3" />
-        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
         <Setter Property="controls:ListBoxItemBehavior.IsBroughtIntoViewWhenSelected" Value="True" />
     </Style>
     <Style Selector="ListBox.AssetsListBox:empty">

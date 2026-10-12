@@ -57,9 +57,9 @@ public partial class MainWindow : FWindow
         AssetsExplorer.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
         AssetsListExplorer.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
 
-        AssetsExplorer.SelectionChanged += (_, e) => SyncSelection(AssetsListName, e);
-        AssetsListExplorer.SelectionChanged += (_, e) => SyncSelection(AssetsListName, e);
-        AssetsListName.SelectionChanged += (_, e) => SyncSelection(AssetsExplorer, e);
+        AssetsExplorer.SelectionChanged += (_, e) => SyncSelection(e, AssetsListName, AssetsListExplorer);
+        AssetsListExplorer.SelectionChanged += (_, e) => SyncSelection(e, AssetsListName, AssetsExplorer);
+        AssetsListName.SelectionChanged += (_, e) => SyncSelection(e, AssetsExplorer, AssetsListExplorer);
 
         _threadWorkerView.PropertyChanged += OnThreadWorkerPropertyChanged;
 
@@ -70,7 +70,19 @@ public partial class MainWindow : FWindow
     }
 
     // Hack to sync selection between packages tab and explorer
-    private void SyncSelection(ListBox target, SelectionChangedEventArgs e)
+    // (WPF did it through ListBoxItem.IsSelected bindings to GameFileViewModel.IsSelected, see Explorer/Resources.axaml)
+    private static void SyncSelection(SelectionChangedEventArgs e, params ListBox[] targets)
+    {
+        foreach (var removed in e.RemovedItems.OfType<GameFileViewModel>())
+            removed.IsSelected = false;
+        foreach (var added in e.AddedItems.OfType<GameFileViewModel>())
+            added.IsSelected = true;
+
+        foreach (var target in targets)
+            SyncSelection(target, e);
+    }
+
+    private static void SyncSelection(ListBox target, SelectionChangedEventArgs e)
     {
         if (target.SelectedItems is not { } selectedItems)
             return;
