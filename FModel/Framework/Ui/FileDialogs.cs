@@ -117,22 +117,32 @@ public class FolderBrowserDialog
         var owner = AppWindows.ActiveTopLevel;
         if (owner == null) return false;
 
-        var folders = UiThread.WaitFor(async () =>
+        IReadOnlyList<IStorageFolder> folders;
+        try
         {
-            IStorageFolder start = null;
-            if (!string.IsNullOrEmpty(SelectedPath) && Directory.Exists(SelectedPath))
+            folders = UiThread.WaitFor(async () =>
             {
-                try { start = await owner.StorageProvider.TryGetFolderFromPathAsync(SelectedPath); }
-                catch { /* ignored */ }
-            }
+                IStorageFolder start = null;
+                if (!string.IsNullOrEmpty(SelectedPath) && Directory.Exists(SelectedPath))
+                {
+                    try { start = await owner.StorageProvider.TryGetFolderFromPathAsync(SelectedPath); }
+                    catch { /* ignored */ }
+                }
 
-            return await owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-            {
-                Title = Description ?? "Select a folder",
-                AllowMultiple = Multiselect,
-                SuggestedStartLocation = start
+                return await owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = Description ?? "Select a folder",
+                    AllowMultiple = Multiselect,
+                    SuggestedStartLocation = start
+                });
             });
-        });
+        }
+        catch (Exception e)
+        {
+            Serilog.Log.Error(e, "Could not open the folder picker");
+            MessageBox.Show($"Could not open the folder picker: {e.Message}\nYou can type the path manually instead.", "Folder Picker", MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
+        }
 
         SelectedPaths = folders.Select(f => f.TryGetLocalPath()).Where(p => p != null).ToArray();
         if (SelectedPaths.Length == 0) return false;

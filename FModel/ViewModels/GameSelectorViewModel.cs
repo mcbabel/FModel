@@ -86,9 +86,15 @@ public class GameSelectorViewModel : ViewModel
     public void AddUndetectedDir(string gameDirectory) => AddUndetectedDir(GetLastPathSegment(gameDirectory), gameDirectory);
     public void AddUndetectedDir(string gameName, string gameDirectory)
     {
-        if (TryDetectUeVersion(gameDirectory, out var ueVersion, out var newGameDirectory))
+        gameDirectory = Helper.ExpandPath(gameDirectory);
+        var ueVersion = EGame.GAME_UE4_LATEST;
+        try
         {
-            // gameDirectory = newGameDirectory; // directory was changed to point to the correct paks folder
+            TryDetectUeVersion(gameDirectory, out ueVersion, out _);
+        }
+        catch (Exception e)
+        {
+            Serilog.Log.Warning(e, "Could not detect the Unreal Engine version of {Directory}", gameDirectory);
         }
 
         var setting = DirectorySettings.Default(gameName, gameDirectory, true, ueVersion);

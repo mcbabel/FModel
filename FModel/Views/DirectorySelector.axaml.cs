@@ -68,7 +68,14 @@ public partial class DirectorySelector : FWindow
             string.IsNullOrEmpty(HelloGameMyNameIsDirectory.Text))
             return;
 
-        gameLauncherViewModel.AddUndetectedDir(HelloMyNameIsGame.Text, HelloGameMyNameIsDirectory.Text);
+        var directory = Helper.ExpandPath(HelloGameMyNameIsDirectory.Text);
+        if (!System.IO.Directory.Exists(directory))
+        {
+            MessageBox.Show($"The directory '{directory}' does not exist.", "Add Undetected Game", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        gameLauncherViewModel.AddUndetectedDir(HelloMyNameIsGame.Text.Trim(), directory);
         HelloMyNameIsGame.Clear();
         HelloGameMyNameIsDirectory.Clear();
     }

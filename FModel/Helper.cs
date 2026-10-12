@@ -114,6 +114,34 @@ public static class Helper
         return radians * ratio;
     }
 
+    /// <summary>
+    /// Normalizes a path typed by the user: trims quotes/spaces, expands "~" and $VARIABLES (shell style) and makes it absolute.
+    /// </summary>
+    public static string ExpandPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return path;
+
+        path = path.Trim().Trim('"', '\'').Trim();
+        if (path == "~" || path.StartsWith("~/"))
+            path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + path[1..];
+
+        path = System.Text.RegularExpressions.Regex.Replace(path, @"\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?",
+            m => Environment.GetEnvironmentVariable(m.Groups[1].Value) ?? m.Value);
+        path = Environment.ExpandEnvironmentVariables(path);
+
+        try
+        {
+            path = Path.GetFullPath(path);
+        }
+        catch
+        {
+            // keep the path as is, the caller validates it
+        }
+
+        return path.Length > 1 ? path.TrimEnd('/', '\\') : path;
+    }
+
     public static string GetGameName(string path)
     {
         // install_folder/
