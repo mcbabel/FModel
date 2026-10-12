@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Windows.Data;
+using Avalonia.Data.Converters;
 
 namespace FModel.Views.Resources.Converters
 {

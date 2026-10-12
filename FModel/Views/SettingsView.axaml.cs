@@ -1,32 +1,36 @@
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
+using AvaloniaEdit;
 using CUE4Parse.UE4.Lua.unluac;
 using FModel.Extensions;
 using FModel.Extensions.Themes;
 using FModel.Framework;
+using FModel.Framework.Ui;
 using FModel.Services;
 using FModel.Settings;
 using FModel.ViewModels;
 using FModel.Views.Resources.Controls;
-using ICSharpCode.AvalonEdit;
-using Microsoft.Win32;
-using Ookii.Dialogs.Wpf;
 
 namespace FModel.Views;
 
-public partial class SettingsView
+public partial class SettingsView : FWindow
 {
     private ApplicationViewModel _applicationView => ApplicationService.ApplicationView;
     private SettingsViewModel _settingsView => _applicationView.SettingsView;
 
     public SettingsView()
     {
+        // WPF: Width = 45% of the screen width, MinHeight = 10% of the screen height
+        var area = ScreenInfo.PrimaryWorkingAreaDipsOf(this);
+        Width = area.Width * 0.45;
+        MinHeight = area.Height * 0.10;
+
         DataContext = _applicationView;
         _applicationView.SettingsView.Initialize();
 
@@ -35,9 +39,31 @@ public partial class SettingsView
         var i = 0;
         foreach (var item in SettingsTree.Items)
         {
-            if (item is not TreeViewItem { Visibility: Visibility.Visible } treeItem) continue;
-            treeItem.IsSelected = i == UserSettings.Default.LastOpenedSettingTab;
+            if (item is not TreeViewItem { IsVisible: true } treeItem) continue;
+            if (i == UserSettings.Default.LastOpenedSettingTab)
+            {
+                SettingsTree.SelectedItem = treeItem;
+                break;
+            }
             i++;
+        }
+        UpdateSettingsContent();
+    }
+
+    /// <summary>
+    /// Replaces OnTagDataTemplateSelector: the Tag of the selected TreeViewItem is the key of the DataTemplate to show.
+    /// The built content inherits the window DataContext (ApplicationViewModel).
+    /// </summary>
+    private void UpdateSettingsContent()
+    {
+        if (SettingsTree.SelectedItem is TreeViewItem { Tag: string key } &&
+            this.TryFindResource(key, out var resource) && resource is IDataTemplate template)
+        {
+            SettingsContent.Content = template.Build(_applicationView);
+        }
+        else
+        {
+            SettingsContent.Content = null;
         }
     }
 
@@ -134,7 +160,7 @@ public partial class SettingsView
 
     private bool TryBrowse(out string path)
     {
-        var folderBrowser = new VistaFolderBrowserDialog { ShowNewFolderButton = false };
+        var folderBrowser = new FolderBrowserDialog { ShowNewFolderButton = false };
         if (folderBrowser.ShowDialog() == true)
         {
             path = folderBrowser.SelectedPath;
@@ -145,14 +171,16 @@ public partial class SettingsView
         return false;
     }
 
-    private void OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    private void OnSelectedItemChanged(object sender, SelectionChangedEventArgs e)
     {
+        UpdateSettingsContent();
+
         var i = 0;
         foreach (var item in SettingsTree.Items)
         {
-            if (item is not TreeViewItem { Visibility: Visibility.Visible } treeItem)
+            if (item is not TreeViewItem { IsVisible: true } treeItem)
                 continue;
-            if (!treeItem.IsSelected)
+            if (!ReferenceEquals(SettingsTree.SelectedItem, treeItem))
             {
                 i++;
                 continue;
@@ -252,7 +280,7 @@ public partial class SettingsView
         if (sender is not TextBox textBox)
             return;
 
-        var input = textBox.Text.Trim();
+        var input = textBox.Text?.Trim();
         if (string.IsNullOrEmpty(input))
         {
             _applicationView.SettingsView.CriwareDecryptionKey = 0;
@@ -287,14 +315,6 @@ public partial class SettingsView
             CultureInfo.InvariantCulture,
             out value
         );
-    }
-
-    private void OnHyperlinkClick(object sender, RoutedEventArgs e)
-    {
-        if (e.OriginalSource is not Hyperlink hyperlink)
-            return;
-
-        Process.Start(new ProcessStartInfo(hyperlink.NavigateUri.AbsoluteUri) { UseShellExecute = true });
     }
 
     private async void OnDecompileLuaChanged(object sender, RoutedEventArgs e)
@@ -363,8 +383,8 @@ public partial class SettingsView
 
     private void OnJsonHighlightThemeChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is FrameworkElement { Tag: TextEditor editor })
-            Dispatcher.BeginInvoke(() => ApplyJsonThemePreview(editor));
+        if (sender is Control { Tag: TextEditor editor })
+            Dispatcher.UIThread.Post(() => ApplyJsonThemePreview(editor));
     }
 
     private void ApplyJsonThemePreview(TextEditor editor)
