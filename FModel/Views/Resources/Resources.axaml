@@ -309,7 +309,6 @@
     <!-- ===================== GameFilesTabControl (asset tabs) ===================== -->
     <Style Selector="TabControl.GameFilesTabControl">
         <Setter Property="ItemsSource" Value="{Binding CUE4Parse.TabControl.TabsItems}" />
-        <Setter Property="SelectedItem" Value="{Binding CUE4Parse.TabControl.SelectedTab, Mode=TwoWay}" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
                 <WrapPanel Background="Transparent" />
@@ -663,109 +662,6 @@
         </Setter>
     </Style>
 
-    <!-- ===================== MenuItem (implicit override: input gestures shown with HotkeyPresenter) ===================== -->
-    <Style Selector="MenuItem">
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-        <Setter Property="Background" Value="{DynamicResource Layer1BackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Layer1BorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="8,6" />
-        <Setter Property="controls:MenuItemGesture.Text" Value="{Binding $self.InputGesture, Converter={x:Static controls:MenuItemGesture.ToStringConverter}}" />
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Panel>
-                    <Border Name="Border" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" />
-                    <Grid Margin="{TemplateBinding Padding}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="CheckMarkColumn" />
-                            <ColumnDefinition Width="22" />
-                            <ColumnDefinition Width="*" MinWidth="130" />
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="InputGestureColumn" />
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="ArrowColumn" />
-                        </Grid.ColumnDefinitions>
-
-                        <ContentPresenter Name="IconPresenter" Grid.Column="1" Margin="0 0 4 0" VerticalAlignment="Center"
-                                          Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" />
-                        <Viewbox Name="CheckMark" Grid.Column="1" Width="11" Height="11" Margin="0 0 4 0" IsVisible="False">
-                            <Path Data="M 1 3 L 4 6 L 10 0" Stroke="{TemplateBinding Foreground}" StrokeThickness="2" />
-                        </Viewbox>
-
-                        <ContentPresenter Name="PART_HeaderPresenter" Grid.Column="2" Margin="4 0" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                                          Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                          Foreground="{TemplateBinding Foreground}" />
-
-                        <controls:HotkeyPresenter Name="InputGesturePresenter" Grid.Column="3" Margin="4 0" VerticalAlignment="Center" HorizontalAlignment="Right"
-                                                  Gesture="{Binding (controls:MenuItemGesture.Text), RelativeSource={RelativeSource TemplatedParent}}"
-                                                  Foreground="{TemplateBinding Foreground}" />
-
-                        <Viewbox Name="ArrowPresenter" Grid.Column="4" Stretch="Uniform" Margin="4 4 0 4" Width="12">
-                            <Path Data="{StaticResource ArrowIcon}" Fill="{TemplateBinding Foreground}" Stretch="Uniform" RenderTransform="rotate(-90deg)" />
-                        </Viewbox>
-                    </Grid>
-
-                    <Popup Name="PART_Popup" Placement="RightEdgeAlignedTop" IsLightDismissEnabled="False"
-                           IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
-                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
-                                Margin="0 0 8 8" BoxShadow="2 2 8 0 #4D000000">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" Grid.IsSharedSizeScope="True" />
-                            </ScrollViewer>
-                        </Border>
-                    </Popup>
-                </Panel>
-            </ControlTemplate>
-        </Setter>
-    </Style>
-    <Style Selector="MenuItem:empty /template/ Viewbox#ArrowPresenter">
-        <Setter Property="IsVisible" Value="False" />
-    </Style>
-    <Style Selector="MenuItem:checked /template/ ContentPresenter#IconPresenter">
-        <Setter Property="IsVisible" Value="False" />
-    </Style>
-    <Style Selector="MenuItem:checked /template/ Viewbox#CheckMark">
-        <Setter Property="IsVisible" Value="True" />
-    </Style>
-    <Style Selector="MenuItem:selected">
-        <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}" />
-    </Style>
-    <Style Selector="MenuItem:disabled">
-        <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
-    </Style>
-    <!-- top level items (WPF Role TopLevelHeader / TopLevelItem) -->
-    <Style Selector="Menu > MenuItem">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Padding" Value="4,2" />
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Panel>
-                    <Border Name="Border" Background="{TemplateBinding Background}" BorderBrush="Transparent"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" />
-                    <ContentPresenter Name="PART_HeaderPresenter" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                                      Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                      Foreground="{TemplateBinding Foreground}" />
-                    <Popup Name="PART_Popup" Placement="BottomEdgeAlignedLeft" IsLightDismissEnabled="True"
-                           IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}" OverlayInputPassThroughElement="{Binding $parent[Menu]}">
-                        <Border Background="{DynamicResource Layer1BackgroundBrush}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
-                                Margin="0 0 8 8" BoxShadow="2 2 8 0 #4D000000">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" Grid.IsSharedSizeScope="True" />
-                            </ScrollViewer>
-                        </Border>
-                    </Popup>
-                </Panel>
-            </ControlTemplate>
-        </Setter>
-    </Style>
-    <Style Selector="Menu > MenuItem:selected">
-        <Setter Property="Background" Value="{DynamicResource Layer1HighlightBrush}" />
-    </Style>
-    <Style Selector="Menu > MenuItem:selected /template/ Border#Border">
-        <Setter Property="BorderBrush" Value="{DynamicResource Layer1HighlightBorderBrush}" />
-    </Style>
-
-    <!-- ===================== Expander (implicit override) ===================== -->
     <Style Selector="ToggleButton.CustomExpanderDownHeaderStyle">
         <Setter Property="Template">
             <ControlTemplate>

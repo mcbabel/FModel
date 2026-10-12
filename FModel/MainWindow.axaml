@@ -369,7 +369,7 @@
                     </TabItem>
                     <TabItem Classes="TabItemFillSpace">
                         <TabItem.Header>
-                            <TextBlock Text="{Binding CUE4Parse.AssetsFolder.SelectedFolder.AssetsList.Assets.Count, FallbackValue=0, StringFormat='{}{0} Packages'}" />
+                            <TextBlock Text="{Binding CUE4Parse.AssetsFolder.SelectedFolder.AssetsList.Assets.Count, FallbackValue='0 Packages', StringFormat='{}{0} Packages'}" />
                         </TabItem.Header>
                         <DockPanel>
                             <inputs:SearchTextBox DockPanel.Dock="Top" x:Name="AssetsSearchTextBox"
@@ -453,7 +453,7 @@
                             </Grid>
                         </Border>
 
-                        <TabControl x:Name="TabControlName" Classes="GameFilesTabControl"
+                        <TabControl x:Name="TabControlName" Classes="GameFilesTabControl" SelectedItem="{Binding CUE4Parse.TabControl.SelectedTab, Mode=TwoWay}"
                                     IsVisible="{Binding !IsAssetsExplorerVisible}" />
                     </Grid>
 

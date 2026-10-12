@@ -258,9 +258,14 @@ public class ApplicationViewModel : ViewModel
         var vgmArchiveFilePath = Path.Combine(UserSettings.Default.OutputDirectory, ".data", archiveName);
         var vgmFileInfo = new FileInfo(vgmArchiveFilePath);
 
-        if (!vgmFileInfo.Exists || vgmFileInfo.LastWriteTimeUtc < DateTime.UtcNow.AddMonths(-4))
+        var cliFilePath = Path.Combine(vgmFileInfo.DirectoryName!, OperatingSystem.IsWindows() ? "vgmstream-cli.exe" : "vgmstream-cli");
+        if (!vgmFileInfo.Exists || vgmFileInfo.Length == 0 || !File.Exists(cliFilePath) || vgmFileInfo.LastWriteTimeUtc < DateTime.UtcNow.AddMonths(-4))
         {
-            await ApplicationService.ApiEndpointView.DownloadFileAsync($"https://github.com/vgmstream/vgmstream/releases/latest/download/{archiveName}", vgmArchiveFilePath);
+            // the official releases only ship Windows binaries, Linux builds are published as nightly in vgmstream-releases
+            var url = OperatingSystem.IsWindows()
+                ? $"https://github.com/vgmstream/vgmstream/releases/latest/download/{archiveName}"
+                : $"https://github.com/vgmstream/vgmstream-releases/releases/download/nightly/{archiveName}";
+            await ApplicationService.ApiEndpointView.DownloadFileAsync(url, vgmArchiveFilePath);
             vgmFileInfo.Refresh();
 
             if (vgmFileInfo.Exists && vgmFileInfo.Length > 0)
@@ -278,10 +283,9 @@ public class ApplicationViewModel : ViewModel
                     await using var gzip = new GZipStream(archiveFs, CompressionMode.Decompress);
                     await TarFile.ExtractToDirectoryAsync(gzip, archiveDir, true);
 
-                    var cliPath = Path.Combine(archiveDir, "vgmstream-cli");
-                    if (File.Exists(cliPath))
+                    if (File.Exists(cliFilePath))
                     {
-                        File.SetUnixFileMode(cliPath, File.GetUnixFileMode(cliPath) |
+                        File.SetUnixFileMode(cliFilePath, File.GetUnixFileMode(cliFilePath) |
                             UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute);
                     }
                 }

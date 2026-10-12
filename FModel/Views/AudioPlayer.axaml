@@ -49,7 +49,7 @@
                              Padding="25 0 0 0" HorizontalAlignment="Stretch" VerticalContentAlignment="Center"
                              TextChanged="OnFilterTextChanged" Watermark="Search by name..." />
                 </Grid>
-                <ListBox x:Name="AudioFilesListBox" DockPanel.Dock="Top" Classes="AudioFilesListBox">
+                <ListBox x:Name="AudioFilesListBox" DockPanel.Dock="Top" Classes="AudioFilesListBox" SelectedItem="{Binding AudioPlayer.SelectedAudioFile, Mode=TwoWay}">
                     <ListBox.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Play" Command="{Binding AudioPlayer.AudioCommand}" CommandParameter="ForcePlayPause">

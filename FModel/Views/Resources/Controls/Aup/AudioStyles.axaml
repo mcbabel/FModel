@@ -6,7 +6,6 @@
     <!-- playlist of the audio player -->
     <Style Selector="ListBox.AudioFilesListBox">
         <Setter Property="ItemsSource" Value="{Binding AudioPlayer.AudioFilesView}" />
-        <Setter Property="SelectedItem" Value="{Binding AudioPlayer.SelectedAudioFile, Mode=TwoWay}" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ItemTemplate">
             <DataTemplate>
